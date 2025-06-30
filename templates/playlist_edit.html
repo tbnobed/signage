@@ -363,6 +363,11 @@ function quickAdd(mediaId, filename, type) {
                     select.value = mediaId;
                     updateIcon(select);
                     console.log('Media item added successfully');
+                    
+                    // Debug: Check if element is in form after addition
+                    const form = document.getElementById('playlistForm');
+                    console.log('Select element is inside form:', form.contains(select));
+                    console.log('Form HTML preview:', form.outerHTML.substring(0, 200) + '...');
                 } else {
                     console.error('Select element not found');
                 }
