@@ -24,11 +24,12 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 # Install PostgreSQL client for database checks
 RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
 
-# Create uploads directory
-RUN mkdir -p uploads logs && chmod 755 uploads logs
+# Create non-root user first
+RUN useradd -r -s /bin/bash signage
 
-# Create non-root user
-RUN useradd -r -s /bin/bash signage && \
+# Create uploads directory with proper permissions
+RUN mkdir -p uploads logs && \
+    chmod 755 uploads logs && \
     chown -R signage:signage /app
 
 USER signage

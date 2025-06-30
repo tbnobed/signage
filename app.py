@@ -28,8 +28,12 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Configure file uploads
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max file size
+upload_folder = os.environ.get('UPLOAD_FOLDER', 'uploads')
+app.config['UPLOAD_FOLDER'] = upload_folder
+app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_CONTENT_LENGTH', 500 * 1024 * 1024))
+
+# Ensure upload directory exists and is writable
+os.makedirs(upload_folder, exist_ok=True)
 
 # Initialize extensions
 db.init_app(app)
