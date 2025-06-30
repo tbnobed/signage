@@ -403,6 +403,8 @@ class SignageSetup:
                 hostname = socket.gethostname()
                 self.device_id = f"{hostname}-client"
                 print(f"Non-interactive mode: Using device ID '{self.device_id}'")
+                print(f"Note: If this device is already registered with a different ID,")
+                print(f"      update the .env file manually: echo 'DEVICE_ID=your-existing-id' >> {self.config_file}")
             
             # Check interval
             if is_interactive:
@@ -561,7 +563,9 @@ AutomaticLogin={username}
 [debug]
 """
             
-            # Write GDM3 config with sudo
+            # Ensure gdm3 directory exists and write config
+            subprocess.run(['sudo', 'mkdir', '-p', '/etc/gdm3'], check=False)
+            
             process = subprocess.Popen(['sudo', 'tee', '/etc/gdm3/custom.conf'], 
                                      stdin=subprocess.PIPE, 
                                      stdout=subprocess.PIPE, 
@@ -569,7 +573,24 @@ AutomaticLogin={username}
                                      text=True)
             stdout, stderr = process.communicate(input=gdm_config)
             
-            if process.returncode == 0:
+            # Also try LightDM configuration for compatibility
+            lightdm_config = f"""[Seat:*]
+autologin-user={username}
+autologin-user-timeout=0
+"""
+            subprocess.run(['sudo', 'mkdir', '-p', '/etc/lightdm'], check=False)
+            
+            process2 = subprocess.Popen(['sudo', 'tee', '/etc/lightdm/lightdm.conf'], 
+                                      stdin=subprocess.PIPE, 
+                                      stdout=subprocess.PIPE, 
+                                      stderr=subprocess.PIPE,
+                                      text=True)
+            stdout2, stderr2 = process2.communicate(input=lightdm_config)
+            
+            # Set graphical target as default
+            subprocess.run(['sudo', 'systemctl', 'set-default', 'graphical.target'], check=False)
+            
+            if process.returncode == 0 or process2.returncode == 0:
                 print("   ✅ Autologin configured")
             else:
                 print("   ⚠️  Could not configure autologin (may require manual setup)")
