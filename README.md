@@ -18,5 +18,35 @@ A comprehensive Flask-based web application for managing digital signage display
 - **Auto-recovery**: Handles crashes and network interruptions
 - **Heartbeat Monitoring**: Regular check-ins with server
 
+## Quick Start
+
+### 1. Initial Setup
+First, create an admin user using the secure setup script:
+
+```bash
+python create_admin.py
+```
+
+This script will prompt you to create the first administrator account securely. After this, the setup functionality is disabled for security.
+
+### 2. Start the Application
+```bash
+gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app
+```
+
+### 3. Access the System
+- Open your browser to `http://localhost:5000`
+- Log in with the admin credentials you created
+- Start adding devices, uploading media, and creating playlists
+
+## Security Features
+
+- **Secure Admin Creation**: Initial admin account created via command-line script only
+- **Session Management**: Secure session-based authentication
+- **Password Requirements**: Minimum 12-character passwords enforced
+- **File Upload Validation**: Restricted file types and size limits
+- **SQL Injection Protection**: SQLAlchemy ORM with parameterized queries
+- **XSS Protection**: Template auto-escaping enabled
+
 ## Architecture
 

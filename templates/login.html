@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}
-{% if setup_mode %}Initial Setup{% else %}Login{% endif %} - Digital Signage Manager
-{% endblock %}
+{% block title %}Login - Digital Signage Manager{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -12,40 +10,11 @@
                 <div class="card-body p-4">
                     <div class="text-center mb-4">
                         <i class="fas fa-tv fa-3x text-primary mb-3"></i>
-                        <h3>{% if setup_mode %}Initial Setup{% else %}Digital Signage Manager{% endif %}</h3>
-                        {% if setup_mode %}
-                        <p class="text-muted">Create your admin account to get started</p>
-                        {% else %}
+                        <h3>Digital Signage Manager</h3>
                         <p class="text-muted">Sign in to manage your digital displays</p>
-                        {% endif %}
                     </div>
 
                     <form method="POST">
-                        {% if setup_mode %}
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="confirm_password" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-user-plus me-2"></i>Create Admin Account
-                        </button>
-                        {% else %}
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
                             <input type="text" class="form-control" id="username" name="username" required autofocus>
@@ -59,17 +28,13 @@
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="fas fa-sign-in-alt me-2"></i>Sign In
                         </button>
-                        {% endif %}
                     </form>
                     
-                    {% if not setup_mode %}
                     <div class="text-center mt-3">
                         <small class="text-muted">
-                            Need to set up the system? 
-                            <a href="{{ url_for('auth.setup') }}" class="text-decoration-none">Initial Setup</a>
+                            No account? Contact your administrator or run the setup script.
                         </small>
                     </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
