@@ -125,10 +125,31 @@ download_and_run_python_script() {
     echo -e "${GREEN}   ✅ Downloaded setup script${NC}"
     echo ""
     
-    # Run the Python script
-    $PYTHON_CMD "$SCRIPT_PATH"
+    # Check if we can run interactively
+    if [ -t 0 ] && [ -t 1 ]; then
+        # Interactive session - run directly
+        echo "Running interactive setup..."
+        $PYTHON_CMD "$SCRIPT_PATH"
+    else
+        # Non-interactive (piped from curl) - copy script and give instructions
+        echo "⚠️  Non-interactive session detected (piped from curl)"
+        echo "   Copying setup script to current directory..."
+        
+        # Copy script to current directory
+        cp "$SCRIPT_PATH" "./setup_client.py"
+        chmod +x "./setup_client.py"
+        
+        echo ""
+        echo "📋 Next Steps:"
+        echo "1. Register your device at: https://display.obtv.io"
+        echo "2. Run the interactive setup: sudo python3 setup_client.py"
+        echo "3. Enter your device ID when prompted"
+        echo ""
+        echo "The setup script is ready at: ./setup_client.py"
+        echo "Dependencies have been installed successfully."
+    fi
     
-    # Clean up
+    # Clean up temp directory
     rm -rf "$TEMP_DIR"
 }
 
