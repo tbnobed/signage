@@ -184,11 +184,21 @@ class SignageClient:
             # Kill any existing player process
             self.stop_current_media()
             
-            # Start new player process
+            # Setup display environment for GUI applications
+            env = os.environ.copy()
+            env.update({
+                'DISPLAY': ':0',
+                'XAUTHORITY': '/home/obtv1/.Xauthority',
+                'HOME': '/home/obtv1',
+                'USER': 'obtv1'
+            })
+            
+            # Start new player process with proper environment
             self.current_process = subprocess.Popen(
                 command,
                 stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
+                stderr=subprocess.DEVNULL,
+                env=env
             )
             
             # Wait for specified duration or until process ends
