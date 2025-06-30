@@ -208,6 +208,11 @@ def update_playlist(playlist_id):
     media_ids = request.form.getlist('media_ids')
     durations = request.form.getlist('durations')
     
+    # Debug: Print what we received
+    print(f"DEBUG: Received media_ids: {media_ids}")
+    print(f"DEBUG: Received durations: {durations}")
+    print(f"DEBUG: All form data: {dict(request.form)}")
+    
     for i, media_id in enumerate(media_ids):
         if media_id:
             duration = int(durations[i]) if durations[i] else None
