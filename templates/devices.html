@@ -6,10 +6,31 @@
 <div class="container my-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="fas fa-desktop me-2"></i>Devices</h2>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDeviceModal">
-            <i class="fas fa-plus me-2"></i>Add Device
+        <div>
+            <button class="btn btn-outline-info me-2" data-bs-toggle="modal" data-bs-target="#clientSetupModal">
+                <i class="fas fa-download me-2"></i>Client Setup
+            </button>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDeviceModal">
+                <i class="fas fa-plus me-2"></i>Add Device
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Setup Info -->
+    {% if not devices %}
+    <div class="alert alert-info">
+        <h5><i class="fas fa-info-circle me-2"></i>Get Started with Client Devices</h5>
+        <p class="mb-2">To connect displays to your signage system:</p>
+        <ol class="mb-3">
+            <li>Register a device using the "Add Device" button</li>
+            <li>Download and set up the client script on your device</li>
+            <li>Create playlists and assign them to devices</li>
+        </ol>
+        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#clientSetupModal">
+            <i class="fas fa-download me-1"></i>View Setup Instructions
         </button>
     </div>
+    {% endif %}
 
     {% if devices %}
     <div class="row">
@@ -130,6 +151,108 @@
                     <button type="submit" class="btn btn-primary">Add Device</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Client Setup Modal -->
+<div class="modal fade" id="clientSetupModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-download me-2"></i>Client Device Setup</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle me-2"></i>Quick Start Guide</h6>
+                    <p class="mb-0">Follow these steps to connect a Raspberry Pi, Intel NUC, or any Linux device to your signage system.</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>1. Register Device</h6>
+                        <p class="text-muted small">Add your device using the "Add Device" button with a unique Device ID.</p>
+                        
+                        <h6>2. Download Client</h6>
+                        <div class="mb-3">
+                            <a href="{{ url_for('main.download_client') }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-download me-1"></i>Download Client Script
+                            </a>
+                        </div>
+                        
+                        <h6>3. Install Dependencies</h6>
+                        <p class="text-muted small">On your device, install Python and a media player.</p>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>Quick Setup Commands</h6>
+                        <p class="text-muted small">Run these on your Raspberry Pi or Linux device:</p>
+                        
+                        <div class="bg-dark p-3 rounded">
+                            <code class="text-light small">
+                                # Install dependencies<br>
+                                sudo apt install python3 python3-pip omxplayer -y<br>
+                                pip3 install requests<br><br>
+                                
+                                # Download and setup<br>
+                                mkdir ~/signage && cd ~/signage<br>
+                                wget {{ request.url_root }}download/client<br>
+                                chmod +x signage_client.py<br><br>
+                                
+                                # Configure (edit with your values)<br>
+                                export SIGNAGE_SERVER_URL={{ request.url_root.rstrip('/') }}<br>
+                                export DEVICE_ID=your-device-id<br><br>
+                                
+                                # Test run<br>
+                                python3 signage_client.py
+                            </code>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-12">
+                        <h6>Supported Devices & Players</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>Raspberry Pi</strong>
+                                <ul class="text-muted small">
+                                    <li>omxplayer (recommended)</li>
+                                    <li>VLC (alternative)</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Intel NUC / PC</strong>
+                                <ul class="text-muted small">
+                                    <li>VLC (recommended)</li>
+                                    <li>ffplay (lightweight)</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Any Linux Device</strong>
+                                <ul class="text-muted small">
+                                    <li>Automatic detection</li>
+                                    <li>Fallback support</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>Important:</strong> Make sure your device can reach this server at <code>{{ request.url_root }}</code>
+                    and that the Device ID matches exactly what you register in the system.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="https://raw.githubusercontent.com/your-repo/main/CLIENT_SETUP.md" target="_blank" class="btn btn-outline-info">
+                    <i class="fas fa-book me-1"></i>Detailed Guide
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>

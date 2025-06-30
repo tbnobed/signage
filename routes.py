@@ -318,3 +318,32 @@ def device_log(device_id):
     db.session.commit()
     
     return jsonify({'status': 'ok'})
+
+@api.route('/devices/status')
+def devices_status():
+    """Get device status for dashboard refresh"""
+    devices = Device.query.all()
+    device_data = []
+    
+    for device in devices:
+        device_data.append({
+            'id': device.id,
+            'name': device.name,
+            'device_id': device.device_id,
+            'status': device.status,
+            'is_online': device.is_online(),
+            'last_checkin': device.last_checkin.isoformat() if device.last_checkin else None,
+            'current_media': device.current_media,
+            'location': device.location
+        })
+    
+    return jsonify(device_data)
+
+@main.route('/download/client')
+def download_client():
+    """Download the client agent script"""
+    from flask import send_file
+    try:
+        return send_file('client_agent.py', as_attachment=True, download_name='signage_client.py')
+    except FileNotFoundError:
+        return "Client script not found", 404
