@@ -508,23 +508,99 @@ CHECK_INTERVAL={self.check_interval}
         
         return True
     
+    def setup_display_access(self, username):
+        """Setup autologin and display access for digital signage"""
+        print("   📺 Setting up display access...")
+        
+        try:
+            # Setup autologin via GDM3
+            gdm_config = f"""[daemon]
+AutomaticLoginEnable=True
+AutomaticLogin={username}
+
+[security]
+
+[xdmcp]
+
+[chooser]
+
+[debug]
+"""
+            
+            # Write GDM3 config with sudo
+            process = subprocess.Popen(['sudo', 'tee', '/etc/gdm3/custom.conf'], 
+                                     stdin=subprocess.PIPE, 
+                                     stdout=subprocess.PIPE, 
+                                     stderr=subprocess.PIPE,
+                                     text=True)
+            stdout, stderr = process.communicate(input=gdm_config)
+            
+            if process.returncode == 0:
+                print("   ✅ Autologin configured")
+            else:
+                print("   ⚠️  Could not configure autologin (may require manual setup)")
+            
+            # Add user to video group for hardware access
+            subprocess.run(['sudo', 'usermod', '-a', '-G', 'video', username], 
+                          check=False)
+            
+            # Setup screen blanking disable
+            autostart_dir = f"/home/{username}/.config/autostart"
+            subprocess.run(['sudo', '-u', username, 'mkdir', '-p', autostart_dir], 
+                          check=False)
+            
+            disable_script = """[Desktop Entry]
+Type=Application
+Name=Disable Screen Blanking
+Exec=bash -c "xset s off; xset -dpms; xset s noblank"
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+"""
+            
+            disable_file = f"{autostart_dir}/disable-blanking.desktop"
+            process = subprocess.Popen(['sudo', 'tee', disable_file], 
+                                     stdin=subprocess.PIPE, 
+                                     stdout=subprocess.PIPE, 
+                                     stderr=subprocess.PIPE,
+                                     text=True)
+            stdout, stderr = process.communicate(input=disable_script)
+            
+            # Fix ownership
+            subprocess.run(['sudo', 'chown', '-R', f'{username}:{username}', 
+                           f'/home/{username}/.config'], check=False)
+            
+            print("   ✅ Display access configured")
+            
+        except Exception as e:
+            print(f"   ⚠️  Display setup warning: {e}")
+    
     def create_systemd_service(self):
-        """Create systemd service for auto-start"""
+        """Create systemd service for auto-start with display access"""
         print("🚀 Setting up auto-start service...")
         
         # Use the target user we already determined
         username = self.target_user or getpass.getuser()
         
+        # Setup autologin and display access first
+        self.setup_display_access(username)
+        
         service_content = f"""[Unit]
 Description=Digital Signage Client
-After=network.target
+After=graphical-session.target
+Wants=graphical-session.target
 
 [Service]
 Type=simple
 User={username}
 Group={username}
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/{username}/.Xauthority
+Environment=HOME=/home/{username}
+Environment=USER={username}
 WorkingDirectory={self.setup_dir}
 EnvironmentFile={self.config_file}
+ExecStartPre=/bin/sleep 30
 ExecStart=/usr/bin/python3 {self.client_script}
 Restart=always
 RestartSec=10
@@ -532,7 +608,7 @@ StandardOutput=journal
 StandardError=journal
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=graphical-session.target
 """
         
         try:
