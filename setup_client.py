@@ -81,14 +81,165 @@ class SignageSetup:
         
         print()
         
+    def install_dependencies(self):
+        """Install required dependencies including media players"""
+        print("📦 Installing dependencies...")
+        
+        # Check system type
+        package_manager = self.detect_package_manager()
+        if not package_manager:
+            print("⚠️  Unsupported system. Please install dependencies manually:")
+            print("   - Python 3 and pip")
+            print("   - Media player (omxplayer, vlc, or ffmpeg)")
+            print("   - requests module: pip3 install requests")
+            if not self.ask_yes_no("Continue anyway?", default=True):
+                sys.exit(1)
+            return
+        
+        # Check if we have sudo access
+        has_sudo = self.check_sudo_access()
+        
+        if package_manager == 'apt':
+            self.install_with_apt(has_sudo)
+        elif package_manager == 'yum':
+            self.install_with_yum(has_sudo)
+        elif package_manager == 'dnf':
+            self.install_with_dnf(has_sudo)
+        
+        # Install Python requests module via pip
+        self.install_python_requests()
+        
+        # Verify installations
+        print("\n🎬 Verifying media players...")
+        if not self.detect_media_players():
+            print("❌ No media players were successfully installed!")
+            if not self.ask_yes_no("Continue anyway?", default=False):
+                print("Setup cancelled.")
+                sys.exit(1)
+        
+        print()
+    
+    def detect_package_manager(self):
+        """Detect available package manager"""
+        managers = ['apt', 'yum', 'dnf', 'pacman']
+        for manager in managers:
+            if shutil.which(manager):
+                return manager
+        return None
+    
+    def check_sudo_access(self):
+        """Check if we have sudo access"""
+        try:
+            subprocess.run(['sudo', '-n', 'true'], check=True, capture_output=True)
+            return True
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            print("⚠️  No sudo access detected. Some installations may fail.")
+            if not self.ask_yes_no("Continue without sudo?", default=False):
+                print("Setup cancelled. Please run with sudo or as root.")
+                sys.exit(1)
+            return False
+    
+    def install_with_apt(self, has_sudo):
+        """Install dependencies using apt (Debian/Ubuntu)"""
+        print("   Using apt package manager...")
+        
+        # Update package list
+        if has_sudo:
+            print("   Updating package list...")
+            try:
+                subprocess.run(['sudo', 'apt', 'update'], check=True, capture_output=True)
+                print("   ✅ Package list updated")
+            except subprocess.CalledProcessError:
+                print("   ⚠️  Failed to update package list")
+        
+        # Install additional Python packages if needed
+        if has_sudo:
+            try:
+                subprocess.run(['sudo', 'apt', 'install', '-y', 'python3-requests'], 
+                             check=True, capture_output=True)
+                print(f"   ✅ python3-requests installed")
+            except subprocess.CalledProcessError:
+                print(f"   ⚠️  Failed to install python3-requests")
+        
+        # Install media players based on platform
+        is_raspberry_pi = self.detect_raspberry_pi()
+        if is_raspberry_pi:
+            print("   Detected Raspberry Pi - installing omxplayer...")
+            media_packages = ['omxplayer', 'vlc']
+        else:
+            print("   Detected generic Linux - installing VLC and FFmpeg...")
+            media_packages = ['vlc', 'ffmpeg']
+        
+        for package in media_packages:
+            if has_sudo:
+                try:
+                    subprocess.run(['sudo', 'apt', 'install', '-y', package], 
+                                 check=True, capture_output=True)
+                    print(f"   ✅ {package} installed")
+                except subprocess.CalledProcessError:
+                    print(f"   ⚠️  Failed to install {package}")
+            else:
+                print(f"   ❌ Cannot install {package} without sudo")
+    
+    def install_with_yum(self, has_sudo):
+        """Install dependencies using yum (CentOS/RHEL)"""
+        print("   Using yum package manager...")
+        
+        media_packages = ['vlc', 'ffmpeg']
+        
+        for package in media_packages:
+            if has_sudo:
+                try:
+                    subprocess.run(['sudo', 'yum', 'install', '-y', package], 
+                                 check=True, capture_output=True)
+                    print(f"   ✅ {package} installed")
+                except subprocess.CalledProcessError:
+                    print(f"   ⚠️  Failed to install {package}")
+            else:
+                print(f"   ❌ Cannot install {package} without sudo")
+    
+    def install_with_dnf(self, has_sudo):
+        """Install dependencies using dnf (Fedora)"""
+        print("   Using dnf package manager...")
+        
+        media_packages = ['vlc', 'ffmpeg']
+        
+        for package in media_packages:
+            if has_sudo:
+                try:
+                    subprocess.run(['sudo', 'dnf', 'install', '-y', package], 
+                                 check=True, capture_output=True)
+                    print(f"   ✅ {package} installed")
+                except subprocess.CalledProcessError:
+                    print(f"   ⚠️  Failed to install {package}")
+            else:
+                print(f"   ❌ Cannot install {package} without sudo")
+    
+    def install_python_requests(self):
+        """Install Python requests module"""
+        try:
+            subprocess.run([sys.executable, '-m', 'pip', 'install', 'requests'], 
+                         check=True, capture_output=True)
+            print("   ✅ Python requests module installed")
+        except subprocess.CalledProcessError:
+            print("   ⚠️  Failed to install Python requests module")
+            print("   Try manually: pip3 install requests")
+    
+    def detect_raspberry_pi(self):
+        """Detect if running on Raspberry Pi"""
+        try:
+            with open('/proc/cpuinfo', 'r') as f:
+                cpu_info = f.read()
+            return 'BCM' in cpu_info or 'Raspberry Pi' in cpu_info
+        except:
+            return False
+    
     def detect_media_players(self):
         """Detect available media players"""
-        print("🎬 Detecting media players...")
-        
         players = {
             'omxplayer': 'Hardware-accelerated (Raspberry Pi)',
             'vlc': 'Cross-platform media player',
-            'ffplay': 'FFmpeg-based player',
+            'ffplay': 'FFmpeg-based player (part of ffmpeg)',
             'mplayer': 'Classic media player'
         }
         
@@ -100,21 +251,11 @@ class SignageSetup:
                 available_players.append(f"   ❌ {player} - {description}")
         
         print("\n".join(available_players))
-        print()
         
         if not any("✅" in player for player in available_players):
-            print("⚠️  No media players detected!")
-            print("   Install one of the following:")
-            print("   - sudo apt install omxplayer     (Raspberry Pi)")
-            print("   - sudo apt install vlc           (Most systems)")  
-            print("   - sudo apt install ffmpeg        (Lightweight)")
-            print()
-            
-            if self.ask_yes_no("Continue anyway?", default=False):
-                return
-            else:
-                print("Setup cancelled.")
-                sys.exit(1)
+            print("   ⚠️  No media players detected!")
+        
+        return any("✅" in player for player in available_players)
     
     def get_user_input(self):
         """Get configuration from user"""
@@ -363,7 +504,7 @@ WantedBy=multi-user.target
         try:
             self.print_header()
             self.check_system()
-            self.detect_media_players()
+            self.install_dependencies()
             self.get_user_input()
             self.create_directory()
             self.download_client()
