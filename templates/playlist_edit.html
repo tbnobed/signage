@@ -192,55 +192,66 @@
 
 {% block scripts %}
 <script>
-let mediaOptions = `
-    <option value="">Select media...</option>
+// Store media options for dynamic creation
+const mediaFiles = [
     {% for media in media_files %}
-    <option value="{{ media.id }}" data-type="{{ media.file_type }}">{{ media.original_filename }}</option>
+    {id: {{ media.id }}, name: "{{ media.original_filename }}", type: "{{ media.file_type }}"},
     {% endfor %}
-`;
+];
+
+function createMediaOptions() {
+    let options = '<option value="">Select media...</option>';
+    mediaFiles.forEach(media => {
+        options += `<option value="${media.id}" data-type="${media.type}">${media.name}</option>`;
+    });
+    return options;
+}
 
 function addItem() {
     const container = document.getElementById('mediaItems');
-    const itemHtml = `
-        <div class="media-item card mb-2">
-            <div class="card-body p-3">
-                <div class="row align-items-center">
-                    <div class="col-md-1">
-                        <div class="d-flex flex-column">
-                            <button type="button" class="btn btn-sm btn-outline-secondary mb-1" onclick="moveUp(this)">
-                                <i class="fas fa-arrow-up"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="moveDown(this)">
-                                <i class="fas fa-arrow-down"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-md-5">
-                        <select name="media_ids" class="form-select" required onchange="updateIcon(this)">
-                            ${mediaOptions}
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="input-group">
-                            <input type="number" name="durations" class="form-control" 
-                                   placeholder="Default" min="1" max="3600">
-                            <span class="input-group-text">sec</span>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <span class="media-icon"></span>
-                    </div>
-                    <div class="col-md-1">
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(this)">
-                            <i class="fas fa-trash"></i>
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'media-item card mb-2';
+    
+    itemDiv.innerHTML = `
+        <div class="card-body p-3">
+            <div class="row align-items-center">
+                <div class="col-md-1">
+                    <div class="d-flex flex-column">
+                        <button type="button" class="btn btn-sm btn-outline-secondary mb-1" onclick="moveUp(this)">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="moveDown(this)">
+                            <i class="fas fa-arrow-down"></i>
                         </button>
                     </div>
+                </div>
+                <div class="col-md-5">
+                    <select name="media_ids" class="form-select" required onchange="updateIcon(this)">
+                        ${createMediaOptions()}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <input type="number" name="durations" class="form-control" 
+                               placeholder="Default" min="1" max="3600">
+                        <span class="input-group-text">sec</span>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <span class="media-icon"></span>
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             </div>
         </div>
     `;
-    container.insertAdjacentHTML('beforeend', itemHtml);
+    
+    container.appendChild(itemDiv);
     updateItemCount();
+    console.log('Added new media item');
 }
 
 function removeItem(button) {
@@ -265,42 +276,68 @@ function moveDown(button) {
 }
 
 function updateIcon(select) {
-    const option = select.selectedOptions[0];
-    const iconContainer = select.closest('.row').querySelector('.media-icon');
-    
-    if (iconContainer && option && option.dataset.type) {
-        const type = option.dataset.type;
-        if (type === 'image') {
-            iconContainer.innerHTML = '<i class="fas fa-image text-primary me-2"></i>';
-        } else {
-            iconContainer.innerHTML = '<i class="fas fa-video text-danger me-2"></i>';
+    try {
+        const option = select.selectedOptions[0];
+        const iconContainer = select.closest('.row').querySelector('.media-icon');
+        
+        if (iconContainer && option && option.dataset.type) {
+            const type = option.dataset.type;
+            if (type === 'image') {
+                iconContainer.innerHTML = '<i class="fas fa-image text-primary me-2"></i>';
+            } else {
+                iconContainer.innerHTML = '<i class="fas fa-video text-danger me-2"></i>';
+            }
+        } else if (iconContainer) {
+            iconContainer.innerHTML = '';
         }
-    } else if (iconContainer) {
-        iconContainer.innerHTML = '';
+    } catch (error) {
+        console.error('Error updating icon:', error);
     }
 }
 
 function updateItemCount() {
     const count = document.querySelectorAll('.media-item').length;
-    document.getElementById('itemCount').textContent = count;
+    const itemCountElement = document.getElementById('itemCount');
+    if (itemCountElement) {
+        itemCountElement.textContent = count;
+    }
 }
 
 function quickAdd(mediaId, filename, type) {
-    addItem();
-    const lastItem = document.querySelector('.media-item:last-child');
-    if (lastItem) {
-        const select = lastItem.querySelector('select[name="media_ids"]');
-        if (select) {
-            select.value = mediaId;
-            updateIcon(select);
-            updateItemCount();
-        }
+    try {
+        console.log('QuickAdd called with:', mediaId, filename, type);
+        addItem();
+        
+        // Wait a moment for DOM to update
+        setTimeout(() => {
+            const lastItem = document.querySelector('.media-item:last-child');
+            if (lastItem) {
+                const select = lastItem.querySelector('select[name="media_ids"]');
+                if (select) {
+                    select.value = mediaId;
+                    updateIcon(select);
+                    console.log('Media item added successfully');
+                } else {
+                    console.error('Select element not found');
+                }
+            } else {
+                console.error('Last item not found');
+            }
+        }, 50);
+        
+    } catch (error) {
+        console.error('Error in quickAdd:', error);
     }
 }
 
 // Initialize icons for existing items
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('select[name="media_ids"]').forEach(updateIcon);
+    try {
+        document.querySelectorAll('select[name="media_ids"]').forEach(updateIcon);
+        updateItemCount();
+    } catch (error) {
+        console.error('Error initializing:', error);
+    }
 });
 </script>
 {% endblock %}
