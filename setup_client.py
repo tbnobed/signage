@@ -431,10 +431,6 @@ class SignageSetup:
         
     def download_client(self):
         """Download client script from GitHub"""
-        if self.client_script is None:
-            print("❌ Client script path not configured")
-            sys.exit(1)
-            
         print("⬇️  Downloading client script...")
         
         try:
@@ -454,10 +450,6 @@ class SignageSetup:
     
     def create_config(self):
         """Create environment configuration file"""
-        if self.config_file is None or self.setup_dir is None:
-            print("❌ Config file path not configured")
-            sys.exit(1)
-            
         print("📝 Creating configuration file...")
         
         config_content = f"""# Digital Signage Client Configuration
