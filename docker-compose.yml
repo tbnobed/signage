@@ -3,16 +3,18 @@ services:
     build: .
     ports:
       - "5000:5000"
+    env_file:
+      - .env
     environment:
-      - DATABASE_URL=postgresql://signage_user:signage_pass@db:5432/signage_db
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-signage_user}:${POSTGRES_PASSWORD:-signage_pass}@db:5432/${POSTGRES_DB:-signage_db}
       - SESSION_SECRET=${SESSION_SECRET:-default_session_secret_change_in_production}
       - FLASK_ENV=production
       - UPLOAD_FOLDER=/app/uploads
       - MAX_CONTENT_LENGTH=104857600
-      # Auto-create admin user
+      # Admin user variables (will be read from .env)
       - ADMIN_USER=${ADMIN_USER:-admin}
       - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@signage.local}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123456789}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     volumes:
       - ./uploads:/app/uploads
       - ./logs:/app/logs
@@ -29,16 +31,18 @@ services:
 
   db:
     image: postgres:15-alpine
+    env_file:
+      - .env
     environment:
-      - POSTGRES_DB=signage_db
-      - POSTGRES_USER=signage_user
-      - POSTGRES_PASSWORD=signage_pass
+      - POSTGRES_DB=${POSTGRES_DB:-signage_db}
+      - POSTGRES_USER=${POSTGRES_USER:-signage_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-signage_pass}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U signage_user -d signage_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-signage_user} -d ${POSTGRES_DB:-signage_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
