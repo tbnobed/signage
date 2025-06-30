@@ -93,11 +93,13 @@ This is a comprehensive Flask-based web application for managing digital signage
 - File uploads stored in persistent volume
 
 ### Client Deployment
+- Interactive setup script (setup_client.py) downloads from GitHub repository
 - Lightweight Python script for remote devices
-- Auto-start on boot configuration
+- Auto-start on boot configuration via systemd service
 - Minimal dependencies for embedded systems
-- Configurable server URL and device identification
+- User-friendly configuration prompts for server URL and device ID
 - Automatic media directory creation and management
+- GitHub repository: https://github.com/tbnobed/signage.git
 
 ### Network Architecture
 - Outbound-only client connections (NAT/firewall friendly)
@@ -109,6 +111,8 @@ This is a comprehensive Flask-based web application for managing digital signage
 - June 30, 2025. Initial setup
 - June 30, 2025. Security improvements: Removed web-based admin setup, implemented command-line admin creation
 - June 30, 2025. Theme update: Changed from purple Replit theme to modern dark theme with cyan accents
+- June 30, 2025. GitHub integration: Added GitHub repository (https://github.com/tbnobed/signage.git) for client distribution
+- June 30, 2025. Interactive setup script: Created setup_client.py that asks user for device ID and automates client installation
 
 ## User Preferences
 

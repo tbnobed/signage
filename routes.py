@@ -319,7 +319,7 @@ def device_log(device_id):
     
     return jsonify({'status': 'ok'})
 
-@api.route('/devices/status')
+@main.route('/api/devices/status')
 def devices_status():
     """Get device status for dashboard refresh"""
     devices = Device.query.all()
