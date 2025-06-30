@@ -23,6 +23,7 @@ import json
 import getpass
 import platform
 import shutil
+import time
 from pathlib import Path
 
 # Configuration
@@ -299,9 +300,19 @@ class SignageSetup:
                     print("❌ Please enter a valid number")
             
         except (EOFError, KeyboardInterrupt):
-            print("\n❌ Configuration cancelled by user or non-interactive session")
-            print("   Please run interactively to configure the client")
-            sys.exit(1)
+            print("\n⚠️  Non-interactive session detected, using defaults...")
+            # Use defaults for non-interactive execution
+            self.server_url = "https://display.obtv.io"
+            
+            # Generate a default device ID based on hostname
+            import socket
+            hostname = socket.gethostname()
+            self.device_id = f"{hostname}-{int(time.time()) % 10000}"
+            
+            print(f"   Server URL: {self.server_url}")
+            print(f"   Device ID: {self.device_id}")
+            print(f"   Check Interval: {self.check_interval} seconds")
+            print("   You can reconfigure later by editing the config file.")
         
         print()
         print("Configuration Summary:")
