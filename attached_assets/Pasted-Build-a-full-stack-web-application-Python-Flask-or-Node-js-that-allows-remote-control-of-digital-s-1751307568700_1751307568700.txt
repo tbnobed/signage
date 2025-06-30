@@ -1,0 +1,64 @@
+Build a full-stack web application (Python Flask or Node.js) that allows remote control of digital signage displays connected to TVs in multiple remote studio locations.
+
+Project Requirements:
+1. Web-Based Admin Dashboard
+Upload and manage images and videos.
+
+Create and edit playlists (ordered sequences of media).
+
+Assign playlists to specific remote display devices.
+
+Show current status (connected, last check-in) and current playing media for each device.
+
+Secure login/authentication (simple username/password or token-based).
+
+2. Display Agent (Client App for Pi/NUC)
+Lightweight Python or Node.js script that runs on Raspberry Pi or Intel NUC, autostarts on boot.
+
+Connects to the server via polling or WebSocket to fetch updated playlists or commands.
+
+Downloads and caches media locally for offline playback.
+
+Plays media using omxplayer, vlc, or ffplay in fullscreen.
+
+Auto-recover on crash or reboot.
+
+3. Media Sync & Playback Control
+Server pushes new media to client, or client pulls updated playlist on interval (e.g. every 1 min).
+
+Playback loop honors order of playlist with optional time-per-item and repeat settings.
+
+Optional support for scheduling (e.g., play X playlist between 9AM–5PM).
+
+4. Network & Remote Access
+The server will be publicly accessible via a domain and SSL (use Let's Encrypt).
+
+Display agents must be able to operate behind NAT/firewall using polling or outbound connection (avoid inbound port requirements).
+
+5. Optional Enhancements (phase 2)
+Group displays (e.g., by region or show)
+
+Support HTML/webpage content
+
+Remote reboot or restart player client
+
+Dashboard that shows a preview or screenshot of the display (using scrot or similar on Pi)
+
+Tech Stack Preferences:
+Backend: Flask (preferred) or Node.js
+
+Frontend: Bootstrap or Tailwind CSS
+
+Database: SQLite or PostgreSQL
+
+Deployment: Dockerized or able to run on Ubuntu server
+
+Please generate:
+
+Backend code with REST or WebSocket endpoints
+
+Frontend interface (admin UI)
+
+Client script (for Raspberry Pi or NUC)
+
+README for deployment instructions
