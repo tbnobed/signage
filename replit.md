@@ -118,6 +118,7 @@ This is a comprehensive Flask-based web application for managing digital signage
 - June 30, 2025. Playlist media management fix: Resolved critical form structure issue preventing media items from being saved to playlists. Media items are now properly added, saved, and displayed in playlists.
 - June 30, 2025. UI improvements: Updated playlist edit page with horizontal two-column layout for better space utilization. Left column shows settings and info, right column shows media items and available media grid.
 - June 30, 2025. Client display access fix: Enhanced setup_client.py to automatically configure autologin, display environment variables, and screen blanking disable for proper VLC display access.
+- June 30, 2025. Critical setup script fixes: Fixed duplicate DEVICE_ID entries in .env files and implemented robust autologin configuration for Ubuntu 24.04 with GDM3, systemd, and LightDM fallbacks. Added automatic screen lock/power management disabling.
 
 ## User Preferences
 
