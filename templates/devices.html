@@ -176,7 +176,7 @@
                         
                         <h6>2. Download Setup Script</h6>
                         <div class="mb-3">
-                            <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh | bash')">
+                            <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('curl -L {{ request.url_root }}install | bash')">
                                 <i class="fas fa-terminal me-1"></i>Copy Setup Command
                             </button>
                         </div>
@@ -191,17 +191,18 @@
                         
                         <div class="bg-dark p-3 rounded">
                             <code class="text-light small">
-                                # Interactive setup (recommended)<br>
-                                curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.py | python3<br><br>
+                                # One-line setup (installs everything)<br>
+                                curl -L {{ request.url_root }}install | bash<br><br>
                                 
                                 # Or download and run manually<br>
-                                wget https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.py<br>
-                                python3 setup_client.py<br><br>
+                                wget {{ request.url_root }}install -O setup_client.sh<br>
+                                bash setup_client.sh<br><br>
                                 
-                                # The script will ask for:<br>
-                                # - Server URL: {{ request.url_root.rstrip('/') }}<br>
-                                # - Device ID: (your unique device ID)<br>
-                                # - Check interval: (default 60 seconds)
+                                # The script will:<br>
+                                # 1. Install Python 3 and dependencies<br>
+                                # 2. Install media players (omxplayer/vlc/ffmpeg)<br>
+                                # 3. Ask for server URL: {{ request.url_root.rstrip('/') }}<br>
+                                # 4. Ask for device ID and setup systemd service
                             </code>
                         </div>
                     </div>

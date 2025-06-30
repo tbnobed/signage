@@ -41,56 +41,37 @@ The client will automatically detect and use the best available media player:
 - `vlc` (Cross-platform)
 - `ffplay` (Part of FFmpeg)
 
-## Step 3: Install Dependencies
+## Step 3: One-Line Installation
 
-### On Raspberry Pi (Raspberry Pi OS)
+### Automatic Setup (Recommended)
+The easiest way to set up a client device is using our automated installation script:
+
 ```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
-
-# Install Python and required packages
-sudo apt install python3 python3-pip python3-requests -y
-
-# Install media player (choose one)
-sudo apt install omxplayer -y          # Recommended for Pi
-# OR
-sudo apt install vlc -y                # Alternative option
+curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh | bash
 ```
 
-### On Ubuntu/Debian Systems
+This script will:
+1. **Install Python 3** and all required dependencies
+2. **Install media players** (omxplayer for Pi, VLC/FFmpeg for PC)
+3. **Download the client software** from GitHub
+4. **Ask for your configuration** (server URL, device ID)
+5. **Set up auto-start service** (systemd)
+6. **Test the connection** and start the service
+
+### Manual Download (Alternative)
+If you prefer to download and run manually:
 ```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
+# Download the setup script
+wget https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh
 
-# Install Python and required packages
-sudo apt install python3 python3-pip python3-requests -y
-
-# Install media player (choose one)
-sudo apt install vlc -y                # Recommended for PC
-# OR
-sudo apt install ffmpeg -y             # Lightweight option
+# Make it executable and run
+chmod +x setup_client.sh
+./setup_client.sh
 ```
 
-### Python Dependencies
-```bash
-pip3 install requests
-```
+## Step 4: Interactive Configuration
 
-## Step 4: Download and Configure Client
-
-### Download Client Script
-```bash
-# Create signage directory
-mkdir -p ~/signage
-cd ~/signage
-
-# Download the client script (replace with your server URL)
-wget http://YOUR_SERVER_URL/static/client_agent.py
-# OR copy from your server manually
-
-# Make executable
-chmod +x client_agent.py
-```
+The setup script will ask you for:
 
 ### Set Environment Variables
 Create a configuration file:

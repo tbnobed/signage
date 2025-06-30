@@ -347,3 +347,47 @@ def download_client():
         return send_file('client_agent.py', as_attachment=True, download_name='signage_client.py')
     except FileNotFoundError:
         return "Client script not found", 404
+
+@main.route('/download/setup.sh')
+def download_setup_script():
+    """Download the setup shell script"""
+    from flask import send_file
+    try:
+        return send_file('setup_client.sh', as_attachment=True, download_name='setup_client.sh')
+    except FileNotFoundError:
+        return "Setup script not found", 404
+
+@main.route('/download/setup.py')
+def download_setup_python():
+    """Download the Python setup script"""
+    from flask import send_file
+    try:
+        return send_file('setup_client.py', as_attachment=True, download_name='setup_client.py')
+    except FileNotFoundError:
+        return "Python setup script not found", 404
+
+@main.route('/install')
+def install_script():
+    """Generate dynamic install script with correct server URL"""
+    from flask import request, Response
+    
+    # Read the template shell script
+    try:
+        with open('setup_client.sh', 'r') as f:
+            script_content = f.read()
+    except FileNotFoundError:
+        return "Setup script template not found", 404
+    
+    # Replace placeholder with actual server URL
+    server_url = request.url_root.rstrip('/')
+    script_content = script_content.replace('YOUR_SERVER_URL', server_url)
+    
+    # Return as downloadable script
+    return Response(
+        script_content,
+        mimetype='application/x-sh',
+        headers={
+            'Content-Disposition': 'attachment; filename=setup_client.sh',
+            'Content-Type': 'text/x-shellscript'
+        }
+    )
