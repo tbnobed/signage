@@ -32,29 +32,28 @@ CLIENT_SCRIPT_URL = f"{GITHUB_REPO}/client_agent.py"
 
 class SignageSetup:
     def __init__(self):
+        # Default configuration
+        self.server_url = ""
+        self.device_id = ""
+        self.check_interval = 60
+        
         # Determine target user and setup directory
         if os.geteuid() == 0:  # Running as root
-            # Ask for target user early in init
-            target_user = input("Username to set up signage for (default: pi): ").strip() or "pi"
-            
+            self.target_user = "obtv1"  # Default user
             try:
                 import pwd
-                user_info = pwd.getpwnam(target_user)
-                self.target_user = target_user
+                user_info = pwd.getpwnam(self.target_user)
                 self.target_uid = user_info.pw_uid
                 self.target_gid = user_info.pw_gid
                 self.setup_dir = Path(user_info.pw_dir) / "signage"
-                print(f"Setting up for user: {target_user}")
-                print(f"Home directory: {user_info.pw_dir}")
             except KeyError:
-                print(f"User '{target_user}' not found. Using /opt/signage")
-                self.target_user = target_user
-                self.target_uid = 1000  # Default
-                self.target_gid = 1000  # Default  
+                # User doesn't exist, use /opt/signage
+                self.target_uid = 1000
+                self.target_gid = 1000  
                 self.setup_dir = Path("/opt/signage")
         else:
             # Running as regular user
-            self.target_user = os.getenv('USER')
+            self.target_user = os.getenv('USER', 'pi')
             self.target_uid = None
             self.target_gid = None
             self.setup_dir = Path.home() / "signage"
@@ -62,10 +61,6 @@ class SignageSetup:
         self.config_file = self.setup_dir / ".env"
         self.client_script = self.setup_dir / "client_agent.py"
         self.service_file = "/etc/systemd/system/signage-client.service"
-        
-        self.server_url = ""
-        self.device_id = ""
-        self.check_interval = 60
         
     def print_header(self):
         print("=" * 60)
