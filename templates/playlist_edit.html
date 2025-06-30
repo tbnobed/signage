@@ -53,16 +53,10 @@
                                 Loop playlist continuously
                             </label>
                         </div>
-                </div>
-            </div>
-
-            <!-- Media Items -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Media Items</h5>
-                </div>
-                <div class="card-body">
-                    <div id="mediaItems">
+                        
+                        <!-- Media Items Section -->
+                        <h5 class="mt-4 mb-3"><i class="fas fa-list me-2"></i>Media Items</h5>
+                        <div id="mediaItems">
                         {% for item in playlist.items %}
                         <div class="media-item card mb-2">
                             <div class="card-body p-3">
@@ -114,21 +108,25 @@
                         {% endfor %}
                     </div>
                     
-                    <button type="button" class="btn btn-outline-primary" onclick="addItem()">
-                        <i class="fas fa-plus me-2"></i>Add Media Item
-                    </button>
-                    <button type="button" class="btn btn-outline-success ms-2" onclick="testFormSubmission()">
-                        <i class="fas fa-bug me-2"></i>Test Form
-                    </button>
-                </div>
-                <div class="card-footer">
-                    <button type="submit" class="btn btn-primary" onclick="setTimeout(debugFormData, 10)">
-                        <i class="fas fa-save me-2"></i>Save Playlist
-                    </button>
-                    <a href="{{ url_for('main.playlists') }}" class="btn btn-secondary">Cancel</a>
+                        
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-outline-primary" onclick="addItem()">
+                                <i class="fas fa-plus me-2"></i>Add Media Item
+                            </button>
+                            <button type="button" class="btn btn-outline-success ms-2" onclick="testFormSubmission()">
+                                <i class="fas fa-bug me-2"></i>Test Form
+                            </button>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary" onclick="setTimeout(debugFormData, 10)">
+                                <i class="fas fa-save me-2"></i>Save Playlist
+                            </button>
+                            <a href="{{ url_for('main.playlists') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
                 </div>
             </div>
-        </form>
             </div>
         </div>
 
