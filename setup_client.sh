@@ -18,9 +18,9 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Server URL (will be replaced with actual server URL)
-SERVER_URL="YOUR_SERVER_URL"
-PYTHON_SCRIPT_URL="${SERVER_URL}/download/setup.py"
+# GitHub repository
+GITHUB_REPO="https://raw.githubusercontent.com/tbnobed/signage/main"
+PYTHON_SCRIPT_URL="${GITHUB_REPO}/setup_client.py"
 
 print_header() {
     echo -e "${BLUE}============================================================${NC}"

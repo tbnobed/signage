@@ -176,7 +176,7 @@
                         
                         <h6>2. Download Setup Script</h6>
                         <div class="mb-3">
-                            <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('curl -L {{ request.url_root }}install | bash')">
+                            <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh | bash')">
                                 <i class="fas fa-terminal me-1"></i>Copy Setup Command
                             </button>
                         </div>
@@ -192,10 +192,10 @@
                         <div class="bg-dark p-3 rounded">
                             <code class="text-light small">
                                 # One-line setup (installs everything)<br>
-                                curl -L {{ request.url_root }}install | bash<br><br>
+                                curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh | bash<br><br>
                                 
                                 # Or download and run manually<br>
-                                wget {{ request.url_root }}install -O setup_client.sh<br>
+                                wget https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh<br>
                                 bash setup_client.sh<br><br>
                                 
                                 # The script will:<br>
