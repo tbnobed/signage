@@ -384,6 +384,20 @@ function debugFormData() {
     for (let [key, value] of formData.entries()) {
         console.log(key + ': ' + value);
     }
+    
+    // Additional debugging: check if media items exist in DOM
+    const mediaItems = document.querySelectorAll('.media-item');
+    const mediaSelects = document.querySelectorAll('select[name="media_ids"]');
+    const durationInputs = document.querySelectorAll('input[name="durations"]');
+    
+    console.log('Media items found:', mediaItems.length);
+    console.log('Media selects found:', mediaSelects.length);
+    console.log('Duration inputs found:', durationInputs.length);
+    
+    // Check if selects are inside the form
+    mediaSelects.forEach((select, index) => {
+        console.log(`Select ${index}: value="${select.value}", inside form: ${form.contains(select)}`);
+    });
 }
 
 // Initialize icons for existing items
