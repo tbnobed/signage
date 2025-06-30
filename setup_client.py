@@ -32,7 +32,33 @@ CLIENT_SCRIPT_URL = f"{GITHUB_REPO}/client_agent.py"
 
 class SignageSetup:
     def __init__(self):
-        self.setup_dir = Path.home() / "signage"
+        # Determine target user and setup directory
+        if os.geteuid() == 0:  # Running as root
+            # Ask for target user early in init
+            target_user = input("Username to set up signage for (default: pi): ").strip() or "pi"
+            
+            try:
+                import pwd
+                user_info = pwd.getpwnam(target_user)
+                self.target_user = target_user
+                self.target_uid = user_info.pw_uid
+                self.target_gid = user_info.pw_gid
+                self.setup_dir = Path(user_info.pw_dir) / "signage"
+                print(f"Setting up for user: {target_user}")
+                print(f"Home directory: {user_info.pw_dir}")
+            except KeyError:
+                print(f"User '{target_user}' not found. Using /opt/signage")
+                self.target_user = target_user
+                self.target_uid = 1000  # Default
+                self.target_gid = 1000  # Default  
+                self.setup_dir = Path("/opt/signage")
+        else:
+            # Running as regular user
+            self.target_user = os.getenv('USER')
+            self.target_uid = None
+            self.target_gid = None
+            self.setup_dir = Path.home() / "signage"
+        
         self.config_file = self.setup_dir / ".env"
         self.client_script = self.setup_dir / "client_agent.py"
         self.service_file = "/etc/systemd/system/signage-client.service"
@@ -374,8 +400,21 @@ class SignageSetup:
     def create_directory(self):
         """Create signage directory"""
         print("📁 Creating signage directory...")
-        self.setup_dir.mkdir(exist_ok=True)
+        self.setup_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Set ownership if running as root
+        if os.geteuid() == 0 and self.target_uid is not None and self.target_gid is not None:
+            os.chown(self.setup_dir, self.target_uid, self.target_gid)
+            print(f"   Set ownership to: {self.target_user}")
+        
         print(f"   Created: {self.setup_dir}")
+        
+        # Create media directory
+        media_dir = self.setup_dir / "media"
+        media_dir.mkdir(exist_ok=True)
+        
+        if os.geteuid() == 0 and self.target_uid is not None and self.target_gid is not None:
+            os.chown(media_dir, self.target_uid, self.target_gid)
         
     def download_client(self):
         """Download client script from GitHub"""
@@ -385,6 +424,11 @@ class SignageSetup:
             urllib.request.urlretrieve(CLIENT_SCRIPT_URL, self.client_script)
             # Make executable
             os.chmod(self.client_script, 0o755)
+            
+            # Set ownership if running as root
+            if os.geteuid() == 0 and self.target_uid is not None and self.target_gid is not None:
+                os.chown(self.client_script, self.target_uid, self.target_gid)
+            
             print(f"   Downloaded: {self.client_script}")
         except Exception as e:
             print(f"❌ Failed to download client script: {e}")
@@ -407,6 +451,10 @@ CHECK_INTERVAL={self.check_interval}
         
         with open(self.config_file, 'w') as f:
             f.write(config_content)
+        
+        # Set ownership if running as root
+        if os.geteuid() == 0 and self.target_uid is not None and self.target_gid is not None:
+            os.chown(self.config_file, self.target_uid, self.target_gid)
         
         print(f"   Created: {self.config_file}")
     
@@ -451,11 +499,8 @@ CHECK_INTERVAL={self.check_interval}
         """Create systemd service for auto-start"""
         print("🚀 Setting up auto-start service...")
         
-        # Get current user for service
-        username = getpass.getuser()
-        if username == 'root':
-            # If running as root, ask for the user to run as
-            username = input("Username to run service as (default: pi): ").strip() or 'pi'
+        # Use the target user we already determined
+        username = self.target_user or getpass.getuser()
         
         service_content = f"""[Unit]
 Description=Digital Signage Client
