@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Digital Signage Manager{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
+        <span class="badge bg-success">System Online</span>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-desktop fa-2x text-primary mb-2"></i>
+                    <h4 class="card-title">{{ total_devices }}</h4>
+                    <p class="card-text text-muted">Total Devices</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-wifi fa-2x text-success mb-2"></i>
+                    <h4 class="card-title">{{ online_devices }}</h4>
+                    <p class="card-text text-muted">Online Devices</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-images fa-2x text-info mb-2"></i>
+                    <h4 class="card-title">{{ total_media }}</h4>
+                    <p class="card-text text-muted">Media Files</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-list fa-2x text-warning mb-2"></i>
+                    <h4 class="card-title">{{ total_playlists }}</h4>
+                    <p class="card-text text-muted">Playlists</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Devices -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-desktop me-2"></i>Recent Devices</h5>
+                    <a href="{{ url_for('main.devices') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_devices %}
+                    <div class="list-group list-group-flush">
+                        {% for device in recent_devices %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div>
+                                <h6 class="mb-1">{{ device.name }}</h6>
+                                <small class="text-muted">{{ device.location or 'No location set' }}</small>
+                            </div>
+                            <div class="text-end">
+                                {% if device.is_online() %}
+                                <span class="badge bg-success">Online</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Offline</span>
+                                {% endif %}
+                                {% if device.last_checkin %}
+                                <br><small class="text-muted">{{ device.last_checkin.strftime('%H:%M') }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-desktop fa-3x mb-3"></i>
+                        <p>No devices registered yet</p>
+                        <a href="{{ url_for('main.devices') }}" class="btn btn-primary">Add First Device</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Media -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-images me-2"></i>Recent Media</h5>
+                    <a href="{{ url_for('main.media') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_media %}
+                    <div class="list-group list-group-flush">
+                        {% for media in recent_media %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div class="d-flex align-items-center">
+                                {% if media.file_type == 'image' %}
+                                <i class="fas fa-image text-primary me-2"></i>
+                                {% else %}
+                                <i class="fas fa-video text-danger me-2"></i>
+                                {% endif %}
+                                <div>
+                                    <h6 class="mb-1">{{ media.original_filename }}</h6>
+                                    <small class="text-muted">{{ media.file_type|title }} • {{ (media.file_size / 1024 / 1024)|round(1) }} MB</small>
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ media.created_at.strftime('%m/%d') }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-images fa-3x mb-3"></i>
+                        <p>No media files uploaded yet</p>
+                        <a href="{{ url_for('main.media') }}" class="btn btn-primary">Upload Media</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('main.devices') }}" class="btn btn-outline-primary w-100 p-3">
+                                <i class="fas fa-plus-circle fa-2x mb-2"></i><br>
+                                Add Device
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('main.media') }}" class="btn btn-outline-info w-100 p-3">
+                                <i class="fas fa-upload fa-2x mb-2"></i><br>
+                                Upload Media
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('main.playlists') }}" class="btn btn-outline-warning w-100 p-3">
+                                <i class="fas fa-list-alt fa-2x mb-2"></i><br>
+                                Create Playlist
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-success w-100 p-3" onclick="refreshStats()">
+                                <i class="fas fa-sync-alt fa-2x mb-2"></i><br>
+                                Refresh Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function refreshStats() {
+    location.reload();
+}
+
+// Auto-refresh every 30 seconds
+setInterval(function() {
+    refreshStats();
+}, 30000);
+</script>
+{% endblock %}

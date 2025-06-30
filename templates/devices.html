@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Devices - Digital Signage Manager{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-desktop me-2"></i>Devices</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDeviceModal">
+            <i class="fas fa-plus me-2"></i>Add Device
+        </button>
+    </div>
+
+    {% if devices %}
+    <div class="row">
+        {% for device in devices %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">{{ device.name }}</h6>
+                    {% if device.is_online() %}
+                    <span class="badge bg-success">Online</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Offline</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <small class="text-muted">Device ID:</small><br>
+                        <code>{{ device.device_id }}</code>
+                    </div>
+                    
+                    {% if device.location %}
+                    <div class="mb-2">
+                        <small class="text-muted">Location:</small><br>
+                        <i class="fas fa-map-marker-alt me-1"></i>{{ device.location }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if device.ip_address %}
+                    <div class="mb-2">
+                        <small class="text-muted">IP Address:</small><br>
+                        {{ device.ip_address }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if device.last_checkin %}
+                    <div class="mb-2">
+                        <small class="text-muted">Last Check-in:</small><br>
+                        {{ device.last_checkin.strftime('%Y-%m-%d %H:%M:%S') }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if device.current_media %}
+                    <div class="mb-3">
+                        <small class="text-muted">Currently Playing:</small><br>
+                        <i class="fas fa-play me-1"></i>{{ device.current_media }}
+                    </div>
+                    {% endif %}
+                    
+                    <form method="POST" action="{{ url_for('main.assign_playlist', device_id=device.id) }}">
+                        <div class="mb-3">
+                            <label class="form-label">Assigned Playlist:</label>
+                            <select name="playlist_id" class="form-select">
+                                <option value="">No playlist assigned</option>
+                                {% for playlist in playlists %}
+                                <option value="{{ playlist.id }}" 
+                                        {% if device.current_playlist_id == playlist.id %}selected{% endif %}>
+                                    {{ playlist.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-save me-1"></i>Update
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-desktop fa-4x text-muted mb-3"></i>
+            <h4>No Devices Registered</h4>
+            <p class="text-muted">Get started by adding your first display device.</p>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDeviceModal">
+                <i class="fas fa-plus me-2"></i>Add First Device
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Device Modal -->
+<div class="modal fade" id="addDeviceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Add New Device</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('main.add_device') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="deviceName" class="form-label">Device Name *</label>
+                        <input type="text" class="form-control" id="deviceName" name="name" 
+                               placeholder="e.g., Lobby Display" required>
+                        <div class="form-text">A friendly name for this display device</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="deviceId" class="form-label">Device ID *</label>
+                        <input type="text" class="form-control" id="deviceId" name="device_id" 
+                               placeholder="e.g., device-001" required>
+                        <div class="form-text">Unique identifier used by the client agent</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="deviceLocation" class="form-label">Location</label>
+                        <input type="text" class="form-control" id="deviceLocation" name="location" 
+                               placeholder="e.g., Main Lobby, Conference Room A">
+                        <div class="form-text">Physical location of the device (optional)</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Device</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Generate random device ID
+document.getElementById('deviceName').addEventListener('input', function() {
+    const name = this.value.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+    if (name && !document.getElementById('deviceId').value) {
+        document.getElementById('deviceId').value = name + '-' + Math.random().toString(36).substr(2, 4);
+    }
+});
+</script>
+{% endblock %}
