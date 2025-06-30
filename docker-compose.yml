@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build: .
@@ -7,10 +5,14 @@ services:
       - "5000:5000"
     environment:
       - DATABASE_URL=postgresql://signage_user:signage_pass@db:5432/signage_db
-      - SESSION_SECRET=${SESSION_SECRET:-$(openssl rand -hex 32)}
+      - SESSION_SECRET=${SESSION_SECRET:-default_session_secret_change_in_production}
       - FLASK_ENV=production
       - UPLOAD_FOLDER=/app/uploads
       - MAX_CONTENT_LENGTH=104857600
+      # Auto-create admin user
+      - ADMIN_USER=${ADMIN_USER:-admin}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@signage.local}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123456789}
     volumes:
       - ./uploads:/app/uploads
       - ./logs:/app/logs
@@ -40,19 +42,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./uploads:/usr/share/nginx/html/uploads:ro
-      - ./ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - app
-    restart: unless-stopped
 
 volumes:
   postgres_data:
