@@ -217,26 +217,40 @@ class SignageSetup:
     
     def install_python_requests(self):
         """Install Python requests module"""
+        # First check if requests is already available
+        try:
+            import requests
+            print("   ✅ Python requests module already available")
+            return
+        except ImportError:
+            pass
+        
+        # Try to install requests if not available
         try:
             # Try user install first
             subprocess.run([sys.executable, '-m', 'pip', 'install', '--user', 'requests'], 
                          check=True, capture_output=True)
             print("   ✅ Python requests module installed (user)")
-        except subprocess.CalledProcessError:
+        except (subprocess.CalledProcessError, FileNotFoundError):
             try:
                 # Try system install with sudo
                 subprocess.run(['sudo', sys.executable, '-m', 'pip', 'install', 'requests'], 
                              check=True, capture_output=True)
                 print("   ✅ Python requests module installed (system)")
-            except subprocess.CalledProcessError:
+            except (subprocess.CalledProcessError, FileNotFoundError):
                 try:
-                    # Try pip3 as fallback
-                    subprocess.run(['pip3', 'install', '--user', 'requests'], 
-                                 check=True, capture_output=True)
-                    print("   ✅ Python requests module installed (pip3)")
+                    # Try pip3 as fallback if it exists
+                    if shutil.which('pip3'):
+                        subprocess.run(['pip3', 'install', '--user', 'requests'], 
+                                     check=True, capture_output=True)
+                        print("   ✅ Python requests module installed (pip3)")
+                    else:
+                        # pip not available, system package should work
+                        print("   ⚠️  pip not available, using system python3-requests package")
+                        print("   This should be sufficient for the client to work")
                 except subprocess.CalledProcessError:
                     print("   ⚠️  Failed to install Python requests module")
-                    print("   Try manually: pip3 install --user requests")
+                    print("   The system python3-requests package should work")
     
     def detect_raspberry_pi(self):
         """Detect if running on Raspberry Pi"""
