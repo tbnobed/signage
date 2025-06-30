@@ -218,12 +218,25 @@ class SignageSetup:
     def install_python_requests(self):
         """Install Python requests module"""
         try:
-            subprocess.run([sys.executable, '-m', 'pip', 'install', 'requests'], 
+            # Try user install first
+            subprocess.run([sys.executable, '-m', 'pip', 'install', '--user', 'requests'], 
                          check=True, capture_output=True)
-            print("   ✅ Python requests module installed")
+            print("   ✅ Python requests module installed (user)")
         except subprocess.CalledProcessError:
-            print("   ⚠️  Failed to install Python requests module")
-            print("   Try manually: pip3 install requests")
+            try:
+                # Try system install with sudo
+                subprocess.run(['sudo', sys.executable, '-m', 'pip', 'install', 'requests'], 
+                             check=True, capture_output=True)
+                print("   ✅ Python requests module installed (system)")
+            except subprocess.CalledProcessError:
+                try:
+                    # Try pip3 as fallback
+                    subprocess.run(['pip3', 'install', '--user', 'requests'], 
+                                 check=True, capture_output=True)
+                    print("   ✅ Python requests module installed (pip3)")
+                except subprocess.CalledProcessError:
+                    print("   ⚠️  Failed to install Python requests module")
+                    print("   Try manually: pip3 install --user requests")
     
     def detect_raspberry_pi(self):
         """Detect if running on Raspberry Pi"""
@@ -429,23 +442,46 @@ WantedBy=multi-user.target
 """
         
         try:
-            with open(self.service_file, 'w') as f:
-                f.write(service_content)
+            # Check if we have sudo privileges
+            sudo_check = subprocess.run(['sudo', '-n', 'true'], 
+                                      capture_output=True, check=False)
             
-            # Reload systemd and enable service
-            subprocess.run(['systemctl', 'daemon-reload'], check=True)
-            subprocess.run(['systemctl', 'enable', 'signage-client.service'], check=True)
+            if sudo_check.returncode != 0:
+                print("   ⚠️  This script needs sudo privileges to create systemd service")
+                print("   Please run the setup with sudo:")
+                print("   sudo python3 setup_client.py")
+                print("")
+                print("   Or run these commands manually after setup:")
+                print(f"   sudo tee /etc/systemd/system/signage-client.service > /dev/null << 'EOF'")
+                print(service_content.strip())
+                print("EOF")
+                print("   sudo systemctl daemon-reload")
+                print("   sudo systemctl enable signage-client.service")
+                print("   sudo systemctl start signage-client.service")
+                return False
+            
+            # Use sudo to create the service file
+            process = subprocess.Popen(['sudo', 'tee', self.service_file], 
+                                     stdin=subprocess.PIPE, 
+                                     stdout=subprocess.PIPE, 
+                                     stderr=subprocess.PIPE,
+                                     text=True)
+            stdout, stderr = process.communicate(input=service_content)
+            
+            if process.returncode != 0:
+                print(f"   ❌ Failed to create service file: {stderr}")
+                return False
+            
+            # Reload systemd and enable service with sudo
+            subprocess.run(['sudo', 'systemctl', 'daemon-reload'], check=True)
+            subprocess.run(['sudo', 'systemctl', 'enable', 'signage-client.service'], check=True)
             
             print(f"   ✅ Service created: {self.service_file}")
             print("   ✅ Service enabled for auto-start")
             
-        except PermissionError:
-            print("   ⚠️  Cannot create systemd service (permission denied)")
-            print("   Run with sudo to enable auto-start, or start manually:")
-            print(f"   python3 {self.client_script}")
-            return False
         except subprocess.CalledProcessError as e:
             print(f"   ❌ Failed to setup service: {e}")
+            print("   Please run this script with sudo privileges")
             return False
         except Exception as e:
             print(f"   ❌ Service setup error: {e}")
@@ -457,12 +493,12 @@ WantedBy=multi-user.target
         """Start the signage service"""
         if self.ask_yes_no("Start the signage client now?", default=True):
             try:
-                subprocess.run(['systemctl', 'start', 'signage-client.service'], check=True)
+                subprocess.run(['sudo', 'systemctl', 'start', 'signage-client.service'], check=True)
                 print("   ✅ Service started")
                 
                 # Show service status
                 print("\n📊 Service Status:")
-                subprocess.run(['systemctl', 'status', 'signage-client.service', '--no-pager', '-l'])
+                subprocess.run(['sudo', 'systemctl', 'status', 'signage-client.service', '--no-pager', '-l'])
                 
             except subprocess.CalledProcessError:
                 print("   ❌ Failed to start service")
