@@ -117,6 +117,9 @@
                     <button type="button" class="btn btn-outline-primary" onclick="addItem()">
                         <i class="fas fa-plus me-2"></i>Add Media Item
                     </button>
+                    <button type="button" class="btn btn-outline-success ms-2" onclick="testFormSubmission()">
+                        <i class="fas fa-bug me-2"></i>Test Form
+                    </button>
                 </div>
                 <div class="card-footer">
                     <button type="submit" class="btn btn-primary" onclick="setTimeout(debugFormData, 10)">
@@ -378,6 +381,41 @@ function quickAdd(mediaId, filename, type) {
         
     } catch (error) {
         console.error('Error in quickAdd:', error);
+    }
+}
+
+// Test form submission with manually created elements
+function testFormSubmission() {
+    console.log('=== FORM SUBMISSION TEST ===');
+    
+    // Create a simple test select element
+    const form = document.getElementById('playlistForm');
+    const mediaItems = document.getElementById('mediaItems');
+    
+    // Create a simple select directly in the form
+    const testSelect = document.createElement('select');
+    testSelect.name = 'media_ids';
+    testSelect.innerHTML = '<option value="1">Test Video</option>';
+    testSelect.value = '1';
+    
+    const testInput = document.createElement('input');
+    testInput.type = 'number';
+    testInput.name = 'durations';
+    testInput.value = '30';
+    
+    // Add them to the form
+    mediaItems.appendChild(testSelect);
+    mediaItems.appendChild(testInput);
+    
+    console.log('Test elements created');
+    console.log('Select in form:', form.contains(testSelect));
+    console.log('Input in form:', form.contains(testInput));
+    
+    // Test FormData
+    const formData = new FormData(form);
+    console.log('FormData contents:');
+    for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
     }
 }
 
