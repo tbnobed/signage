@@ -195,10 +195,6 @@ def edit_playlist(playlist_id):
 def update_playlist(playlist_id):
     playlist = Playlist.query.get_or_404(playlist_id)
     
-    # Debug: Log form data
-    print(f"DEBUG: Form data received: {dict(request.form)}")
-    print(f"DEBUG: media_ids: {request.form.getlist('media_ids')}")
-    print(f"DEBUG: durations: {request.form.getlist('durations')}")
     
     playlist.name = request.form['name']
     playlist.description = request.form.get('description', '')
@@ -222,7 +218,7 @@ def update_playlist(playlist_id):
                 duration=duration
             )
             db.session.add(item)
-            print(f"DEBUG: Added playlist item - media_id: {media_id}, duration: {duration}")
+
     
     db.session.commit()
     flash('Playlist updated successfully', 'success')
