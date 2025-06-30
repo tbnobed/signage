@@ -115,6 +115,7 @@ This is a comprehensive Flask-based web application for managing digital signage
 - June 30, 2025. Interactive setup script: Created setup_client.py that asks user for device ID and automates client installation
 - June 30, 2025. Docker deployment: Complete Docker setup with PostgreSQL, auto-admin creation, and .env configuration - successfully deployed and tested
 - June 30, 2025. Client deployment success: Fixed permission issues in setup script, client successfully connecting to production server at https://display.obtv.io with proper user permissions and systemd service
+- June 30, 2025. Playlist media management fix: Resolved critical form structure issue preventing media items from being saved to playlists. Media items are now properly added, saved, and displayed in playlists.
 
 ## User Preferences
 

@@ -19,26 +19,25 @@
         </a>
     </div>
 
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Playlist Settings -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Playlist Settings</h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('main.update_playlist', playlist_id=playlist.id) }}" id="playlistForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="name" class="form-label">Playlist Name *</label>
-                                <input type="text" class="form-control" id="name" name="name" 
-                                       value="{{ playlist.name }}" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="default_duration" class="form-label">Default Duration (seconds)</label>
-                                <input type="number" class="form-control" id="default_duration" name="default_duration" 
-                                       value="{{ playlist.default_duration }}" min="1" max="3600" required>
-                            </div>
+    <form method="POST" action="{{ url_for('main.update_playlist', playlist_id=playlist.id) }}" id="playlistForm">
+        <div class="row">
+            <!-- Left Column: Playlist Settings -->
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Playlist Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Playlist Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="{{ playlist.name }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="default_duration" class="form-label">Default Duration (seconds)</label>
+                            <input type="number" class="form-control" id="default_duration" name="default_duration" 
+                                   value="{{ playlist.default_duration }}" min="1" max="3600" required>
                         </div>
                         
                         <div class="mb-3">
@@ -46,17 +45,68 @@
                             <textarea class="form-control" id="description" name="description" rows="3">{{ playlist.description or '' }}</textarea>
                         </div>
                         
-                        <div class="form-check mb-3">
+                        <div class="form-check mb-4">
                             <input class="form-check-input" type="checkbox" id="loop_playlist" name="loop_playlist" 
                                    {% if playlist.loop_playlist %}checked{% endif %}>
                             <label class="form-check-label" for="loop_playlist">
                                 Loop playlist continuously
                             </label>
                         </div>
-                        
-                        <!-- Media Items Section -->
-                        <h5 class="mt-4 mb-3"><i class="fas fa-list me-2"></i>Media Items</h5>
-                        <div id="mediaItems">
+
+                        <!-- Playlist Info -->
+                        <div class="border-top pt-3">
+                            <h6 class="mb-3"><i class="fas fa-info-circle me-2"></i>Playlist Info</h6>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <div class="fw-bold text-primary" id="itemCount">{{ playlist.items|length }}</div>
+                                        <small class="text-muted">Items</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="fw-bold text-success">{{ playlist.default_duration }}s</div>
+                                    <small class="text-muted">Duration</small>
+                                </div>
+                            </div>
+                            <div class="row text-center mt-3">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <div class="fw-bold">{{ "Yes" if playlist.loop_playlist else "No" }}</div>
+                                        <small class="text-muted">Loop</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="fw-bold">{{ playlist.assigned_devices|length }} devices</div>
+                                    <small class="text-muted">Assigned</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-save me-2"></i>Save Playlist
+                        </button>
+                        <a href="{{ url_for('main.playlists') }}" class="btn btn-secondary w-100">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Playlists
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Media Items and Available Media -->
+            <div class="col-lg-8">
+                <div class="row">
+                    <!-- Media Items -->
+                    <div class="col-12 mb-4">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Media Items</h5>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addItem()">
+                                    <i class="fas fa-plus me-1"></i>Add Item
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div id="mediaItems">
                         {% for item in playlist.items %}
                         <div class="media-item card mb-2">
                             <div class="card-body p-3">
@@ -113,13 +163,11 @@
                             <button type="button" class="btn btn-outline-primary" onclick="addItem()">
                                 <i class="fas fa-plus me-2"></i>Add Media Item
                             </button>
-                            <button type="button" class="btn btn-outline-success ms-2" onclick="testFormSubmission()">
-                                <i class="fas fa-bug me-2"></i>Test Form
-                            </button>
+
                         </div>
                         
                         <div class="mt-4">
-                            <button type="submit" class="btn btn-primary" onclick="setTimeout(debugFormData, 10)">
+                            <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-2"></i>Save Playlist
                             </button>
                             <a href="{{ url_for('main.playlists') }}" class="btn btn-secondary">Cancel</a>
