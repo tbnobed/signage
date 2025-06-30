@@ -488,6 +488,11 @@ class SignageSetup:
         """Create environment configuration file"""
         print("📝 Creating configuration file...")
         
+        # Remove existing config file to prevent duplicates
+        if self.config_file.exists():
+            self.config_file.unlink()
+            print("   Removed existing configuration file")
+        
         config_content = f"""# Digital Signage Client Configuration
 SIGNAGE_SERVER_URL={self.server_url}
 DEVICE_ID={self.device_id}
@@ -506,6 +511,8 @@ CHECK_INTERVAL={self.check_interval}
             os.chown(self.config_file, self.target_uid, self.target_gid)
         
         print(f"   Created: {self.config_file}")
+        print(f"   Device ID: {self.device_id}")
+        print(f"   Server URL: {self.server_url}")
     
     def test_connection(self):
         """Test connection to server"""
