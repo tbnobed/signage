@@ -16,8 +16,8 @@ services:
       - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@signage.local}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     volumes:
-      - ./uploads:/app/uploads
-      - ./logs:/app/logs
+      - uploads_data:/app/uploads
+      - logs_data:/app/logs
     depends_on:
       db:
         condition: service_healthy
@@ -49,3 +49,5 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:
+  logs_data:

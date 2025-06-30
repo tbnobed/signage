@@ -10,11 +10,10 @@ done
 
 echo "Database is ready!"
 
-# Ensure upload directories have correct permissions
+# Ensure upload directories exist
 echo "Setting up upload directories..."
 mkdir -p /app/uploads /app/logs
-chmod 755 /app/uploads /app/logs
-# Note: chown not needed as we're already running as signage user
+# Note: Permissions handled by Docker volume mounts and user context
 
 # Initialize database tables
 echo "Initializing database tables..."
