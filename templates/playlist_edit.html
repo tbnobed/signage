@@ -268,14 +268,14 @@ function updateIcon(select) {
     const option = select.selectedOptions[0];
     const iconContainer = select.closest('.row').querySelector('.media-icon');
     
-    if (option && option.dataset.type) {
+    if (iconContainer && option && option.dataset.type) {
         const type = option.dataset.type;
         if (type === 'image') {
             iconContainer.innerHTML = '<i class="fas fa-image text-primary me-2"></i>';
         } else {
             iconContainer.innerHTML = '<i class="fas fa-video text-danger me-2"></i>';
         }
-    } else {
+    } else if (iconContainer) {
         iconContainer.innerHTML = '';
     }
 }
@@ -288,9 +288,14 @@ function updateItemCount() {
 function quickAdd(mediaId, filename, type) {
     addItem();
     const lastItem = document.querySelector('.media-item:last-child');
-    const select = lastItem.querySelector('select[name="media_ids"]');
-    select.value = mediaId;
-    updateIcon(select);
+    if (lastItem) {
+        const select = lastItem.querySelector('select[name="media_ids"]');
+        if (select) {
+            select.value = mediaId;
+            updateIcon(select);
+            updateItemCount();
+        }
+    }
 }
 
 // Initialize icons for existing items
