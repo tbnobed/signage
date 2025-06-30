@@ -37,27 +37,20 @@ class SignageSetup:
         self.device_id = ""
         self.check_interval = 60
         
-        # Determine target user and setup directory
-        if os.geteuid() == 0:  # Running as root
-            self.target_user = "obtv1"  # Default user
-            try:
-                import pwd
-                user_info = pwd.getpwnam(self.target_user)
-                self.target_uid = user_info.pw_uid
-                self.target_gid = user_info.pw_gid
-                self.setup_dir = Path(user_info.pw_dir) / "signage"
-            except KeyError:
-                # User doesn't exist, use /opt/signage
-                self.target_uid = 1000
-                self.target_gid = 1000  
-                self.setup_dir = Path("/opt/signage")
+        # Always initialize with user home directory - will be updated if running as root
+        current_user = os.getenv('USER', 'pi')
+        self.target_user = current_user
+        self.target_uid = None
+        self.target_gid = None
+        
+        # Set default setup directory
+        if os.geteuid() == 0:
+            # Default to pi user when running as root
+            self.setup_dir = Path("/home/pi/signage")
         else:
-            # Running as regular user
-            self.target_user = os.getenv('USER', 'pi')
-            self.target_uid = None
-            self.target_gid = None
             self.setup_dir = Path.home() / "signage"
         
+        # Initialize paths
         self.config_file = self.setup_dir / ".env"
         self.client_script = self.setup_dir / "client_agent.py"
         self.service_file = "/etc/systemd/system/signage-client.service"
@@ -332,6 +325,31 @@ class SignageSetup:
         print("⚙️  Configuration")
         print("-" * 20)
         
+        # If running as root, ask for target user
+        if os.geteuid() == 0:
+            # Get target user
+            target_user = input("Username to run signage as (default: pi): ").strip() or "pi"
+            
+            try:
+                import pwd
+                user_info = pwd.getpwnam(target_user)
+                self.target_user = target_user
+                self.target_uid = user_info.pw_uid
+                self.target_gid = user_info.pw_gid
+                self.setup_dir = Path(user_info.pw_dir) / "signage"
+                
+                # Update paths with correct setup directory
+                self.config_file = self.setup_dir / ".env"
+                self.client_script = self.setup_dir / "client_agent.py"
+                
+                print(f"Setting up for user: {self.target_user}")
+                print(f"Home directory: {user_info.pw_dir}")
+                print()
+            except KeyError:
+                print(f"❌ User '{target_user}' not found")
+                print("Please create the user first or run as the target user")
+                sys.exit(1)
+        
         try:
             # Server URL
             while True:
@@ -413,6 +431,10 @@ class SignageSetup:
         
     def download_client(self):
         """Download client script from GitHub"""
+        if self.client_script is None:
+            print("❌ Client script path not configured")
+            sys.exit(1)
+            
         print("⬇️  Downloading client script...")
         
         try:
@@ -432,6 +454,10 @@ class SignageSetup:
     
     def create_config(self):
         """Create environment configuration file"""
+        if self.config_file is None or self.setup_dir is None:
+            print("❌ Config file path not configured")
+            sys.exit(1)
+            
         print("📝 Creating configuration file...")
         
         config_content = f"""# Digital Signage Client Configuration
