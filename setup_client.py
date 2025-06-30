@@ -398,13 +398,35 @@ class SignageSetup:
                         break
                     print("❌ Device ID is required!")
             else:
-                # Non-interactive: generate device ID from hostname
-                import socket
-                hostname = socket.gethostname()
-                self.device_id = f"{hostname}-client"
-                print(f"Non-interactive mode: Using device ID '{self.device_id}'")
-                print(f"Note: If this device is already registered with a different ID,")
-                print(f"      update the .env file manually: echo 'DEVICE_ID=your-existing-id' >> {self.config_file}")
+                # Non-interactive: check if device ID is provided as environment variable
+                existing_device_id = os.environ.get('DEVICE_ID')
+                if existing_device_id:
+                    self.device_id = existing_device_id
+                    print(f"Using device ID from environment: '{self.device_id}'")
+                else:
+                    # Check if there's an existing config file with device ID
+                    if self.config_file.exists():
+                        try:
+                            with open(self.config_file, 'r') as f:
+                                content = f.read()
+                                for line in content.split('\n'):
+                                    if line.startswith('DEVICE_ID='):
+                                        self.device_id = line.split('=', 1)[1].strip()
+                                        print(f"Found existing device ID: '{self.device_id}'")
+                                        break
+                        except Exception:
+                            pass
+                    
+                    if not self.device_id:
+                        print("❌ ERROR: Device ID not found!")
+                        print("")
+                        print("To set up this client, run:")
+                        print("  DEVICE_ID=t-zyw3 python3 setup_client.py")
+                        print("")
+                        print("Or create a config file first:")
+                        print("  echo 'DEVICE_ID=t-zyw3' > .env")
+                        print("  python3 setup_client.py")
+                        sys.exit(1)
             
             # Check interval
             if is_interactive:
