@@ -110,7 +110,24 @@ class SignageSetup:
         # Install Python requests module via pip
         self.install_python_requests()
         
-        # Verify installations
+        # Verify essential tools are available after installation
+        print("\n🔍 Verifying installations...")
+        
+        # Check if pip is now available
+        if shutil.which('pip3') or shutil.which('pip'):
+            print("   ✅ pip/pip3 available")
+        else:
+            print("   ⚠️  pip/pip3 not found after installation")
+        
+        # Check if requests module is importable
+        try:
+            import requests
+            print("   ✅ Python requests module available")
+        except ImportError:
+            print("   ❌ Python requests module not available")
+            print("   This may cause connection issues")
+        
+        # Verify media players
         print("\n🎬 Verifying media players...")
         if not self.detect_media_players():
             print("❌ No media players were successfully installed!")
@@ -152,14 +169,19 @@ class SignageSetup:
             except subprocess.CalledProcessError:
                 print("   ⚠️  Failed to update package list")
         
-        # Install additional Python packages if needed
+        # Install essential Python packages
+        essential_packages = ['python3-pip', 'python3-requests', 'python3-setuptools', 'python3-dev']
+        
         if has_sudo:
-            try:
-                subprocess.run(['sudo', 'apt', 'install', '-y', 'python3-requests'], 
-                             check=True, capture_output=True)
-                print(f"   ✅ python3-requests installed")
-            except subprocess.CalledProcessError:
-                print(f"   ⚠️  Failed to install python3-requests")
+            for package in essential_packages:
+                try:
+                    subprocess.run(['sudo', 'apt', 'install', '-y', package], 
+                                 check=True, capture_output=True)
+                    print(f"   ✅ {package} installed")
+                except subprocess.CalledProcessError:
+                    print(f"   ⚠️  Failed to install {package}")
+        else:
+            print("   ❌ Cannot install Python packages without sudo")
         
         # Install media players based on platform
         is_raspberry_pi = self.detect_raspberry_pi()
