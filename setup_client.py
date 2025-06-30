@@ -530,14 +530,20 @@ WantedBy=multi-user.target
             self.download_client()
             self.create_config()
             
-            if self.test_connection():
-                if self.create_systemd_service():
+            # Always try to create systemd service regardless of connection test
+            connection_ok = self.test_connection()
+            if self.create_systemd_service():
+                if connection_ok:
                     self.start_service()
-                self.show_completion_info()
-            else:
+                else:
+                    print("   ⚠️  Service created but not started due to connection issues")
+            
+            if not connection_ok:
                 print("⚠️  Setup completed but connection test failed.")
                 print("   Please verify your server URL and network settings.")
-                self.show_completion_info()
+                print("   The service was created and can be started once connection is working.")
+            
+            self.show_completion_info()
                 
         except KeyboardInterrupt:
             print("\n\n⚠️  Setup cancelled by user")

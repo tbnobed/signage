@@ -1,0 +1,94 @@
+obtv1@obtv-client1:~$ # Download setup script first, then run
+curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh -o setup_client.sh
+bash setup_client.sh
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  4565  100  4565    0     0  20926      0 --:--:-- --:--:-- --:--:-- 21036
+============================================================
+     Digital Signage Client Setup
+============================================================
+
+This script will prepare your system and install the signage client.
+
+✅ Python 3 is available
+Python 3 is already installed, skipping installation.
+⬇️  Downloading and running Python setup script...
+   ✅ Downloaded setup script
+
+============================================================
+     Digital Signage Client Setup
+============================================================
+
+This script will help you set up a digital signage client device.
+It will download the latest client software and configure your system.
+
+🔍 Checking system requirements...
+✅ Python 3.12.3 - OK
+
+📦 Installing dependencies...
+   Using apt package manager...
+   Updating package list...
+   ✅ Package list updated
+   ✅ python3-requests installed
+   Detected generic Linux - installing VLC and FFmpeg...
+   ✅ vlc installed
+   ✅ ffmpeg installed
+   ⚠️  Failed to install Python requests module
+   Try manually: pip3 install requests
+
+🎬 Verifying media players...
+   ❌ omxplayer - Hardware-accelerated (Raspberry Pi)
+   ✅ vlc - Cross-platform media player
+   ✅ ffplay - FFmpeg-based player (part of ffmpeg)
+   ❌ mplayer - Classic media player
+
+⚙️  Configuration
+--------------------
+Server URL (default: https://display.obtv.io): https://display.obtv.io
+Device ID (unique identifier):  t-zyw3
+Check interval in seconds (default: 60): 60
+
+Configuration Summary:
+  Server URL: https://display.obtv.io
+  Device ID: t-zyw3
+  Check Interval: 60 seconds
+
+Is this correct? [Y/n]: y
+📁 Creating signage directory...
+   Created: /home/obtv1/signage
+⬇️  Downloading client script...
+   Downloaded: /home/obtv1/signage/client_agent.py
+📝 Creating configuration file...
+   Created: /home/obtv1/signage/.env
+🔌 Testing server connection...
+   ❌ Cannot reach server: <urlopen error [Errno 104] Connection reset by peer>
+   Please check the server URL and network connection
+⚠️  Setup completed but connection test failed.
+   Please verify your server URL and network settings.
+
+============================================================
+🎉 Setup Complete!
+============================================================
+
+Your digital signage client is now configured!
+
+📋 Next Steps:
+1. Register this device in your web dashboard:
+   - Server: https://display.obtv.io
+   - Device ID: t-zyw3
+2. Create playlists and assign them to this device
+3. Media will automatically download and play
+
+🔧 Useful Commands:
+   sudo systemctl status signage-client    # Check status
+   sudo systemctl restart signage-client   # Restart service
+   sudo systemctl stop signage-client      # Stop service
+   tail -f /home/obtv1/signage/client.log      # View logs
+
+📁 Files Created:
+   /home/obtv1/signage/client_agent.py
+   /home/obtv1/signage/.env
+
+obtv1@obtv-client1:~$ sudo systemctl status signage-client
+Unit signage-client.service could not be found.
+obtv1@obtv-client1:~$
