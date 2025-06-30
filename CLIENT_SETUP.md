@@ -83,7 +83,7 @@ nano ~/signage/.env
 Add these settings (replace with your values):
 ```bash
 # Your signage server URL
-SIGNAGE_SERVER_URL=http://YOUR_SERVER_IP:5000
+SIGNAGE_SERVER_URL=https://display.obtv.io
 
 # Unique device identifier (must match what you registered)
 DEVICE_ID=your-device-id

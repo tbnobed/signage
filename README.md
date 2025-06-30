@@ -82,8 +82,8 @@ The setup script will:
 curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh | bash
 
 # Follow the prompts for:
-# - Server URL (e.g., http://192.168.1.100:5000)
-# - Device ID (unique identifier)
+# - Server URL (default: https://display.obtv.io)
+# - Device ID (unique identifier) 
 # - Check interval (default: 60 seconds)
 ```
 
@@ -148,8 +148,8 @@ journalctl -u signage-client -f
 sudo systemctl status signage-client
 
 # Test network connectivity
-ping your-server-ip
-curl http://your-server-ip:5000
+ping display.obtv.io
+curl https://display.obtv.io
 
 # Check configuration
 cat ~/signage/.env

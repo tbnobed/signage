@@ -264,11 +264,13 @@ class SignageSetup:
         try:
             # Server URL
             while True:
-                self.server_url = input("Server URL (e.g., http://192.168.1.100:5000): ").strip()
+                self.server_url = input("Server URL (default: https://display.obtv.io): ").strip()
+                if not self.server_url:
+                    self.server_url = "https://display.obtv.io"
                 if self.server_url:
                     # Clean up URL
                     if not self.server_url.startswith(('http://', 'https://')):
-                        self.server_url = 'http://' + self.server_url
+                        self.server_url = 'https://' + self.server_url
                     if self.server_url.endswith('/'):
                         self.server_url = self.server_url[:-1]
                     break

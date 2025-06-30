@@ -387,10 +387,10 @@ Once deployed, clients connect using:
 curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh | sudo bash
 ```
 
-Server URL examples:
-- **HTTP**: `http://your-server-ip`
-- **HTTPS**: `https://your-domain.com`
-- **Custom Port**: `http://your-server-ip:8080`
+When prompted for server URL, use:
+- **Production Server**: `https://display.obtv.io` (default)
+- **Local Development**: `http://localhost:5000`
+- **Custom Server**: Your own domain/IP
 
 ## 🔄 Updates and Maintenance
 
