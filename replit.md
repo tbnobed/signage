@@ -107,7 +107,10 @@ This is a comprehensive Flask-based web application for managing digital signage
 
 ## Changelog
 - June 30, 2025. Initial setup
+- June 30, 2025. Security improvements: Removed web-based admin setup, implemented command-line admin creation
+- June 30, 2025. Theme update: Changed from purple Replit theme to modern dark theme with cyan accents
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Design preferences: Dark theme preferred, avoid purple colors, prefers modern cyan/blue color scheme.
