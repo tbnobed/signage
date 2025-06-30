@@ -330,11 +330,31 @@ function quickAdd(mediaId, filename, type) {
     }
 }
 
+// Debug form submission
+function debugFormData() {
+    const form = document.getElementById('playlistForm');
+    const formData = new FormData(form);
+    console.log('Form data being submitted:');
+    for (let [key, value] of formData.entries()) {
+        console.log(key + ': ' + value);
+    }
+}
+
 // Initialize icons for existing items
 document.addEventListener('DOMContentLoaded', function() {
     try {
         document.querySelectorAll('select[name="media_ids"]').forEach(updateIcon);
         updateItemCount();
+        
+        // Add form submit listener for debugging
+        const form = document.getElementById('playlistForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                console.log('Form being submitted...');
+                debugFormData();
+                // Don't prevent submission, just log it
+            });
+        }
     } catch (error) {
         console.error('Error initializing:', error);
     }
