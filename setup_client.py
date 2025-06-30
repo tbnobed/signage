@@ -325,10 +325,27 @@ class SignageSetup:
         print("⚙️  Configuration")
         print("-" * 20)
         
+        # Check if we're in non-interactive mode (piped from curl)
+        is_interactive = sys.stdin.isatty()
+        
         # If running as root, ask for target user
         if os.geteuid() == 0:
             # Get target user
-            target_user = input("Username to run signage as (default: pi): ").strip() or "pi"
+            if is_interactive:
+                target_user = input("Username to run signage as (default: obtv1): ").strip() or "obtv1"
+            else:
+                target_user = "obtv1"
+                print(f"Non-interactive mode: Using default user '{target_user}'")
+            
+            # For existing obtv1 user on this system, try to use it
+            if target_user == "pi":
+                try:
+                    import pwd
+                    pwd.getpwnam("obtv1")
+                    target_user = "obtv1"
+                    print("Found obtv1 user, using that instead of pi")
+                except KeyError:
+                    pass
             
             try:
                 import pwd
@@ -352,40 +369,57 @@ class SignageSetup:
         
         try:
             # Server URL
-            while True:
-                self.server_url = input("Server URL (default: https://display.obtv.io): ").strip()
-                if not self.server_url:
-                    self.server_url = "https://display.obtv.io"
-                if self.server_url:
-                    # Clean up URL
-                    if not self.server_url.startswith(('http://', 'https://')):
-                        self.server_url = 'https://' + self.server_url
-                    if self.server_url.endswith('/'):
-                        self.server_url = self.server_url[:-1]
-                    break
-                print("❌ Server URL is required!")
+            if is_interactive:
+                while True:
+                    self.server_url = input("Server URL (default: https://display.obtv.io): ").strip()
+                    if not self.server_url:
+                        self.server_url = "https://display.obtv.io"
+                    if self.server_url:
+                        # Clean up URL
+                        if not self.server_url.startswith(('http://', 'https://')):
+                            self.server_url = 'https://' + self.server_url
+                        if self.server_url.endswith('/'):
+                            self.server_url = self.server_url[:-1]
+                        break
+                    else:
+                        print("❌ Server URL is required!")
+            else:
+                # Non-interactive mode: use defaults
+                self.server_url = "https://display.obtv.io"
+                print(f"Non-interactive mode: Using default server URL '{self.server_url}'")
             
             # Device ID
-            while True:
-                self.device_id = input("Device ID (unique identifier): ").strip()
-                if self.device_id:
-                    # Clean up device ID
-                    self.device_id = self.device_id.lower().replace(' ', '-')
-                    break
-                print("❌ Device ID is required!")
+            if is_interactive:
+                while True:
+                    self.device_id = input("Device ID (unique identifier): ").strip()
+                    if self.device_id:
+                        # Clean up device ID
+                        self.device_id = self.device_id.lower().replace(' ', '-')
+                        break
+                    print("❌ Device ID is required!")
+            else:
+                # Non-interactive: generate device ID from hostname
+                import socket
+                hostname = socket.gethostname()
+                self.device_id = f"{hostname}-client"
+                print(f"Non-interactive mode: Using device ID '{self.device_id}'")
             
             # Check interval
-            while True:
-                interval_input = input(f"Check interval in seconds (default: {self.check_interval}): ").strip()
-                if not interval_input:
-                    break
-                try:
-                    self.check_interval = int(interval_input)
-                    if self.check_interval < 10:
-                        print("⚠️  Warning: Very short intervals may cause server load")
-                    break
-                except ValueError:
-                    print("❌ Please enter a valid number")
+            if is_interactive:
+                while True:
+                    interval_input = input(f"Check interval in seconds (default: {self.check_interval}): ").strip()
+                    if not interval_input:
+                        break
+                    try:
+                        self.check_interval = int(interval_input)
+                        if self.check_interval < 10:
+                            print("⚠️  Warning: Very short intervals may cause server load")
+                        break
+                    except ValueError:
+                        print("❌ Please enter a valid number")
+            else:
+                # Non-interactive: keep default
+                print(f"Non-interactive mode: Using default check interval {self.check_interval} seconds")
             
         except (EOFError, KeyboardInterrupt):
             print("\n❌ Configuration cancelled by user or non-interactive session")
