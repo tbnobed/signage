@@ -134,9 +134,8 @@ class SignageSetup:
             return True
         except (subprocess.CalledProcessError, FileNotFoundError):
             print("⚠️  No sudo access detected. Some installations may fail.")
-            if not self.ask_yes_no("Continue without sudo?", default=False):
-                print("Setup cancelled. Please run with sudo or as root.")
-                sys.exit(1)
+            print("   Re-run with sudo for automatic package installation.")
+            print("   Continuing with limited functionality...")
             return False
     
     def install_with_apt(self, has_sudo):
@@ -262,39 +261,45 @@ class SignageSetup:
         print("⚙️  Configuration")
         print("-" * 20)
         
-        # Server URL
-        while True:
-            self.server_url = input("Server URL (e.g., http://192.168.1.100:5000): ").strip()
-            if self.server_url:
-                # Clean up URL
-                if not self.server_url.startswith(('http://', 'https://')):
-                    self.server_url = 'http://' + self.server_url
-                if self.server_url.endswith('/'):
-                    self.server_url = self.server_url[:-1]
-                break
-            print("❌ Server URL is required!")
-        
-        # Device ID
-        while True:
-            self.device_id = input("Device ID (unique identifier): ").strip()
-            if self.device_id:
-                # Clean up device ID
-                self.device_id = self.device_id.lower().replace(' ', '-')
-                break
-            print("❌ Device ID is required!")
-        
-        # Check interval
-        while True:
-            interval_input = input(f"Check interval in seconds (default: {self.check_interval}): ").strip()
-            if not interval_input:
-                break
-            try:
-                self.check_interval = int(interval_input)
-                if self.check_interval < 10:
-                    print("⚠️  Warning: Very short intervals may cause server load")
-                break
-            except ValueError:
-                print("❌ Please enter a valid number")
+        try:
+            # Server URL
+            while True:
+                self.server_url = input("Server URL (e.g., http://192.168.1.100:5000): ").strip()
+                if self.server_url:
+                    # Clean up URL
+                    if not self.server_url.startswith(('http://', 'https://')):
+                        self.server_url = 'http://' + self.server_url
+                    if self.server_url.endswith('/'):
+                        self.server_url = self.server_url[:-1]
+                    break
+                print("❌ Server URL is required!")
+            
+            # Device ID
+            while True:
+                self.device_id = input("Device ID (unique identifier): ").strip()
+                if self.device_id:
+                    # Clean up device ID
+                    self.device_id = self.device_id.lower().replace(' ', '-')
+                    break
+                print("❌ Device ID is required!")
+            
+            # Check interval
+            while True:
+                interval_input = input(f"Check interval in seconds (default: {self.check_interval}): ").strip()
+                if not interval_input:
+                    break
+                try:
+                    self.check_interval = int(interval_input)
+                    if self.check_interval < 10:
+                        print("⚠️  Warning: Very short intervals may cause server load")
+                    break
+                except ValueError:
+                    print("❌ Please enter a valid number")
+            
+        except (EOFError, KeyboardInterrupt):
+            print("\n❌ Configuration cancelled by user or non-interactive session")
+            print("   Please run interactively to configure the client")
+            sys.exit(1)
         
         print()
         print("Configuration Summary:")
@@ -488,16 +493,21 @@ WantedBy=multi-user.target
         else:
             prompt = f"{question} [y/N]: "
         
-        while True:
-            answer = input(prompt).strip().lower()
-            if answer in ['y', 'yes']:
-                return True
-            elif answer in ['n', 'no']:
-                return False
-            elif answer == '':
-                return default
-            else:
-                print("Please answer yes or no (y/n)")
+        try:
+            while True:
+                answer = input(prompt).strip().lower()
+                if answer in ['y', 'yes']:
+                    return True
+                elif answer in ['n', 'no']:
+                    return False
+                elif answer == '':
+                    return default
+                else:
+                    print("Please answer yes or no (y/n)")
+        except (EOFError, KeyboardInterrupt):
+            # Handle non-interactive execution
+            print(f"\nUsing default: {'yes' if default else 'no'}")
+            return default
     
     def run(self):
         """Run the complete setup process"""
