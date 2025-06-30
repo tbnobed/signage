@@ -156,88 +156,70 @@
                             </div>
                         </div>
                         {% endfor %}
+                                {% if not playlist.items %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-list fa-3x text-muted mb-3"></i>
+                                    <h6 class="text-muted">No media items added yet</h6>
+                                    <p class="text-muted mb-0">Click "Add Item" or use the "+" buttons in Available Media to get started</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                     
-                        
-                        <div class="mt-3">
-                            <button type="button" class="btn btn-outline-primary" onclick="addItem()">
-                                <i class="fas fa-plus me-2"></i>Add Media Item
-                            </button>
-
-                        </div>
-                        
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Save Playlist
-                            </button>
-                            <a href="{{ url_for('main.playlists') }}" class="btn btn-secondary">Cancel</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <!-- Playlist Info -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Playlist Info</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-6 mb-2">
-                            <small class="text-muted">Created</small><br>
-                            <strong>{{ playlist.created_at.strftime('%m/%d/%y') }}</strong>
-                        </div>
-                        <div class="col-6 mb-2">
-                            <small class="text-muted">Updated</small><br>
-                            <strong>{{ playlist.updated_at.strftime('%m/%d/%y') }}</strong>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted">Items</small><br>
-                            <strong id="itemCount">{{ playlist.items|length }}</strong>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted">Assigned</small><br>
-                            <strong>{{ playlist.assigned_devices|length }} devices</strong>
+                    <!-- Available Media -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-photo-video me-2"></i>Available Media</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if media_files %}
+                                <div class="row">
+                                    {% for media in media_files %}
+                                    <div class="col-sm-6 col-lg-4 mb-3">
+                                        <div class="card h-100">
+                                            <div class="card-body p-3">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    {% if media.file_type == 'image' %}
+                                                    <i class="fas fa-image text-primary me-2"></i>
+                                                    {% else %}
+                                                    <i class="fas fa-video text-danger me-2"></i>
+                                                    {% endif %}
+                                                    <div class="flex-grow-1 min-width-0">
+                                                        <div class="fw-bold text-truncate">{{ media.original_filename }}</div>
+                                                        <small class="text-muted">{{ media.file_type|title }} • {{ (media.file_size / 1024 / 1024)|round(1) }} MB</small>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="btn btn-sm btn-outline-primary w-100" 
+                                                        onclick="quickAdd({{ media.id }}, '{{ media.original_filename }}', '{{ media.file_type }}')">
+                                                    <i class="fas fa-plus me-1"></i>Add to Playlist
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-photo-video fa-3x text-muted mb-3"></i>
+                                    <h6 class="text-muted">No media files available</h6>
+                                    <p class="text-muted mb-3">Upload some media files to create your playlist</p>
+                                    <a href="{{ url_for('main.media') }}" class="btn btn-primary">
+                                        <i class="fas fa-upload me-2"></i>Upload Media
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Media Library -->
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0"><i class="fas fa-images me-2"></i>Available Media</h6>
-                </div>
-                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-                    {% if media_files %}
-                    {% for media in media_files %}
-                    <div class="d-flex align-items-center mb-2 p-2 border rounded">
-                        {% if media.file_type == 'image' %}
-                        <i class="fas fa-image text-primary me-2"></i>
-                        {% else %}
-                        <i class="fas fa-video text-danger me-2"></i>
-                        {% endif %}
-                        <div class="flex-grow-1">
-                            <small class="fw-bold">{{ media.original_filename }}</small><br>
-                            <small class="text-muted">{{ media.file_type|title }} • {{ (media.file_size / 1024 / 1024)|round(1) }} MB</small>
-                        </div>
-                        <button type="button" class="btn btn-sm btn-outline-primary" 
-                                onclick="quickAdd({{ media.id }}, '{{ media.original_filename }}', '{{ media.file_type }}')">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                    {% endfor %}
-                    {% else %}
-                    <p class="text-muted">No media files available. <a href="{{ url_for('main.media') }}">Upload some media</a> first.</p>
-                    {% endif %}
-                </div>
-            </div>
         </div>
-    </div>
+    </form>
 </div>
+
+
 {% endblock %}
 
 {% block scripts %}
@@ -255,6 +237,66 @@ function createMediaOptions() {
         options += `<option value="${media.id}" data-type="${media.type}">${media.name}</option>`;
     });
     return options;
+}
+
+function quickAdd(mediaId, mediaName, mediaType) {
+    // Add media directly to the playlist
+    const mediaItems = document.getElementById('mediaItems');
+    const itemCount = mediaItems.children.length;
+    
+    const iconClass = mediaType === 'image' ? 'fas fa-image text-primary' : 'fas fa-video text-danger';
+    
+    const newItem = document.createElement('div');
+    newItem.className = 'media-item card mb-2';
+    newItem.innerHTML = `
+        <div class="card-body p-3">
+            <div class="row align-items-center">
+                <div class="col-md-1">
+                    <div class="d-flex flex-column">
+                        <button type="button" class="btn btn-sm btn-outline-secondary mb-1" onclick="moveUp(this)">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="moveDown(this)">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <select name="media_ids" class="form-select" required>
+                        ${createMediaOptions()}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <input type="number" name="durations" class="form-control" 
+                               placeholder="Default" min="1" max="3600">
+                        <span class="input-group-text">sec</span>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <i class="${iconClass} me-2"></i>
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Set the selected media
+    const select = newItem.querySelector('select[name="media_ids"]');
+    select.value = mediaId;
+    
+    mediaItems.appendChild(newItem);
+    updateItemCount();
+    
+    // Hide the empty state message if it exists
+    const emptyState = mediaItems.querySelector('.text-center.py-4');
+    if (emptyState) {
+        emptyState.style.display = 'none';
+    }
 }
 
 function addItem() {
@@ -398,138 +440,27 @@ function updateItemCount() {
     }
 }
 
+// Updated quickAdd function for the new layout
 function quickAdd(mediaId, filename, type) {
-    try {
-        console.log('QuickAdd called with:', mediaId, filename, type);
-        addItem();
-        
-        // Wait a moment for DOM to update
-        setTimeout(() => {
-            const lastItem = document.querySelector('.media-item:last-child');
-            if (lastItem) {
-                const select = lastItem.querySelector('select[name="media_ids"]');
-                if (select) {
-                    select.value = mediaId;
-                    updateIcon(select);
-                    console.log('Media item added successfully');
-                    
-                    // Debug: Check if element is in form after addition
-                    const form = document.getElementById('playlistForm');
-                    console.log('Select element is inside form:', form.contains(select));
-                    console.log('Form HTML preview:', form.outerHTML.substring(0, 200) + '...');
-                } else {
-                    console.error('Select element not found');
-                }
-            } else {
-                console.error('Last item not found');
+    addItem();
+    
+    // Wait for DOM to update then set the media selection
+    setTimeout(() => {
+        const lastItem = document.querySelector('.media-item:last-child');
+        if (lastItem) {
+            const select = lastItem.querySelector('select[name="media_ids"]');
+            if (select) {
+                select.value = mediaId;
+                updateIcon(select);
             }
-        }, 50);
-        
-    } catch (error) {
-        console.error('Error in quickAdd:', error);
-    }
-}
-
-// Test form submission with manually created elements
-function testFormSubmission() {
-    console.log('=== FORM SUBMISSION TEST ===');
-    
-    // Create a simple test select element
-    const form = document.getElementById('playlistForm');
-    const mediaItems = document.getElementById('mediaItems');
-    
-    // Create a simple select directly in the form
-    const testSelect = document.createElement('select');
-    testSelect.name = 'media_ids';
-    testSelect.innerHTML = '<option value="1">Test Video</option>';
-    testSelect.value = '1';
-    
-    const testInput = document.createElement('input');
-    testInput.type = 'number';
-    testInput.name = 'durations';
-    testInput.value = '30';
-    
-    // Add them to the form
-    mediaItems.appendChild(testSelect);
-    mediaItems.appendChild(testInput);
-    
-    console.log('Test elements created');
-    console.log('Select in form:', form.contains(testSelect));
-    console.log('Input in form:', form.contains(testInput));
-    
-    // Test FormData
-    const formData = new FormData(form);
-    console.log('FormData contents:');
-    for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
-    }
-}
-
-// Debug form submission
-function debugFormData() {
-    const form = document.getElementById('playlistForm');
-    const formData = new FormData(form);
-    console.log('Form data being submitted:');
-    for (let [key, value] of formData.entries()) {
-        console.log(key + ': ' + value);
-    }
-    
-    // Additional debugging: check if media items exist in DOM
-    const mediaItems = document.querySelectorAll('.media-item');
-    const mediaSelects = document.querySelectorAll('select[name="media_ids"]');
-    const durationInputs = document.querySelectorAll('input[name="durations"]');
-    
-    console.log('Media items found:', mediaItems.length);
-    console.log('Media selects found:', mediaSelects.length);
-    console.log('Duration inputs found:', durationInputs.length);
-    
-    // Check if selects are inside the form
-    mediaSelects.forEach((select, index) => {
-        console.log(`Select ${index}: value="${select.value}", inside form: ${form.contains(select)}`);
-    });
-}
-
-// Initialize icons for existing items
-document.addEventListener('DOMContentLoaded', function() {
-    try {
-        document.querySelectorAll('select[name="media_ids"]').forEach(updateIcon);
-        updateItemCount();
-        
-        // Add form submit listener for debugging
-        const form = document.getElementById('playlistForm');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                console.log('Form being submitted...');
-                // Run debug before submission
-                const mediaItems = document.querySelectorAll('.media-item');
-                const mediaSelects = document.querySelectorAll('select[name="media_ids"]');
-                const durationInputs = document.querySelectorAll('input[name="durations"]');
-                
-                console.log('Media items found:', mediaItems.length);
-                console.log('Media selects found:', mediaSelects.length);
-                console.log('Duration inputs found:', durationInputs.length);
-                
-                // Check if selects are inside the form and their values
-                mediaSelects.forEach((select, index) => {
-                    console.log(`Select ${index}: value="${select.value}", inside form: ${form.contains(select)}`);
-                });
-                
-                // Check all form elements
-                const allFormElements = form.querySelectorAll('input, select, textarea');
-                console.log('Total form elements:', allFormElements.length);
-                allFormElements.forEach((el, index) => {
-                    if (el.name) {
-                        console.log(`Form element ${index}: name="${el.name}", value="${el.value}"`);
-                    }
-                });
-                
-                debugFormData();
-                // Don't prevent submission, just log it
-            });
         }
-    } catch (error) {
-        console.error('Error initializing:', error);
-    }
+    }, 50);
+}
+
+// Initialize icons for existing items and setup form
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('select[name="media_ids"]').forEach(updateIcon);
+    updateItemCount();
 });
 </script>
 {% endblock %}
