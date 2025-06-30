@@ -8,11 +8,8 @@ from app import app, db
 from models import User, Device, MediaFile, Playlist, PlaylistItem, DeviceLog
 
 main = Blueprint('main', __name__)
-app.register_blueprint(main)
-
 # API Blueprint for client communication
 api = Blueprint('api', __name__, url_prefix='/api')
-app.register_blueprint(api)
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi', 'mov', 'mkv', 'webm'}
 

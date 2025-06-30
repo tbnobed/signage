@@ -5,7 +5,6 @@ from app import app, db, login_manager
 from models import User
 
 auth = Blueprint('auth', __name__)
-app.register_blueprint(auth, url_prefix='/auth')
 
 @login_manager.user_loader
 def load_user(user_id):
