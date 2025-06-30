@@ -119,12 +119,13 @@
                     </button>
                 </div>
                 <div class="card-footer">
-                    <button type="submit" form="playlistForm" class="btn btn-primary" onclick="debugFormData()">
+                    <button type="submit" class="btn btn-primary" onclick="debugFormData()">
                         <i class="fas fa-save me-2"></i>Save Playlist
                     </button>
                     <a href="{{ url_for('main.playlists') }}" class="btn btn-secondary">Cancel</a>
                 </div>
-                </form>
+            </div>
+        </form>
             </div>
         </div>
 
@@ -244,7 +245,7 @@ function addItem() {
     select.name = 'media_ids';
     select.className = 'form-select';
     select.required = true;
-    select.form = 'playlistForm'; // Explicitly associate with form
+    // Form association handled by DOM placement
     select.onchange = function() { updateIcon(this); };
     select.innerHTML = createMediaOptions();
     selectCol.appendChild(select);
@@ -261,7 +262,7 @@ function addItem() {
     durationInput.placeholder = 'Default';
     durationInput.min = '1';
     durationInput.max = '3600';
-    durationInput.form = 'playlistForm'; // Explicitly associate with form
+    // Form association handled by DOM placement
     const inputGroupText = document.createElement('span');
     inputGroupText.className = 'input-group-text';
     inputGroupText.textContent = 'sec';
