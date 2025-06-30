@@ -580,25 +580,42 @@ AutomaticLogin={username}
                                      text=True)
             stdout, stderr = process.communicate(input=gdm_config)
             
-            # Also try LightDM configuration for compatibility
-            lightdm_config = f"""[Seat:*]
-autologin-user={username}
-autologin-user-timeout=0
-"""
-            subprocess.run(['sudo', 'mkdir', '-p', '/etc/lightdm'], check=False)
+            # For Ubuntu 24.04, also configure systemd auto-login
+            systemd_override_dir = "/etc/systemd/system/getty@tty1.service.d"
+            subprocess.run(['sudo', 'mkdir', '-p', systemd_override_dir], check=False)
             
-            process2 = subprocess.Popen(['sudo', 'tee', '/etc/lightdm/lightdm.conf'], 
+            systemd_override = f"""[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin {username} --noclear %I $TERM
+"""
+            
+            process3 = subprocess.Popen(['sudo', 'tee', f'{systemd_override_dir}/override.conf'], 
                                       stdin=subprocess.PIPE, 
                                       stdout=subprocess.PIPE, 
                                       stderr=subprocess.PIPE,
                                       text=True)
-            stdout2, stderr2 = process2.communicate(input=lightdm_config)
+            stdout3, stderr3 = process3.communicate(input=systemd_override)
             
-            # Set graphical target as default
+            # Reload systemd to apply changes
+            subprocess.run(['sudo', 'systemctl', 'daemon-reload'], check=False)
             subprocess.run(['sudo', 'systemctl', 'set-default', 'graphical.target'], check=False)
             
-            if process.returncode == 0 or process2.returncode == 0:
-                print("   ✅ Autologin configured")
+            # Enable automatic X11 startup for the user
+            user_home = f"/home/{username}"
+            xinitrc_content = f"""#!/bin/bash
+# Start X11 session automatically
+exec startx
+"""
+            
+            process4 = subprocess.Popen(['sudo', '-u', username, 'tee', f'{user_home}/.bash_profile'], 
+                                      stdin=subprocess.PIPE, 
+                                      stdout=subprocess.PIPE, 
+                                      stderr=subprocess.PIPE,
+                                      text=True)
+            stdout4, stderr4 = process4.communicate(input=xinitrc_content)
+            
+            if process.returncode == 0 or process3.returncode == 0:
+                print("   ✅ Autologin configured (GDM3 + systemd)")
             else:
                 print("   ⚠️  Could not configure autologin (may require manual setup)")
             
