@@ -203,6 +203,12 @@ class SignageSetup:
         # Install desktop environment for Ubuntu Server
         if is_server and has_sudo:
             print("   Detected Ubuntu Server - installing desktop environment...")
+            print("   ⚠️  This may take several minutes, please be patient...")
+            
+            # Set non-interactive mode to prevent prompts
+            env = os.environ.copy()
+            env['DEBIAN_FRONTEND'] = 'noninteractive'
+            
             desktop_packages = [
                 'ubuntu-desktop-minimal',
                 'gdm3',
@@ -212,12 +218,35 @@ class SignageSetup:
             ]
             
             for package in desktop_packages:
+                print(f"   Installing {package}...")
                 try:
-                    subprocess.run(['sudo', 'apt', 'install', '-y', package], 
-                                 check=True, capture_output=True)
-                    print(f"   ✅ {package} installed")
-                except subprocess.CalledProcessError:
-                    print(f"   ⚠️  Failed to install {package}")
+                    # Use timeout and show progress with real-time output
+                    process = subprocess.Popen(['sudo', 'apt', 'install', '-y', package], 
+                                             env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, 
+                                             universal_newlines=True)
+                    
+                    # Show dots for progress
+                    import time
+                    start_time = time.time()
+                    while process.poll() is None:
+                        print(".", end="", flush=True)
+                        time.sleep(5)
+                        # Check for timeout (10 minutes)
+                        if time.time() - start_time > 600:
+                            process.terminate()
+                            print(f"\n   ⏰ {package} installation timed out (10 minutes)")
+                            break
+                    
+                    if process.returncode == 0:
+                        print(f"\n   ✅ {package} installed")
+                    else:
+                        print(f"\n   ⚠️  Failed to install {package} (exit code: {process.returncode})")
+                        
+                except Exception as e:
+                    print(f"\n   ⚠️  Error installing {package}: {e}")
+                    print("   Continuing with next package...")
+            
+            print("   Desktop environment installation complete!")
         
         # Install media players based on platform
         is_raspberry_pi = self.detect_raspberry_pi()
