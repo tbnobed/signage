@@ -220,9 +220,10 @@ class SignageSetup:
             env = os.environ.copy()
             env['DEBIAN_FRONTEND'] = 'noninteractive'
             
-            # Install packages for framebuffer output (more reliable than DRM)
+            # Install packages for KMS (Kernel Mode Setting) direct hardware output
             essential_packages = [
-                'fbset',         # Framebuffer utilities
+                'libdrm2',       # Direct Rendering Manager
+                'mesa-utils',    # OpenGL utilities
                 'pulseaudio',    # Audio system
                 'alsa-utils'     # Audio drivers
             ]
@@ -783,26 +784,28 @@ X-GNOME-Autostart-enabled=true
 # Add user to video and render groups for display access
 usermod -a -G video,render {self.target_user or 'obtv1'}
 
-# Check for display hardware
-if [ -e /dev/fb0 ]; then
-    echo "Framebuffer device detected: /dev/fb0"
-    chmod 666 /dev/fb0
-elif [ -d /dev/dri ]; then
+# Check for display hardware and set up KMS access
+if [ -d /dev/dri ]; then
     echo "DRM devices detected in /dev/dri"
     chmod 666 /dev/dri/card*
     chmod 666 /dev/dri/renderD*
+    # Set up KMS for direct hardware output
+    echo "Setting up KMS for direct display output"
+elif [ -e /dev/fb0 ]; then
+    echo "Framebuffer device detected: /dev/fb0"
+    chmod 666 /dev/fb0
 else
     echo "No display hardware detected"
 fi
 
-# Configure VLC for framebuffer output (more reliable than DRM)
+# Configure VLC for KMS output (direct hardware rendering)
 mkdir -p {self.setup_dir}/.config/vlc
 cat > {self.setup_dir}/.config/vlc/vlcrc << 'EOF'
 [dummy]
 intf=dummy
 
 [core]
-vout=fb
+vout=kms
 aout=pulse
 EOF
 

@@ -26,7 +26,7 @@ LOG_FILE = os.path.expanduser('~/signage_agent.log')
 # Media player commands
 PLAYER_COMMANDS = {
     'omxplayer': ['omxplayer', '-o', 'hdmi', '--loop', '--no-osd'],
-    'vlc': ['vlc', '--fullscreen', '--no-osd', '--loop', '--intf', 'dummy', '--no-video-title-show', '--vout', 'fb'],
+    'vlc': ['vlc', '--fullscreen', '--no-osd', '--loop', '--intf', 'dummy', '--no-video-title-show', '--vout', 'kms'],
     'ffplay': ['ffplay', '-fs', '-loop', '0', '-loglevel', 'quiet', '-vf', 'scale=1920:1080']
 }
 
@@ -187,14 +187,15 @@ class SignageClient:
             # Setup display environment for GUI applications
             env = os.environ.copy()
             
-            # For digital signage, use direct hardware output (no X server needed for VLC DRM)
-            # VLC with DRM output bypasses X server entirely
-            if os.path.exists('/dev/fb0') or os.path.exists('/dev/dri'):
-                self.logger.info("Using direct hardware output (DRM)")
-                # No DISPLAY variable needed for DRM output
+            # For digital signage, use KMS (Kernel Mode Setting) for direct hardware output
+            # KMS bypasses framebuffer and outputs directly to display hardware
+            if os.path.exists('/dev/dri'):
+                self.logger.info("Using KMS direct hardware output")
+                # Set environment for KMS access
+                env['VLC_PLUGIN_PATH'] = '/usr/lib/vlc/plugins'
                 env.pop('DISPLAY', None)
             else:
-                self.logger.warning("No display hardware detected - video may not be visible")
+                self.logger.warning("No DRM hardware detected - video may not be visible")
                 env.pop('DISPLAY', None)
             
             # Set up other environment variables
