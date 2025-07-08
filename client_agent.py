@@ -186,11 +186,25 @@ class SignageClient:
             
             # Setup display environment for GUI applications
             env = os.environ.copy()
+            
+            # Try to use real display first, fallback to virtual framebuffer
+            if os.path.exists('/tmp/.X11-unix/X0'):
+                env['DISPLAY'] = ':0'
+            else:
+                # Start Xvfb for headless operation
+                self.logger.info("Starting virtual framebuffer for headless display")
+                xvfb_process = subprocess.Popen([
+                    'Xvfb', ':99', '-screen', '0', '1920x1080x24', '-ac', '+extension', 'GLX'
+                ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                time.sleep(2)  # Give Xvfb time to start
+                env['DISPLAY'] = ':99'
+            
+            # Set up other environment variables
+            user_home = os.path.expanduser('~')
             env.update({
-                'DISPLAY': ':0',
-                'XAUTHORITY': '/home/obtv1/.Xauthority',
-                'HOME': '/home/obtv1',
-                'USER': 'obtv1'
+                'HOME': user_home,
+                'USER': os.getenv('USER', 'obtv1'),
+                'PULSE_RUNTIME_PATH': f'{user_home}/.pulse'
             })
             
             # Start new player process with proper environment

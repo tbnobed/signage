@@ -200,55 +200,41 @@ class SignageSetup:
         # Check if this is Ubuntu Server (no desktop environment)
         is_server = not os.path.exists('/usr/bin/gnome-session') and not os.path.exists('/usr/bin/startx')
         
-        # Install minimal X11 components for Ubuntu Server (lighter than full desktop)
+        # Install minimal display components for Ubuntu Server - focus on VLC essentials
         if is_server and has_sudo:
-            print("   Detected Ubuntu Server - installing minimal X11 environment...")
-            print("   ⚠️  This may take a few minutes, please be patient...")
+            print("   Detected Ubuntu Server - installing display components...")
+            print("   ⚠️  Installing essential packages for VLC display...")
             
             # Set non-interactive mode to prevent prompts
             env = os.environ.copy()
             env['DEBIAN_FRONTEND'] = 'noninteractive'
             
-            # Install minimal X11 components instead of full desktop
-            x11_packages = [
-                'xorg',
-                'xinit', 
-                'x11-xserver-utils',
-                'lightdm',
-                'openbox',
-                'xterm'
+            # Install only essential packages for VLC to work
+            essential_packages = [
+                'xvfb',          # Virtual framebuffer for headless X11
+                'x11-utils',     # Basic X11 utilities
+                'pulseaudio',    # Audio system
+                'alsa-utils'     # Audio drivers
             ]
             
-            for package in x11_packages:
+            for package in essential_packages:
                 print(f"   Installing {package}...")
                 try:
-                    # Use timeout and show progress with real-time output
-                    process = subprocess.Popen(['sudo', 'apt', 'install', '-y', package], 
-                                             env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, 
-                                             universal_newlines=True)
+                    # Quick install with shorter timeout
+                    result = subprocess.run(['sudo', 'apt', 'install', '-y', package], 
+                                         env=env, timeout=120, capture_output=True, text=True)
                     
-                    # Show dots for progress
-                    import time
-                    start_time = time.time()
-                    while process.poll() is None:
-                        print(".", end="", flush=True)
-                        time.sleep(3)
-                        # Check for timeout (5 minutes for smaller packages)
-                        if time.time() - start_time > 300:
-                            process.terminate()
-                            print(f"\n   ⏰ {package} installation timed out (5 minutes)")
-                            break
-                    
-                    if process.returncode == 0:
-                        print(f"\n   ✅ {package} installed")
+                    if result.returncode == 0:
+                        print(f"   ✅ {package} installed")
                     else:
-                        print(f"\n   ⚠️  Failed to install {package} (exit code: {process.returncode})")
+                        print(f"   ⚠️  Failed to install {package}")
                         
+                except subprocess.TimeoutExpired:
+                    print(f"   ⏰ {package} installation timed out (2 minutes)")
                 except Exception as e:
-                    print(f"\n   ⚠️  Error installing {package}: {e}")
-                    print("   Continuing with next package...")
+                    print(f"   ⚠️  Error installing {package}: {e}")
             
-            print("   Minimal X11 environment installation complete!")
+            print("   Essential display components installed!")
         
         # Install media players based on platform
         is_raspberry_pi = self.detect_raspberry_pi()
@@ -782,28 +768,31 @@ X-GNOME-Autostart-enabled=true
         
         service_content = f"""[Unit]
 Description=Digital Signage Client
-After=graphical-session.target
-Wants=graphical-session.target
+After=multi-user.target
+Wants=multi-user.target
 
 [Service]
 Type=simple
 User={username}
 Group={username}
-Environment=DISPLAY=:0
-Environment=XAUTHORITY=/home/{username}/.Xauthority
+Environment=DISPLAY=:99
 Environment=HOME=/home/{username}
 Environment=USER={username}
+Environment=PULSE_RUNTIME_PATH=/home/{username}/.pulse
 WorkingDirectory={self.setup_dir}
 EnvironmentFile={self.config_file}
-ExecStartPre=/bin/sleep 30
+ExecStartPre=/bin/bash -c 'pkill -f "Xvfb :99" || true'
+ExecStartPre=/bin/bash -c 'Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX &'
+ExecStartPre=/bin/sleep 5
 ExecStart=/usr/bin/python3 {self.client_script}
+ExecStopPost=/bin/bash -c 'pkill -f "Xvfb :99" || true'
 Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
 
 [Install]
-WantedBy=graphical-session.target
+WantedBy=multi-user.target
 """
         
         try:
