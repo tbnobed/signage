@@ -194,7 +194,7 @@ class SignageClient:
                 # Start Xvfb for headless operation
                 self.logger.info("Starting virtual framebuffer for headless display")
                 xvfb_process = subprocess.Popen([
-                    'Xvfb', ':99', '-screen', '0', '1920x1080x24', '-ac', '+extension', 'GLX'
+                    'Xvfb', ':99', '-screen', '0', '1920x1080x24', '-ac', '+extension', 'GLX', '-nolisten', 'tcp', '-dpi', '96'
                 ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 time.sleep(2)  # Give Xvfb time to start
                 env['DISPLAY'] = ':99'
