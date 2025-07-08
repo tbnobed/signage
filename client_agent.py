@@ -26,8 +26,8 @@ LOG_FILE = os.path.expanduser('~/signage_agent.log')
 # Media player commands
 PLAYER_COMMANDS = {
     'omxplayer': ['omxplayer', '-o', 'hdmi', '--loop', '--no-osd'],
-    'vlc': ['vlc', '--fullscreen', '--no-osd', '--loop', '--intf', 'dummy', '--no-video-title-show'],
-    'ffplay': ['ffplay', '-fs', '-loop', '0', '-loglevel', 'quiet']
+    'vlc': ['vlc', '--fullscreen', '--no-osd', '--loop', '--intf', 'dummy', '--no-video-title-show', '--vout', 'drm'],
+    'ffplay': ['ffplay', '-fs', '-loop', '0', '-loglevel', 'quiet', '-vf', 'scale=1920:1080']
 }
 
 class SignageClient:
@@ -187,16 +187,26 @@ class SignageClient:
             # Setup display environment for GUI applications
             env = os.environ.copy()
             
-            # Try to use real display first, fallback to virtual framebuffer
-            if os.path.exists('/tmp/.X11-unix/X0'):
+            # For digital signage, we need to output to actual display hardware
+            # Try to use the framebuffer directly for headless systems
+            if os.path.exists('/dev/fb0'):
+                # Use framebuffer for direct hardware output
+                env['DISPLAY'] = ':0'
+                # Start minimal X server on framebuffer
+                subprocess.Popen([
+                    'sudo', 'X', ':0', '-config', '/dev/null', '-nolisten', 'tcp', 
+                    '-noreset', '+extension', 'GLX', '+extension', 'RANDR', '+extension', 'RENDER'
+                ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                time.sleep(3)
+            elif os.path.exists('/tmp/.X11-unix/X0'):
                 env['DISPLAY'] = ':0'
             else:
-                # Start Xvfb for headless operation
-                self.logger.info("Starting virtual framebuffer for headless display")
-                xvfb_process = subprocess.Popen([
-                    'Xvfb', ':99', '-screen', '0', '1920x1080x24', '-ac', '+extension', 'GLX', '-nolisten', 'tcp', '-dpi', '96'
+                # Fallback to virtual framebuffer (won't show on screen)
+                self.logger.warning("No physical display found, using virtual framebuffer")
+                subprocess.Popen([
+                    'Xvfb', ':99', '-screen', '0', '1920x1080x24', '-ac', '+extension', 'GLX'
                 ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                time.sleep(2)  # Give Xvfb time to start
+                time.sleep(2)
                 env['DISPLAY'] = ':99'
             
             # Set up other environment variables
