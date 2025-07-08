@@ -220,14 +220,11 @@ class SignageSetup:
             env = os.environ.copy()
             env['DEBIAN_FRONTEND'] = 'noninteractive'
             
-            # Install packages for direct hardware rendering (DRM/KMS)
+            # Install packages for framebuffer output (more reliable than DRM)
             essential_packages = [
-                'libdrm2',       # Direct Rendering Manager
-                'libdrm-dev',    # DRM development headers
-                'mesa-utils',    # OpenGL utilities
+                'fbset',         # Framebuffer utilities
                 'pulseaudio',    # Audio system
-                'alsa-utils',    # Audio drivers
-                'fbset'          # Framebuffer utilities
+                'alsa-utils'     # Audio drivers
             ]
             
             for package in essential_packages:
@@ -783,23 +780,29 @@ X-GNOME-Autostart-enabled=true
         display_script = f"""#!/bin/bash
 # Setup direct display output for digital signage
 
+# Add user to video and render groups for display access
+usermod -a -G video,render {self.target_user or 'obtv1'}
+
 # Check for display hardware
 if [ -e /dev/fb0 ]; then
     echo "Framebuffer device detected: /dev/fb0"
+    chmod 666 /dev/fb0
 elif [ -d /dev/dri ]; then
     echo "DRM devices detected in /dev/dri"
+    chmod 666 /dev/dri/card*
+    chmod 666 /dev/dri/renderD*
 else
     echo "No display hardware detected"
 fi
 
-# Configure VLC for DRM output
+# Configure VLC for framebuffer output (more reliable than DRM)
 mkdir -p {self.setup_dir}/.config/vlc
 cat > {self.setup_dir}/.config/vlc/vlcrc << 'EOF'
 [dummy]
 intf=dummy
 
 [core]
-vout=drm
+vout=fb
 aout=pulse
 EOF
 
