@@ -197,6 +197,28 @@ class SignageSetup:
         else:
             print("   ❌ Cannot install Python packages without sudo")
         
+        # Check if this is Ubuntu Server (no desktop environment)
+        is_server = not os.path.exists('/usr/bin/gnome-session') and not os.path.exists('/usr/bin/startx')
+        
+        # Install desktop environment for Ubuntu Server
+        if is_server and has_sudo:
+            print("   Detected Ubuntu Server - installing desktop environment...")
+            desktop_packages = [
+                'ubuntu-desktop-minimal',
+                'gdm3',
+                'xinit', 
+                'xorg',
+                'x11-xserver-utils'
+            ]
+            
+            for package in desktop_packages:
+                try:
+                    subprocess.run(['sudo', 'apt', 'install', '-y', package], 
+                                 check=True, capture_output=True)
+                    print(f"   ✅ {package} installed")
+                except subprocess.CalledProcessError:
+                    print(f"   ⚠️  Failed to install {package}")
+        
         # Install media players based on platform
         is_raspberry_pi = self.detect_raspberry_pi()
         if is_raspberry_pi:
@@ -579,10 +601,11 @@ CHECK_INTERVAL={self.check_interval}
         print("   📺 Setting up display access...")
         
         try:
-            # Setup autologin via GDM3
+            # Setup autologin via GDM3 with X11 instead of Wayland
             gdm_config = f"""[daemon]
 AutomaticLoginEnable=True
 AutomaticLogin={username}
+WaylandEnable=false
 
 [security]
 
