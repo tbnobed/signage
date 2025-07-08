@@ -114,7 +114,7 @@ class SignageClient:
             }
             
             requests.post(
-                f"{SERVER_URL}/api/devices/{DEVICE_ID}/log",
+                f"{SERVER_URL}/api/devices/{DEVICE_ID}/logs",
                 json=data,
                 timeout=5
             )

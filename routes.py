@@ -301,7 +301,7 @@ def get_device_playlist(device_id):
     
     return jsonify({'playlist': playlist_data})
 
-@api.route('/devices/<device_id>/log', methods=['POST'])
+@api.route('/devices/<device_id>/logs', methods=['POST'])
 def device_log(device_id):
     device = Device.query.filter_by(device_id=device_id).first()
     
