@@ -119,6 +119,7 @@ This is a comprehensive Flask-based web application for managing digital signage
 - June 30, 2025. UI improvements: Updated playlist edit page with horizontal two-column layout for better space utilization. Left column shows settings and info, right column shows media items and available media grid.
 - June 30, 2025. Client display access fix: Enhanced setup_client.py to automatically configure autologin, display environment variables, and screen blanking disable for proper VLC display access.
 - June 30, 2025. Critical setup script fixes: Fixed duplicate DEVICE_ID entries in .env files and implemented robust autologin configuration for Ubuntu 24.04 with GDM3, systemd, and LightDM fallbacks. Added automatic screen lock/power management disabling.
+- July 8, 2025. Ubuntu Server headless deployment success: Completely redesigned client setup for Ubuntu Server environments. Replaced heavy desktop environment with minimal Xvfb virtual framebuffer approach. Client now successfully runs headless with VLC displaying media via virtual display :99. Setup script installs only essential packages (xvfb, x11-utils, pulseaudio, alsa-utils) and creates robust systemd service with proper Xvfb management.
 
 ## User Preferences
 
