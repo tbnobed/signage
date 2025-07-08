@@ -1,0 +1,334 @@
+obtv1@client1:~$ systemctl status signage-client.service
+● signage-client.service - Digital Signage Client
+     Loaded: loaded (/etc/systemd/system/signage-client.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2025-07-08 20:55:25 UTC; 3min 0s ago
+    Process: 898 ExecStartPre=/home/obtv1/signage/setup_display.sh (code=exited, status=0/SUCCESS)
+   Main PID: 907 (python3)
+      Tasks: 12 (limit: 9170)
+     Memory: 80.0M (peak: 103.0M)
+        CPU: 1min 3.248s
+     CGroup: /system.slice/signage-client.service
+             ├─ 907 /usr/bin/python3 /home/obtv1/signage/client_agent.py
+             └─6528 vlc --fullscreen --no-osd --loop --intf dummy --no-video-title-show --vout fb /home/obtv1/signage_media/452bf30e25f440098021a2286724b298.mp4
+
+Jul 08 20:55:25 client1 python3[907]: 2025-07-08 20:55:25,659 - INFO - Media player: vlc
+Jul 08 20:55:25 client1 python3[907]: 2025-07-08 20:55:25,875 - INFO - New playlist received: Test playlist
+Jul 08 20:55:25 client1 python3[907]: 2025-07-08 20:55:25,876 - INFO - Playing: 452bf30e25f440098021a2286724b298.mp4
+Jul 08 20:55:25 client1 python3[907]: 2025-07-08 20:55:25,877 - INFO - Using direct hardware output (DRM)
+Jul 08 20:56:25 client1 python3[907]: 2025-07-08 20:56:25,417 - INFO - Playing: 452bf30e25f440098021a2286724b298.mp4
+Jul 08 20:56:25 client1 python3[907]: 2025-07-08 20:56:25,418 - INFO - Using direct hardware output (DRM)
+Jul 08 20:57:25 client1 python3[907]: 2025-07-08 20:57:25,644 - INFO - Playing: 452bf30e25f440098021a2286724b298.mp4
+Jul 08 20:57:25 client1 python3[907]: 2025-07-08 20:57:25,645 - INFO - Using direct hardware output (DRM)
+Jul 08 20:58:25 client1 python3[907]: 2025-07-08 20:58:25,847 - INFO - Playing: 452bf30e25f440098021a2286724b298.mp4
+Jul 08 20:58:25 client1 python3[907]: 2025-07-08 20:58:25,848 - INFO - Using direct hardware output (DRM)
+obtv1@client1:~$ vlc --vout drm --intf dummy --fullscreen ~/signage_media/*.mp4
+VLC media player 3.0.20 Vetinari (revision 3.0.20-0-g6f0d0ab126b)
+[00006224442d5850] main interface error: no suitable interface module
+[00006224441f33c0] main libvlc error: interface "globalhotkeys,none" initialization failed
+[00006224442d5850] dummy interface: using the dummy interface module...
+[000074cb54060fe0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[000074cb54060fe0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[000074cb5407c740] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cc0f340] get_buffer() failed
+[h264 @ 0x74cb5cc0f340] thread_get_buffer() failed
+[h264 @ 0x74cb5cc0f340] decode_slice_header error
+[h264 @ 0x74cb5cc0f340] no frame!
+[000074cb50045f50] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cddcdc0] get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] thread_get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] decode_slice_header error
+[h264 @ 0x74cb5cddcdc0] no frame!
+[000074cb44047750] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5ceab680] get_buffer() failed
+[h264 @ 0x74cb5ceab680] thread_get_buffer() failed
+[h264 @ 0x74cb5ceab680] decode_slice_header error
+[h264 @ 0x74cb5ceab680] no frame!
+[000074cb480461d0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cf7a480] get_buffer() failed
+[h264 @ 0x74cb5cf7a480] thread_get_buffer() failed
+[h264 @ 0x74cb5cf7a480] decode_slice_header error
+[h264 @ 0x74cb5cf7a480] no frame!
+[000074cb3c048690] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5d049280] get_buffer() failed
+[h264 @ 0x74cb5d049280] thread_get_buffer() failed
+[h264 @ 0x74cb5d049280] decode_slice_header error
+[h264 @ 0x74cb5d049280] no frame!
+[000074cb5408f840] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cc0f340] get_buffer() failed
+[h264 @ 0x74cb5cc0f340] thread_get_buffer() failed
+[h264 @ 0x74cb5cc0f340] decode_slice_header error
+[h264 @ 0x74cb5cc0f340] no frame!
+[000074cb50045ed0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cddcdc0] get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] thread_get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] decode_slice_header error
+[h264 @ 0x74cb5cddcdc0] no frame!
+[000074cb44087b80] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5ceab680] get_buffer() failed
+[h264 @ 0x74cb5ceab680] thread_get_buffer() failed
+[h264 @ 0x74cb5ceab680] decode_slice_header error
+[h264 @ 0x74cb5ceab680] no frame!
+[000074cb4805ae80] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cf7a480] get_buffer() failed
+[h264 @ 0x74cb5cf7a480] thread_get_buffer() failed
+[h264 @ 0x74cb5cf7a480] decode_slice_header error
+[h264 @ 0x74cb5cf7a480] no frame!
+[000074cb3c048610] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5d049280] get_buffer() failed
+[h264 @ 0x74cb5d049280] thread_get_buffer() failed
+[h264 @ 0x74cb5d049280] decode_slice_header error
+[h264 @ 0x74cb5d049280] no frame!
+[000074cb5407c740] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cc0f340] get_buffer() failed
+[h264 @ 0x74cb5cc0f340] thread_get_buffer() failed
+[h264 @ 0x74cb5cc0f340] decode_slice_header error
+[h264 @ 0x74cb5cc0f340] no frame!
+[000074cb50070540] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cddcdc0] get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] thread_get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] decode_slice_header error
+[h264 @ 0x74cb5cddcdc0] no frame!
+[000074cb44087b80] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5ceab680] get_buffer() failed
+[h264 @ 0x74cb5ceab680] thread_get_buffer() failed
+[h264 @ 0x74cb5ceab680] decode_slice_header error
+[h264 @ 0x74cb5ceab680] no frame!
+[000074cb48059970] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cf7a480] get_buffer() failed
+[h264 @ 0x74cb5cf7a480] thread_get_buffer() failed
+[h264 @ 0x74cb5cf7a480] decode_slice_header error
+[h264 @ 0x74cb5cf7a480] no frame!
+[000074cb3c048610] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5d049280] get_buffer() failed
+[h264 @ 0x74cb5d049280] thread_get_buffer() failed
+[h264 @ 0x74cb5d049280] decode_slice_header error
+[h264 @ 0x74cb5d049280] no frame!
+[000074cb54091390] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cc0f340] get_buffer() failed
+[h264 @ 0x74cb5cc0f340] thread_get_buffer() failed
+[h264 @ 0x74cb5cc0f340] decode_slice_header error
+[h264 @ 0x74cb5cc0f340] no frame!
+[000074cb50077ab0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cddcdc0] get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] thread_get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] decode_slice_header error
+[h264 @ 0x74cb5cddcdc0] no frame!
+[000074cb4405ac60] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5ceab680] get_buffer() failed
+[h264 @ 0x74cb5ceab680] thread_get_buffer() failed
+[h264 @ 0x74cb5ceab680] decode_slice_header error
+[h264 @ 0x74cb5ceab680] no frame!
+[000074cb48081920] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cf7a480] get_buffer() failed
+[h264 @ 0x74cb5cf7a480] thread_get_buffer() failed
+[h264 @ 0x74cb5cf7a480] decode_slice_header error
+[h264 @ 0x74cb5cf7a480] no frame!
+[000074cb3c085be0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5d049280] get_buffer() failed
+[h264 @ 0x74cb5d049280] thread_get_buffer() failed
+[h264 @ 0x74cb5d049280] decode_slice_header error
+[h264 @ 0x74cb5d049280] no frame!
+[000074cb5406b800] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cc0f340] get_buffer() failed
+[h264 @ 0x74cb5cc0f340] thread_get_buffer() failed
+[h264 @ 0x74cb5cc0f340] decode_slice_header error
+[h264 @ 0x74cb5cc0f340] no frame!
+[000074cb500a5b10] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cddcdc0] get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] thread_get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] decode_slice_header error
+[h264 @ 0x74cb5cddcdc0] no frame!
+[000074cb44099680] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5ceab680] get_buffer() failed
+[h264 @ 0x74cb5ceab680] thread_get_buffer() failed
+[h264 @ 0x74cb5ceab680] decode_slice_header error
+[h264 @ 0x74cb5ceab680] no frame!
+[000074cb4809c7f0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cf7a480] get_buffer() failed
+[h264 @ 0x74cb5cf7a480] thread_get_buffer() failed
+[h264 @ 0x74cb5cf7a480] decode_slice_header error
+[h264 @ 0x74cb5cf7a480] no frame!
+[000074cb3c085be0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5d049280] get_buffer() failed
+[h264 @ 0x74cb5d049280] thread_get_buffer() failed
+[h264 @ 0x74cb5d049280] decode_slice_header error
+[h264 @ 0x74cb5d049280] no frame!
+[000074cb54076180] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cc0f340] get_buffer() failed
+[h264 @ 0x74cb5cc0f340] thread_get_buffer() failed
+[h264 @ 0x74cb5cc0f340] decode_slice_header error
+[h264 @ 0x74cb5cc0f340] no frame!
+[000074cb5005b710] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cddcdc0] get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] thread_get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] decode_slice_header error
+[h264 @ 0x74cb5cddcdc0] no frame!
+[000074cb44087b80] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5ceab680] get_buffer() failed
+[h264 @ 0x74cb5ceab680] thread_get_buffer() failed
+[h264 @ 0x74cb5ceab680] decode_slice_header error
+[h264 @ 0x74cb5ceab680] no frame!
+[000074cb4809c7f0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cf7a480] get_buffer() failed
+[h264 @ 0x74cb5cf7a480] thread_get_buffer() failed
+[h264 @ 0x74cb5cf7a480] decode_slice_header error
+[h264 @ 0x74cb5cf7a480] no frame!
+[000074cb3c085be0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5d049280] get_buffer() failed
+[h264 @ 0x74cb5d049280] thread_get_buffer() failed
+[h264 @ 0x74cb5d049280] decode_slice_header error
+[h264 @ 0x74cb5d049280] no frame!
+[000074cb540d8880] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cc0f340] get_buffer() failed
+[h264 @ 0x74cb5cc0f340] thread_get_buffer() failed
+[h264 @ 0x74cb5cc0f340] decode_slice_header error
+[h264 @ 0x74cb5cc0f340] no frame!
+[000074cb50059a40] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cddcdc0] get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] thread_get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] decode_slice_header error
+[h264 @ 0x74cb5cddcdc0] no frame!
+[000074cb44087b80] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5ceab680] get_buffer() failed
+[h264 @ 0x74cb5ceab680] thread_get_buffer() failed
+[h264 @ 0x74cb5ceab680] decode_slice_header error
+[h264 @ 0x74cb5ceab680] no frame!
+[000074cb48052340] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cf7a480] get_buffer() failed
+[h264 @ 0x74cb5cf7a480] thread_get_buffer() failed
+[h264 @ 0x74cb5cf7a480] decode_slice_header error
+[h264 @ 0x74cb5cf7a480] no frame!
+[000074cb3c0a7c90] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5d049280] get_buffer() failed
+[h264 @ 0x74cb5d049280] thread_get_buffer() failed
+[h264 @ 0x74cb5d049280] decode_slice_header error
+[h264 @ 0x74cb5d049280] no frame!
+[000074cb540865b0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cc0f340] get_buffer() failed
+[h264 @ 0x74cb5cc0f340] thread_get_buffer() failed
+[h264 @ 0x74cb5cc0f340] decode_slice_header error
+[h264 @ 0x74cb5cc0f340] no frame!
+[000074cb500a2860] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cddcdc0] get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] thread_get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] decode_slice_header error
+[h264 @ 0x74cb5cddcdc0] no frame!
+[000074cb5cc19e30] main decoder error: buffer deadlock prevented
+[000074cb44099360] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5ceab680] get_buffer() failed
+[h264 @ 0x74cb5ceab680] thread_get_buffer() failed
+[h264 @ 0x74cb5ceab680] decode_slice_header error
+[h264 @ 0x74cb5ceab680] no frame!
+[000074cb480962a0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cf7a480] get_buffer() failed
+[h264 @ 0x74cb5cf7a480] thread_get_buffer() failed
+[h264 @ 0x74cb5cf7a480] decode_slice_header error
+[h264 @ 0x74cb5cf7a480] no frame!
+[000074cb3c094270] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5d049280] get_buffer() failed
+[h264 @ 0x74cb5d049280] thread_get_buffer() failed
+[h264 @ 0x74cb5d049280] decode_slice_header error
+[h264 @ 0x74cb5d049280] no frame!
+[000074cb541d32e0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cc0f340] get_buffer() failed
+[h264 @ 0x74cb5cc0f340] thread_get_buffer() failed
+[h264 @ 0x74cb5cc0f340] decode_slice_header error
+[h264 @ 0x74cb5cc0f340] no frame!
+[000074cb50071240] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cddcdc0] get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] thread_get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] decode_slice_header error
+[h264 @ 0x74cb5cddcdc0] no frame!
+[000074cb440a10a0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5ceab680] get_buffer() failed
+[h264 @ 0x74cb5ceab680] thread_get_buffer() failed
+[h264 @ 0x74cb5ceab680] decode_slice_header error
+[h264 @ 0x74cb5ceab680] no frame!
+[000074cb48080de0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cf7a480] get_buffer() failed
+[h264 @ 0x74cb5cf7a480] thread_get_buffer() failed
+[h264 @ 0x74cb5cf7a480] decode_slice_header error
+[h264 @ 0x74cb5cf7a480] no frame!
+[000074cb3c085be0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5d049280] get_buffer() failed
+[h264 @ 0x74cb5d049280] thread_get_buffer() failed
+[h264 @ 0x74cb5d049280] decode_slice_header error
+[h264 @ 0x74cb5d049280] no frame!
+[000074cb54090c50] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cc0f340] get_buffer() failed
+[h264 @ 0x74cb5cc0f340] thread_get_buffer() failed
+[h264 @ 0x74cb5cc0f340] decode_slice_header error
+[h264 @ 0x74cb5cc0f340] no frame!
+[000074cb50071240] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cddcdc0] get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] thread_get_buffer() failed
+[h264 @ 0x74cb5cddcdc0] decode_slice_header error
+[h264 @ 0x74cb5cddcdc0] no frame!
+[000074cb4409ea30] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5ceab680] get_buffer() failed
+[h264 @ 0x74cb5ceab680] thread_get_buffer() failed
+[h264 @ 0x74cb5ceab680] decode_slice_header error
+[h264 @ 0x74cb5ceab680] no frame!
+^C[000074cb48070900] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5cf7a480] get_buffer() failed
+[h264 @ 0x74cb5cf7a480] thread_get_buffer() failed
+[h264 @ 0x74cb5cf7a480] decode_slice_header error
+[h264 @ 0x74cb5cf7a480] no frame!
+[000074cb3c085be0] main video output error: video output creation failed
+[000074cb5cc19e30] main decoder error: failed to create video output
+[h264 @ 0x74cb5d049280] get_buffer() failed
+[h264 @ 0x74cb5d049280] thread_get_buffer() failed
+[h264 @ 0x74cb5d049280] decode_slice_header error
+[h264 @ 0x74cb5d049280] no frame!
+obtv1@client1:~$
