@@ -1,0 +1,134 @@
+root@client1:~# sudo python3 setup_client.py
+============================================================
+     Digital Signage Client Setup
+============================================================
+
+This script will help you set up a digital signage client device.
+It will download the latest client software and configure your system.
+
+🔍 Checking system requirements...
+⚠️  Warning: Running as root. This is okay for initial setup.
+   The service will run as a regular user for security.
+
+✅ Python 3.12.3 - OK
+
+📦 Installing dependencies...
+   Using apt package manager...
+   Updating package list...
+   ✅ Package list updated
+   ✅ python3-pip installed
+   ✅ python3-requests installed
+   ✅ python3-setuptools installed
+   ✅ python3-dev installed
+   Detected Ubuntu Server - installing display components...
+   ⚠️  Installing essential packages for VLC display...
+   Installing xvfb...
+   ✅ xvfb installed
+   Installing x11-utils...
+   ✅ x11-utils installed
+   Installing pulseaudio...
+   ✅ pulseaudio installed
+   Installing alsa-utils...
+   ✅ alsa-utils installed
+   Essential display components installed!
+   Detected generic Linux - installing VLC and FFmpeg...
+   ✅ vlc installed
+   ✅ ffmpeg installed
+   ✅ Python requests module already available
+
+🔍 Verifying installations...
+   ✅ pip/pip3 available
+   ✅ Python requests module available
+
+🎬 Verifying media players...
+   ❌ omxplayer - Hardware-accelerated (Raspberry Pi)
+   ✅ vlc - Cross-platform media player
+   ✅ ffplay - FFmpeg-based player (part of ffmpeg)
+   ❌ mplayer - Classic media player
+
+⚙️  Configuration
+--------------------
+Username to run signage as (default: obtv1):
+Setting up for user: obtv1
+Home directory: /home/obtv1
+
+Server URL (default: https://display.obtv.io):
+Device ID (unique identifier): t-zyw3
+Check interval in seconds (default: 60):
+
+Configuration Summary:
+  Server URL: https://display.obtv.io
+  Device ID: t-zyw3
+  Check Interval: 60 seconds
+
+Is this correct? [Y/n]: y
+📁 Creating signage directory...
+   Set ownership to: obtv1
+   Created: /home/obtv1/signage
+⬇️  Downloading client script...
+   Downloaded: /home/obtv1/signage/client_agent.py
+📝 Creating configuration file...
+   Created: /home/obtv1/signage/.env
+   Device ID: t-zyw3
+   Server URL: https://display.obtv.io
+🔌 Testing server connection...
+   ✅ Server is reachable (404 is expected for ping)
+🚀 Setting up auto-start service...
+   📺 Setting up display access...
+Created symlink /etc/systemd/system/default.target → /usr/lib/systemd/system/graphical.target.
+   ✅ Autologin configured (GDM3 + systemd)
+   ✅ Screen lock and power management disabled
+   ⚠️  Reboot required for autologin to take effect
+   ✅ Display access configured
+Created symlink /etc/systemd/system/multi-user.target.wants/signage-client.service → /etc/systemd/system/signage-client.service.
+   ✅ Service created: /etc/systemd/system/signage-client.service
+   ✅ Service enabled for auto-start
+Start the signage client now? [Y/n]: y
+Job for signage-client.service failed because a fatal signal was delivered to the control process.
+See "systemctl status signage-client.service" and "journalctl -xeu signage-client.service" for details.
+   ❌ Failed to start service
+   Try manually: sudo systemctl start signage-client.service
+
+============================================================
+🎉 Setup Complete!
+============================================================
+
+Your digital signage client is now configured!
+
+📋 Next Steps:
+1. Register this device in your web dashboard:
+   - Server: https://display.obtv.io
+   - Device ID: t-zyw3
+2. Create playlists and assign them to this device
+3. Media will automatically download and play
+
+🔧 Useful Commands:
+   sudo systemctl status signage-client    # Check status
+   sudo systemctl restart signage-client   # Restart service
+   sudo systemctl stop signage-client      # Stop service
+   tail -f /home/obtv1/signage/client.log      # View logs
+
+📁 Files Created:
+   /home/obtv1/signage/client_agent.py
+   /home/obtv1/signage/.env
+   /etc/systemd/system/signage-client.service
+
+root@client1:~# sudo systemctl start signage-client.service
+Job for signage-client.service failed because a fatal signal was delivered to the control process.
+See "systemctl status signage-client.service" and "journalctl -xeu signage-client.service" for details.
+root@client1:~# systemctl status signage-client.service
+● signage-client.service - Digital Signage Client
+     Loaded: loaded (/etc/systemd/system/signage-client.service; enabled; preset: enabled)
+     Active: activating (auto-restart) (Result: signal) since Tue 2025-07-08 20:27:12 UTC; 2s ago
+    Process: 7531 ExecStartPre=/bin/bash -c pkill -f "Xvfb :99" || true (code=killed, signal=TERM)
+    Process: 7533 ExecStopPost=/bin/bash -c pkill -f "Xvfb :99" || true (code=killed, signal=TERM)
+        CPU: 35ms
+root@client1:~# exit
+logout
+obtv1@client1:~/signage$ systemctl status signage-client.service
+● signage-client.service - Digital Signage Client
+     Loaded: loaded (/etc/systemd/system/signage-client.service; enabled; preset: enabled)
+     Active: activating (auto-restart) (Result: signal) since Tue 2025-07-08 20:27:23 UTC; 1s ago
+    Process: 7539 ExecStartPre=/bin/bash -c pkill -f "Xvfb :99" || true (code=killed, signal=TERM)
+    Process: 7542 ExecStopPost=/bin/bash -c pkill -f "Xvfb :99" || true (code=killed, signal=TERM)
+        CPU: 40ms

@@ -777,6 +777,21 @@ X-GNOME-Autostart-enabled=true
         # Setup autologin and display access first
         self.setup_display_access(username)
         
+        # Create Xvfb start script
+        xvfb_script = f"""#!/bin/bash
+# Kill existing Xvfb processes
+pkill -f "Xvfb :99" 2>/dev/null || true
+sleep 1
+# Start Xvfb in background
+Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX &
+sleep 2
+"""
+        
+        with open(f'{self.setup_dir}/start_xvfb.sh', 'w') as f:
+            f.write(xvfb_script)
+        
+        subprocess.run(['chmod', '+x', f'{self.setup_dir}/start_xvfb.sh'], check=True)
+        
         service_content = f"""[Unit]
 Description=Digital Signage Client
 After=multi-user.target
@@ -792,11 +807,9 @@ Environment=USER={username}
 Environment=PULSE_RUNTIME_PATH=/home/{username}/.pulse
 WorkingDirectory={self.setup_dir}
 EnvironmentFile={self.config_file}
-ExecStartPre=/bin/bash -c 'pkill -f "Xvfb :99" || true'
-ExecStartPre=/bin/bash -c 'Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX &'
-ExecStartPre=/bin/sleep 5
+ExecStartPre={self.setup_dir}/start_xvfb.sh
 ExecStart=/usr/bin/python3 {self.client_script}
-ExecStopPost=/bin/bash -c 'pkill -f "Xvfb :99" || true'
+ExecStopPost=-/bin/bash -c 'pkill -f "Xvfb :99" || true'
 Restart=always
 RestartSec=10
 StandardOutput=journal
