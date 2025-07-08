@@ -10,7 +10,7 @@ def test_server_connection():
     try:
         # Test device checkin
         result = subprocess.run([
-            'curl', '-s', 'https://display.obtv.io/api/device/t-zyw3/checkin', '-X', 'POST'
+            'curl', '-s', 'https://display.obtv.io/api/devices/t-zyw3/checkin', '-X', 'POST'
         ], capture_output=True, text=True, timeout=10)
         
         if result.returncode == 0:
@@ -20,7 +20,7 @@ def test_server_connection():
             
         # Test playlist fetch
         result = subprocess.run([
-            'curl', '-s', 'https://display.obtv.io/api/device/t-zyw3/playlist'
+            'curl', '-s', 'https://display.obtv.io/api/devices/t-zyw3/playlist'
         ], capture_output=True, text=True, timeout=10)
         
         if result.returncode == 0:
