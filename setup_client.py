@@ -211,21 +211,23 @@ class SignageSetup:
         # Check if this is Ubuntu Server (no desktop environment)
         is_server = not os.path.exists('/usr/bin/gnome-session') and not os.path.exists('/usr/bin/startx')
         
-        # Install minimal display components for Ubuntu Server - focus on VLC essentials
+        # Install display components for Ubuntu Server - focus on direct hardware output
         if is_server and has_sudo:
             print("   Detected Ubuntu Server - installing display components...")
-            print("   ⚠️  Installing essential packages for VLC display...")
+            print("   ⚠️  Installing packages for direct display output...")
             
             # Set non-interactive mode to prevent prompts
             env = os.environ.copy()
             env['DEBIAN_FRONTEND'] = 'noninteractive'
             
-            # Install only essential packages for VLC to work
+            # Install packages for direct hardware rendering (DRM/KMS)
             essential_packages = [
-                'xvfb',          # Virtual framebuffer for headless X11
-                'x11-utils',     # Basic X11 utilities
+                'libdrm2',       # Direct Rendering Manager
+                'libdrm-dev',    # DRM development headers
+                'mesa-utils',    # OpenGL utilities
                 'pulseaudio',    # Audio system
-                'alsa-utils'     # Audio drivers
+                'alsa-utils',    # Audio drivers
+                'fbset'          # Framebuffer utilities
             ]
             
             for package in essential_packages:
@@ -245,7 +247,7 @@ class SignageSetup:
                 except Exception as e:
                     print(f"   ⚠️  Error installing {package}: {e}")
             
-            print("   Essential display components installed!")
+            print("   Display components installed!")
         
         # Install media players based on platform
         is_raspberry_pi = self.detect_raspberry_pi()
@@ -777,20 +779,40 @@ X-GNOME-Autostart-enabled=true
         # Setup autologin and display access first
         self.setup_display_access(username)
         
-        # Create Xvfb start script
-        xvfb_script = f"""#!/bin/bash
-# Kill existing Xvfb processes
-pkill -f "Xvfb :99" 2>/dev/null || true
-sleep 1
-# Start Xvfb in background with minimal keyboard warnings
-Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX -nolisten tcp -dpi 96 > /dev/null 2>&1 &
-sleep 2
+        # Create display setup script for direct hardware output
+        display_script = f"""#!/bin/bash
+# Setup direct display output for digital signage
+
+# Check for display hardware
+if [ -e /dev/fb0 ]; then
+    echo "Framebuffer device detected: /dev/fb0"
+elif [ -d /dev/dri ]; then
+    echo "DRM devices detected in /dev/dri"
+else
+    echo "No display hardware detected"
+fi
+
+# Configure VLC for DRM output
+mkdir -p {self.setup_dir}/.config/vlc
+cat > {self.setup_dir}/.config/vlc/vlcrc << 'EOF'
+[dummy]
+intf=dummy
+
+[core]
+vout=drm
+aout=pulse
+EOF
+
+# Set permissions
+chown -R {self.target_user or 'obtv1'}:{self.target_user or 'obtv1'} {self.setup_dir}/.config
+
+echo "Display setup complete"
 """
         
-        with open(f'{self.setup_dir}/start_xvfb.sh', 'w') as f:
-            f.write(xvfb_script)
+        with open(f'{self.setup_dir}/setup_display.sh', 'w') as f:
+            f.write(display_script)
         
-        subprocess.run(['chmod', '+x', f'{self.setup_dir}/start_xvfb.sh'], check=True)
+        subprocess.run(['chmod', '+x', f'{self.setup_dir}/setup_display.sh'], check=True)
         
         service_content = f"""[Unit]
 Description=Digital Signage Client
@@ -801,15 +823,13 @@ Wants=multi-user.target
 Type=simple
 User={username}
 Group={username}
-Environment=DISPLAY=:99
 Environment=HOME=/home/{username}
 Environment=USER={username}
 Environment=PULSE_RUNTIME_PATH=/home/{username}/.pulse
 WorkingDirectory={self.setup_dir}
 EnvironmentFile={self.config_file}
-ExecStartPre={self.setup_dir}/start_xvfb.sh
+ExecStartPre={self.setup_dir}/setup_display.sh
 ExecStart=/usr/bin/python3 {self.client_script}
-ExecStopPost=-/bin/bash -c 'pkill -f "Xvfb :99" || true'
 Restart=always
 RestartSec=10
 StandardOutput=journal

@@ -187,27 +187,15 @@ class SignageClient:
             # Setup display environment for GUI applications
             env = os.environ.copy()
             
-            # For digital signage, we need to output to actual display hardware
-            # Try to use the framebuffer directly for headless systems
-            if os.path.exists('/dev/fb0'):
-                # Use framebuffer for direct hardware output
-                env['DISPLAY'] = ':0'
-                # Start minimal X server on framebuffer
-                subprocess.Popen([
-                    'sudo', 'X', ':0', '-config', '/dev/null', '-nolisten', 'tcp', 
-                    '-noreset', '+extension', 'GLX', '+extension', 'RANDR', '+extension', 'RENDER'
-                ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                time.sleep(3)
-            elif os.path.exists('/tmp/.X11-unix/X0'):
-                env['DISPLAY'] = ':0'
+            # For digital signage, use direct hardware output (no X server needed for VLC DRM)
+            # VLC with DRM output bypasses X server entirely
+            if os.path.exists('/dev/fb0') or os.path.exists('/dev/dri'):
+                self.logger.info("Using direct hardware output (DRM)")
+                # No DISPLAY variable needed for DRM output
+                env.pop('DISPLAY', None)
             else:
-                # Fallback to virtual framebuffer (won't show on screen)
-                self.logger.warning("No physical display found, using virtual framebuffer")
-                subprocess.Popen([
-                    'Xvfb', ':99', '-screen', '0', '1920x1080x24', '-ac', '+extension', 'GLX'
-                ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                time.sleep(2)
-                env['DISPLAY'] = ':99'
+                self.logger.warning("No display hardware detected - video may not be visible")
+                env.pop('DISPLAY', None)
             
             # Set up other environment variables
             user_home = os.path.expanduser('~')
