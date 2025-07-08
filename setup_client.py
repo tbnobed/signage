@@ -200,24 +200,26 @@ class SignageSetup:
         # Check if this is Ubuntu Server (no desktop environment)
         is_server = not os.path.exists('/usr/bin/gnome-session') and not os.path.exists('/usr/bin/startx')
         
-        # Install desktop environment for Ubuntu Server
+        # Install minimal X11 components for Ubuntu Server (lighter than full desktop)
         if is_server and has_sudo:
-            print("   Detected Ubuntu Server - installing desktop environment...")
-            print("   ⚠️  This may take several minutes, please be patient...")
+            print("   Detected Ubuntu Server - installing minimal X11 environment...")
+            print("   ⚠️  This may take a few minutes, please be patient...")
             
             # Set non-interactive mode to prevent prompts
             env = os.environ.copy()
             env['DEBIAN_FRONTEND'] = 'noninteractive'
             
-            desktop_packages = [
-                'ubuntu-desktop-minimal',
-                'gdm3',
-                'xinit', 
+            # Install minimal X11 components instead of full desktop
+            x11_packages = [
                 'xorg',
-                'x11-xserver-utils'
+                'xinit', 
+                'x11-xserver-utils',
+                'lightdm',
+                'openbox',
+                'xterm'
             ]
             
-            for package in desktop_packages:
+            for package in x11_packages:
                 print(f"   Installing {package}...")
                 try:
                     # Use timeout and show progress with real-time output
@@ -230,11 +232,11 @@ class SignageSetup:
                     start_time = time.time()
                     while process.poll() is None:
                         print(".", end="", flush=True)
-                        time.sleep(5)
-                        # Check for timeout (10 minutes)
-                        if time.time() - start_time > 600:
+                        time.sleep(3)
+                        # Check for timeout (5 minutes for smaller packages)
+                        if time.time() - start_time > 300:
                             process.terminate()
-                            print(f"\n   ⏰ {package} installation timed out (10 minutes)")
+                            print(f"\n   ⏰ {package} installation timed out (5 minutes)")
                             break
                     
                     if process.returncode == 0:
@@ -246,7 +248,7 @@ class SignageSetup:
                     print(f"\n   ⚠️  Error installing {package}: {e}")
                     print("   Continuing with next package...")
             
-            print("   Desktop environment installation complete!")
+            print("   Minimal X11 environment installation complete!")
         
         # Install media players based on platform
         is_raspberry_pi = self.detect_raspberry_pi()
@@ -630,30 +632,22 @@ CHECK_INTERVAL={self.check_interval}
         print("   📺 Setting up display access...")
         
         try:
-            # Setup autologin via GDM3 with X11 instead of Wayland
-            gdm_config = f"""[daemon]
-AutomaticLoginEnable=True
-AutomaticLogin={username}
-WaylandEnable=false
-
-[security]
-
-[xdmcp]
-
-[chooser]
-
-[debug]
+            # Setup autologin via LightDM (more reliable for headless systems)
+            lightdm_config = f"""[Seat:*]
+autologin-user={username}
+autologin-user-timeout=0
+user-session=openbox
 """
             
-            # Ensure gdm3 directory exists and write config
-            subprocess.run(['sudo', 'mkdir', '-p', '/etc/gdm3'], check=False)
+            # Ensure lightdm directory exists and write config
+            subprocess.run(['sudo', 'mkdir', '-p', '/etc/lightdm'], check=False)
             
-            process = subprocess.Popen(['sudo', 'tee', '/etc/gdm3/custom.conf'], 
+            process = subprocess.Popen(['sudo', 'tee', '/etc/lightdm/lightdm.conf'], 
                                      stdin=subprocess.PIPE, 
                                      stdout=subprocess.PIPE, 
                                      stderr=subprocess.PIPE,
                                      text=True)
-            stdout, stderr = process.communicate(input=gdm_config)
+            stdout, stderr = process.communicate(input=lightdm_config)
             
             # For Ubuntu 24.04, also configure systemd auto-login
             systemd_override_dir = "/etc/systemd/system/getty@tty1.service.d"
