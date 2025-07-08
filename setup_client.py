@@ -174,26 +174,37 @@ class SignageSetup:
         """Install dependencies using apt (Debian/Ubuntu)"""
         print("   Using apt package manager...")
         
-        # Update package list
+        # Update package list with better error handling
         if has_sudo:
             print("   Updating package list...")
             try:
-                subprocess.run(['sudo', 'apt', 'update'], check=True, capture_output=True)
-                print("   ✅ Package list updated")
-            except subprocess.CalledProcessError:
-                print("   ⚠️  Failed to update package list")
+                result = subprocess.run(['sudo', 'apt', 'update'], 
+                                      capture_output=True, text=True, timeout=60)
+                if result.returncode == 0:
+                    print("   ✅ Package list updated")
+                else:
+                    print(f"   ⚠️  Package list update had warnings: {result.stderr[:100]}")
+            except subprocess.TimeoutExpired:
+                print("   ⚠️  Package list update timed out")
+            except subprocess.CalledProcessError as e:
+                print(f"   ⚠️  Failed to update package list: {e}")
         
-        # Install essential Python packages
+        # Install essential Python packages with better error handling
         essential_packages = ['python3-pip', 'python3-requests', 'python3-setuptools', 'python3-dev']
         
         if has_sudo:
             for package in essential_packages:
                 try:
-                    subprocess.run(['sudo', 'apt', 'install', '-y', package], 
-                                 check=True, capture_output=True)
-                    print(f"   ✅ {package} installed")
-                except subprocess.CalledProcessError:
-                    print(f"   ⚠️  Failed to install {package}")
+                    result = subprocess.run(['sudo', 'apt', 'install', '-y', package], 
+                                         capture_output=True, text=True, timeout=120)
+                    if result.returncode == 0:
+                        print(f"   ✅ {package} installed")
+                    else:
+                        print(f"   ⚠️  Failed to install {package}: {result.stderr[:100]}")
+                except subprocess.TimeoutExpired:
+                    print(f"   ⏰ {package} installation timed out")
+                except subprocess.CalledProcessError as e:
+                    print(f"   ⚠️  Failed to install {package}: {e}")
         else:
             print("   ❌ Cannot install Python packages without sudo")
         
