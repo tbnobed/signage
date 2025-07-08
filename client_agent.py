@@ -26,7 +26,7 @@ LOG_FILE = os.path.expanduser('~/signage_agent.log')
 # Media player commands
 PLAYER_COMMANDS = {
     'omxplayer': ['omxplayer', '-o', 'hdmi', '--loop', '--no-osd'],
-    'vlc': ['vlc', '--fullscreen', '--no-osd', '--loop'],
+    'vlc': ['vlc', '--fullscreen', '--no-osd', '--loop', '--intf', 'dummy', '--no-video-title-show'],
     'ffplay': ['ffplay', '-fs', '-loop', '0', '-loglevel', 'quiet']
 }
 
