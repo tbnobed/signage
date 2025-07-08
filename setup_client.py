@@ -782,8 +782,8 @@ X-GNOME-Autostart-enabled=true
 # Kill existing Xvfb processes
 pkill -f "Xvfb :99" 2>/dev/null || true
 sleep 1
-# Start Xvfb in background
-Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX &
+# Start Xvfb in background with proper keyboard config
+Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX -nolisten tcp -dpi 96 -noreset -kb &
 sleep 2
 """
         

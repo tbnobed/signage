@@ -81,10 +81,23 @@ class SignageClient:
                 if items and self.current_media_index < len(items):
                     current_media = items[self.current_media_index]['original_filename']
             
+            # Get current IP address for debugging
+            try:
+                import socket
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                s.connect(("8.8.8.8", 80))
+                ip_address = s.getsockname()[0]
+                s.close()
+            except:
+                ip_address = "unknown"
+            
             data = {
                 'current_media': current_media,
+                'ip_address': ip_address,
                 'timestamp': datetime.now().isoformat()
             }
+            
+            self.logger.info(f"Sending checkin to {SERVER_URL}/api/devices/{DEVICE_ID}/checkin")
             
             response = requests.post(
                 f"{SERVER_URL}/api/devices/{DEVICE_ID}/checkin",
@@ -194,7 +207,8 @@ class SignageClient:
                 # Start Xvfb for headless operation
                 self.logger.info("Starting virtual framebuffer for headless display")
                 xvfb_process = subprocess.Popen([
-                    'Xvfb', ':99', '-screen', '0', '1920x1080x24', '-ac', '+extension', 'GLX'
+                    'Xvfb', ':99', '-screen', '0', '1920x1080x24', '-ac', '+extension', 'GLX', 
+                    '-nolisten', 'tcp', '-dpi', '96', '-noreset', '-kb'
                 ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 time.sleep(2)  # Give Xvfb time to start
                 env['DISPLAY'] = ':99'

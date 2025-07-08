@@ -157,9 +157,11 @@ async function refreshDeviceStatus() {
         if (response.ok) {
             const data = await response.json();
             updateDeviceCards(data);
+        } else {
+            console.error('Failed to refresh device status - HTTP error:', response.status, response.statusText);
         }
     } catch (error) {
-        console.error('Failed to refresh device status:', error);
+        console.error('Failed to refresh device status - Network error:', error.message, error);
     }
 }
 
