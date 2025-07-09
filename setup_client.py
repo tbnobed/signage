@@ -798,14 +798,14 @@ else
     echo "No display hardware detected"
 fi
 
-# Configure VLC for KMS output (direct hardware rendering)
+# Configure VLC for framebuffer output (confirmed working)
 mkdir -p {self.setup_dir}/.config/vlc
 cat > {self.setup_dir}/.config/vlc/vlcrc << 'EOF'
 [dummy]
 intf=dummy
 
 [core]
-vout=kms
+vout=fb
 aout=pulse
 EOF
 
