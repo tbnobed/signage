@@ -351,8 +351,8 @@ class SignageClient:
                     self.fetch_playlist()
                     last_checkin = datetime.now()
                 
-                # Rapid playlist status checks for instant updates
-                elif datetime.now() - last_rapid_check >= timedelta(seconds=RAPID_CHECK_INTERVAL):
+                # Rapid playlist status checks for instant updates (independent of checkin)
+                if datetime.now() - last_rapid_check >= timedelta(seconds=RAPID_CHECK_INTERVAL):
                     self.check_playlist_status()
                     last_rapid_check = datetime.now()
                 
