@@ -16,6 +16,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import signal
 import threading
+from threading import Lock
 
 # Configuration
 SERVER_URL = os.environ.get('SIGNAGE_SERVER_URL', 'http://localhost:5000')
@@ -44,6 +45,10 @@ class SignageClient:
         self.last_media_change = datetime.now()
         self.last_playlist_check = None  # Track when we last got playlist timestamp
         
+        # Thread safety for concurrent access
+        self._playlist_lock = Lock()
+        self._stop_event = threading.Event()
+        
         # Create media directory
         Path(MEDIA_DIR).mkdir(exist_ok=True)
         
@@ -51,6 +56,11 @@ class SignageClient:
         self.logger.info(f"Server URL: {SERVER_URL}")
         self.logger.info(f"Media player: {self.media_player}")
         self.logger.info(f"Rapid playlist checks every {RAPID_CHECK_INTERVAL} seconds for instant updates")
+        
+        # Start background thread for rapid playlist checks
+        self._rapid_check_thread = threading.Thread(target=self._rapid_check_loop, daemon=True)
+        self._rapid_check_thread.start()
+        self.logger.info("Background rapid playlist checking started")
 
     def setup_logging(self):
         logging.basicConfig(
@@ -122,6 +132,15 @@ class SignageClient:
         except Exception as e:
             self.logger.error(f"Failed to send log to server: {e}")
 
+    def _rapid_check_loop(self):
+        """Background thread that runs rapid playlist checks"""
+        while not self._stop_event.wait(RAPID_CHECK_INTERVAL):
+            try:
+                self.logger.info("Running rapid playlist check (background thread)...")
+                self.check_playlist_status()
+            except Exception as e:
+                self.logger.error(f"Error in rapid check loop: {e}")
+
     def check_playlist_status(self):
         """Quick check if playlist has been updated"""
         try:
@@ -136,15 +155,19 @@ class SignageClient:
                 playlist_id = data.get('playlist_id')
                 last_updated = data.get('last_updated')
                 
-                self.logger.debug(f"Current playlist: {self.current_playlist.get('id') if self.current_playlist else None}, "
+                with self._playlist_lock:
+                    current_id = self.current_playlist.get('id') if self.current_playlist else None
+                    current_timestamp = self.current_playlist.get('last_updated') if self.current_playlist else None
+                
+                self.logger.debug(f"Current playlist: {current_id}, "
                                 f"Server playlist: {playlist_id}, "
-                                f"Current timestamp: {self.current_playlist.get('last_updated') if self.current_playlist else None}, "
+                                f"Current timestamp: {current_timestamp}, "
                                 f"Server timestamp: {last_updated}")
                 
                 # Check if we need to fetch full playlist
                 if (not self.current_playlist or 
-                    self.current_playlist.get('id') != playlist_id or
-                    self.current_playlist.get('last_updated') != last_updated):
+                    current_id != playlist_id or
+                    current_timestamp != last_updated):
                     
                     self.logger.info(f"Playlist update detected - stopping current media and fetching new playlist")
                     self.stop_current_media()  # Stop immediately to start new content
@@ -172,8 +195,9 @@ class SignageClient:
                 if playlist != self.current_playlist:
                     self.logger.info(f"New playlist received: {playlist['name'] if playlist else 'None'}")
                     self.stop_current_media()  # Stop current media immediately
-                    self.current_playlist = playlist
-                    self.current_media_index = 0
+                    with self._playlist_lock:
+                        self.current_playlist = playlist
+                        self.current_media_index = 0
                     self.logger.info(f"Starting immediate playback of new playlist")
                     return True
                     
@@ -272,15 +296,16 @@ class SignageClient:
 
     def stop_current_media(self):
         """Stop currently playing media"""
-        if self.current_process and self.current_process.poll() is None:
-            try:
-                self.current_process.terminate()
-                self.current_process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                self.current_process.kill()
-                self.current_process.wait()
-            except Exception as e:
-                self.logger.error(f"Error stopping media: {e}")
+        with self._playlist_lock:
+            if self.current_process and self.current_process.poll() is None:
+                try:
+                    self.current_process.terminate()
+                    self.current_process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    self.current_process.kill()
+                    self.current_process.wait()
+                except Exception as e:
+                    self.logger.error(f"Error stopping media: {e}")
 
     def play_playlist(self):
         """Play current playlist"""
@@ -337,6 +362,7 @@ class SignageClient:
         """Handle shutdown signals"""
         self.logger.info("Shutdown signal received")
         self.running = False
+        self._stop_event.set()  # Stop the background thread
         self.stop_current_media()
 
     def run(self):
@@ -346,7 +372,6 @@ class SignageClient:
         signal.signal(signal.SIGINT, self.signal_handler)
         
         last_checkin = datetime.now() - timedelta(seconds=CHECK_INTERVAL)
-        last_rapid_check = datetime.now() - timedelta(seconds=RAPID_CHECK_INTERVAL)
         last_cleanup = datetime.now()
         
         self.send_log('info', 'Signage client started')
@@ -359,11 +384,7 @@ class SignageClient:
                     self.fetch_playlist()
                     last_checkin = datetime.now()
                 
-                # Rapid playlist status checks for instant updates (independent of checkin)
-                if datetime.now() - last_rapid_check >= timedelta(seconds=RAPID_CHECK_INTERVAL):
-                    self.logger.debug(f"Running rapid playlist check...")
-                    self.check_playlist_status()
-                    last_rapid_check = datetime.now()
+                # Rapid checks now run in background thread, no longer needed here
                 
                 # Play current playlist
                 self.play_playlist()
