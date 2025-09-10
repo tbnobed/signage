@@ -322,33 +322,16 @@ class SignageClient:
             return False
             
         try:
-            # Create VLC playlist file (.xspf format for better reliability)
-            playlist_file = os.path.join(MEDIA_DIR, 'current_playlist.xspf')
+            # Create VLC playlist file (.m3u format for better image support)
+            playlist_file = os.path.join(MEDIA_DIR, 'current_playlist.m3u')
             
-            # Generate XML playlist content
-            playlist_content = '''<?xml version="1.0" encoding="UTF-8"?>
-<playlist xmlns="http://xspf.org/ns/0/" version="1">
-    <title>Digital Signage Playlist</title>
-    <trackList>
-'''
-            
-            for i, media_path in enumerate(media_paths):
-                # Create proper file URI using pathlib
-                file_uri = Path(media_path).resolve().as_uri()
-                # Escape XML special characters
-                escaped_uri = file_uri.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-                playlist_content += f'''        <track>
-            <location>{escaped_uri}</location>
-            <title>Media {i+1}</title>
-        </track>
-'''
-            
-            playlist_content += '''    </trackList>
-</playlist>'''
-            
-            # Write playlist file
+            # Generate M3U playlist content (simpler and more reliable than XSPF)
             with open(playlist_file, 'w', encoding='utf-8') as f:
-                f.write(playlist_content)
+                f.write('#EXTM3U\n')
+                for i, media_path in enumerate(media_paths):
+                    abs_path = os.path.abspath(media_path)
+                    f.write(f'#EXTINF:-1,Media {i+1}\n')
+                    f.write(f'{abs_path}\n')
             
             self.logger.info(f"Created VLC playlist with {len(media_paths)} items: {playlist_file}")
             
@@ -359,17 +342,18 @@ class SignageClient:
             if SCREEN_INDEX > 0:
                 command.extend(['--qt-fullscreen-screennumber', str(SCREEN_INDEX)])
             
-            # Handle loop setting properly (avoid duplicating --loop from PLAYER_COMMANDS)
+            # Remove default --loop to control explicitly
             if '--loop' in command:
-                command.remove('--loop')  # Remove default to control explicitly
+                command.remove('--loop')
             
-            if loop:
-                command.append('--loop')  # Loop the entire playlist
-            else:
-                command.append('--no-loop')
-            
-            # Add image duration for proper image display (10 seconds default)
-            command.extend(['--image-duration', '10'])  # Images show for 10 seconds each
+            # Force infinite looping for images and videos
+            command.extend([
+                '--repeat',           # Repeat the playlist infinitely
+                '--image-duration', '10',  # Images show for 10 seconds each
+                '--no-random',        # Play in order
+                '--no-qt-error-dialogs',  # No error popups
+                '--intf', 'dummy',    # No interface (more stable)
+            ])
             
             # Add the playlist file
             command.append(playlist_file)
@@ -434,9 +418,8 @@ class SignageClient:
         
         items = self.current_playlist['items']
         
-        # Use continuous playlist approach for ALL playlists (single or multi-item)
-        # This prevents VLC from restarting between images/videos AND handles image looping properly
-        self.logger.info(f"Playlist with {len(items)} items - creating continuous VLC playlist to prevent restarts")
+        # FIXED: Use continuous playlist for ALL playlists to prevent VLC restarts
+        self.logger.info(f"FIXED VERSION: Playlist with {len(items)} items - creating continuous VLC playlist to prevent restarts")
         
         # Download all media files first
         media_paths = []
