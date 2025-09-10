@@ -29,16 +29,21 @@ with app.app_context():
     # Add new columns for reboot functionality if they don't exist
     try:
         # Check if pending_command column exists
-        check_sql = '''SELECT column_name FROM information_schema.columns 
-                       WHERE table_name=%s AND column_name=%s'''
-        result = db.session.execute(text(check_sql), ('devices', 'pending_command')).fetchone()
+        check_query = text('''
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'devices' AND column_name = 'pending_command'
+        ''')
+        result = db.session.execute(check_query).fetchone()
         
         if not result:
             print('Adding pending_command and command_timestamp columns...')
-            alter_sql = '''ALTER TABLE devices 
-                          ADD COLUMN pending_command VARCHAR(50), 
-                          ADD COLUMN command_timestamp TIMESTAMP'''
-            db.session.execute(text(alter_sql))
+            alter_query = text('''
+                ALTER TABLE devices 
+                ADD COLUMN pending_command VARCHAR(50), 
+                ADD COLUMN command_timestamp TIMESTAMP
+            ''')
+            db.session.execute(alter_query)
             db.session.commit()
             print('Schema migration completed successfully')
         else:

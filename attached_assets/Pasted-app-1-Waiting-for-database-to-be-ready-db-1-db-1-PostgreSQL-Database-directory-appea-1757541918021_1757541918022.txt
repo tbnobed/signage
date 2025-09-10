@@ -1,0 +1,832 @@
+app-1  | Waiting for database to be ready...
+db-1   |
+db-1   | PostgreSQL Database directory appears to contain a database; Skipping initialization
+db-1   |
+db-1   | 2025-09-10 22:02:58.343 UTC [1] LOG:  starting PostgreSQL 15.13 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+db-1   | 2025-09-10 22:02:58.344 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+db-1   | 2025-09-10 22:02:58.344 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+db-1   | 2025-09-10 22:02:58.353 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+app-1  | db:5432 - accepting connections
+app-1  | Database is ready!
+app-1  | Setting up upload directories...
+app-1  | Initializing database tables...
+db-1   | 2025-09-10 22:02:58.368 UTC [30] LOG:  database system was shut down at 2025-09-10 22:00:01 UTC
+db-1   | 2025-09-10 22:02:58.389 UTC [1] LOG:  database system is ready to accept connections
+app-1  | INFO:root:Database tables created
+app-1  | Database tables created successfully
+app-1  | Schema check/migration info: List argument must consist only of dictionaries
+app-1  | Checking for admin user...
+app-1  | INFO:root:Database tables created
+app-1  | Admin user already exists
+app-1  | Starting application...
+app-1  | [2025-09-10 22:03:11 +0000] [1] [INFO] Starting gunicorn 23.0.0
+app-1  | [2025-09-10 22:03:11 +0000] [1] [INFO] Listening at: http://0.0.0.0:5000 (1)
+app-1  | [2025-09-10 22:03:11 +0000] [1] [INFO] Using worker: sync
+app-1  | [2025-09-10 22:03:11 +0000] [11] [INFO] Booting worker with pid: 11
+app-1  | [2025-09-10 22:03:12 +0000] [12] [INFO] Booting worker with pid: 12
+app-1  | INFO:root:Database tables created
+app-1  | INFO:root:Database tables created
+db-1   | 2025-09-10 22:03:13.808 UTC [45] ERROR:  column devices.pending_command does not exist at character 372
+db-1   | 2025-09-10 22:03:13.808 UTC [45] STATEMENT:  SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+db-1   |        FROM devices
+db-1   |        WHERE devices.device_id = 't-jblj'
+db-1   |         LIMIT 1
+app-1  | ERROR:app:Exception on /api/devices/t-jblj/playlist-status [GET]
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | psycopg2.errors.UndefinedColumn: column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  |
+app-1  | The above exception was the direct cause of the following exception:
+app-1  |
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+app-1  |     response = self.full_dispatch_request()
+app-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+app-1  |     rv = self.handle_user_exception(e)
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+app-1  |     rv = self.dispatch_request()
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+app-1  |     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/app/routes.py", line 317, in get_device_playlist_status
+app-1  |     device = Device.query.filter_by(device_id=device_id).first()
+app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+app-1  |     return self.limit(1)._iter().first()  # type: ignore
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+app-1  |     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+app-1  |                                                   ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+app-1  |     return self._execute_internal(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+app-1  |     result: Result[Any] = compile_state_cls.orm_execute_statement(
+app-1  |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+app-1  |     result = conn.execute(
+app-1  |              ^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+app-1  |     return meth(
+app-1  |            ^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+app-1  |     return connection._execute_clauseelement(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+app-1  |     ret = self._execute_context(
+app-1  |           ^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+app-1  |     return self._exec_single_context(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+app-1  |     self._handle_dbapi_exception(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+app-1  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  | [SQL: SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+app-1  | FROM devices
+app-1  | WHERE devices.device_id = %(device_id_1)s
+app-1  |  LIMIT %(param_1)s]
+app-1  | [parameters: {'device_id_1': 't-jblj', 'param_1': 1}]
+app-1  | (Background on this error at: https://sqlalche.me/e/20/f405)
+db-1   | 2025-09-10 22:03:15.911 UTC [45] ERROR:  column devices.pending_command does not exist at character 372
+db-1   | 2025-09-10 22:03:15.911 UTC [45] STATEMENT:  SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+db-1   |        FROM devices
+db-1   |        WHERE devices.device_id = 't-jblj'
+db-1   |         LIMIT 1
+app-1  | ERROR:app:Exception on /api/devices/t-jblj/playlist-status [GET]
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | psycopg2.errors.UndefinedColumn: column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  |
+app-1  | The above exception was the direct cause of the following exception:
+app-1  |
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+app-1  |     response = self.full_dispatch_request()
+app-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+app-1  |     rv = self.handle_user_exception(e)
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+app-1  |     rv = self.dispatch_request()
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+app-1  |     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/app/routes.py", line 317, in get_device_playlist_status
+app-1  |     device = Device.query.filter_by(device_id=device_id).first()
+app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+app-1  |     return self.limit(1)._iter().first()  # type: ignore
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+app-1  |     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+app-1  |                                                   ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+app-1  |     return self._execute_internal(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+app-1  |     result: Result[Any] = compile_state_cls.orm_execute_statement(
+app-1  |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+app-1  |     result = conn.execute(
+app-1  |              ^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+app-1  |     return meth(
+app-1  |            ^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+app-1  |     return connection._execute_clauseelement(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+app-1  |     ret = self._execute_context(
+app-1  |           ^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+app-1  |     return self._exec_single_context(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+app-1  |     self._handle_dbapi_exception(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+app-1  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  | [SQL: SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+app-1  | FROM devices
+app-1  | WHERE devices.device_id = %(device_id_1)s
+app-1  |  LIMIT %(param_1)s]
+app-1  | [parameters: {'device_id_1': 't-jblj', 'param_1': 1}]
+app-1  | (Background on this error at: https://sqlalche.me/e/20/f405)
+db-1   | 2025-09-10 22:03:18.062 UTC [44] ERROR:  column devices.pending_command does not exist at character 372
+db-1   | 2025-09-10 22:03:18.062 UTC [44] STATEMENT:  SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+db-1   |        FROM devices
+db-1   |        WHERE devices.device_id = 't-jblj'
+db-1   |         LIMIT 1
+app-1  | ERROR:app:Exception on /api/devices/t-jblj/playlist-status [GET]
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | psycopg2.errors.UndefinedColumn: column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  |
+app-1  | The above exception was the direct cause of the following exception:
+app-1  |
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+app-1  |     response = self.full_dispatch_request()
+app-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+app-1  |     rv = self.handle_user_exception(e)
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+app-1  |     rv = self.dispatch_request()
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+app-1  |     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/app/routes.py", line 317, in get_device_playlist_status
+app-1  |     device = Device.query.filter_by(device_id=device_id).first()
+app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+app-1  |     return self.limit(1)._iter().first()  # type: ignore
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+app-1  |     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+app-1  |                                                   ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+app-1  |     return self._execute_internal(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+app-1  |     result: Result[Any] = compile_state_cls.orm_execute_statement(
+app-1  |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+app-1  |     result = conn.execute(
+app-1  |              ^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+app-1  |     return meth(
+app-1  |            ^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+app-1  |     return connection._execute_clauseelement(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+app-1  |     ret = self._execute_context(
+app-1  |           ^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+app-1  |     return self._exec_single_context(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+app-1  |     self._handle_dbapi_exception(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+app-1  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  | [SQL: SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+app-1  | FROM devices
+app-1  | WHERE devices.device_id = %(device_id_1)s
+app-1  |  LIMIT %(param_1)s]
+app-1  | [parameters: {'device_id_1': 't-jblj', 'param_1': 1}]
+app-1  | (Background on this error at: https://sqlalche.me/e/20/f405)
+db-1   | 2025-09-10 22:03:20.158 UTC [44] ERROR:  column devices.pending_command does not exist at character 372
+db-1   | 2025-09-10 22:03:20.158 UTC [44] STATEMENT:  SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+db-1   |        FROM devices
+db-1   |        WHERE devices.device_id = 't-jblj'
+db-1   |         LIMIT 1
+app-1  | ERROR:app:Exception on /api/devices/t-jblj/playlist-status [GET]
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | psycopg2.errors.UndefinedColumn: column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  |
+app-1  | The above exception was the direct cause of the following exception:
+app-1  |
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+app-1  |     response = self.full_dispatch_request()
+app-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+app-1  |     rv = self.handle_user_exception(e)
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+app-1  |     rv = self.dispatch_request()
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+app-1  |     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/app/routes.py", line 317, in get_device_playlist_status
+app-1  |     device = Device.query.filter_by(device_id=device_id).first()
+app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+app-1  |     return self.limit(1)._iter().first()  # type: ignore
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+app-1  |     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+app-1  |                                                   ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+app-1  |     return self._execute_internal(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+app-1  |     result: Result[Any] = compile_state_cls.orm_execute_statement(
+app-1  |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+app-1  |     result = conn.execute(
+app-1  |              ^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+app-1  |     return meth(
+app-1  |            ^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+app-1  |     return connection._execute_clauseelement(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+app-1  |     ret = self._execute_context(
+app-1  |           ^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+app-1  |     return self._exec_single_context(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+app-1  |     self._handle_dbapi_exception(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+app-1  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  | [SQL: SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+app-1  | FROM devices
+app-1  | WHERE devices.device_id = %(device_id_1)s
+app-1  |  LIMIT %(param_1)s]
+app-1  | [parameters: {'device_id_1': 't-jblj', 'param_1': 1}]
+app-1  | (Background on this error at: https://sqlalche.me/e/20/f405)
+db-1   | 2025-09-10 22:03:22.233 UTC [45] ERROR:  column devices.pending_command does not exist at character 372
+db-1   | 2025-09-10 22:03:22.233 UTC [45] STATEMENT:  SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+db-1   |        FROM devices
+db-1   |        WHERE devices.device_id = 't-jblj'
+db-1   |         LIMIT 1
+app-1  | ERROR:app:Exception on /api/devices/t-jblj/playlist-status [GET]
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | psycopg2.errors.UndefinedColumn: column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  |
+app-1  | The above exception was the direct cause of the following exception:
+app-1  |
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+app-1  |     response = self.full_dispatch_request()
+app-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+app-1  |     rv = self.handle_user_exception(e)
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+app-1  |     rv = self.dispatch_request()
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+app-1  |     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/app/routes.py", line 317, in get_device_playlist_status
+app-1  |     device = Device.query.filter_by(device_id=device_id).first()
+app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+app-1  |     return self.limit(1)._iter().first()  # type: ignore
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+app-1  |     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+app-1  |                                                   ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+app-1  |     return self._execute_internal(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+app-1  |     result: Result[Any] = compile_state_cls.orm_execute_statement(
+app-1  |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+app-1  |     result = conn.execute(
+app-1  |              ^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+app-1  |     return meth(
+app-1  |            ^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+app-1  |     return connection._execute_clauseelement(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+app-1  |     ret = self._execute_context(
+app-1  |           ^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+app-1  |     return self._exec_single_context(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+app-1  |     self._handle_dbapi_exception(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+app-1  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  | [SQL: SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+app-1  | FROM devices
+app-1  | WHERE devices.device_id = %(device_id_1)s
+app-1  |  LIMIT %(param_1)s]
+app-1  | [parameters: {'device_id_1': 't-jblj', 'param_1': 1}]
+app-1  | (Background on this error at: https://sqlalche.me/e/20/f405)
+db-1   | 2025-09-10 22:03:24.307 UTC [45] ERROR:  column devices.pending_command does not exist at character 372
+db-1   | 2025-09-10 22:03:24.307 UTC [45] STATEMENT:  SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+db-1   |        FROM devices
+db-1   |        WHERE devices.device_id = 't-jblj'
+db-1   |         LIMIT 1
+app-1  | ERROR:app:Exception on /api/devices/t-jblj/playlist-status [GET]
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | psycopg2.errors.UndefinedColumn: column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  |
+app-1  | The above exception was the direct cause of the following exception:
+app-1  |
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+app-1  |     response = self.full_dispatch_request()
+app-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+app-1  |     rv = self.handle_user_exception(e)
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+app-1  |     rv = self.dispatch_request()
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+app-1  |     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/app/routes.py", line 317, in get_device_playlist_status
+app-1  |     device = Device.query.filter_by(device_id=device_id).first()
+app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+app-1  |     return self.limit(1)._iter().first()  # type: ignore
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+app-1  |     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+app-1  |                                                   ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+app-1  |     return self._execute_internal(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+app-1  |     result: Result[Any] = compile_state_cls.orm_execute_statement(
+app-1  |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+app-1  |     result = conn.execute(
+app-1  |              ^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+app-1  |     return meth(
+app-1  |            ^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+app-1  |     return connection._execute_clauseelement(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+app-1  |     ret = self._execute_context(
+app-1  |           ^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+app-1  |     return self._exec_single_context(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+app-1  |     self._handle_dbapi_exception(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+app-1  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  | [SQL: SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+app-1  | FROM devices
+app-1  | WHERE devices.device_id = %(device_id_1)s
+app-1  |  LIMIT %(param_1)s]
+app-1  | [parameters: {'device_id_1': 't-jblj', 'param_1': 1}]
+app-1  | (Background on this error at: https://sqlalche.me/e/20/f405)
+db-1   | 2025-09-10 22:03:26.383 UTC [44] ERROR:  column devices.pending_command does not exist at character 372
+db-1   | 2025-09-10 22:03:26.383 UTC [44] STATEMENT:  SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+db-1   |        FROM devices
+db-1   |        WHERE devices.device_id = 't-jblj'
+db-1   |         LIMIT 1
+app-1  | ERROR:app:Exception on /api/devices/t-jblj/playlist-status [GET]
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | psycopg2.errors.UndefinedColumn: column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  |
+app-1  | The above exception was the direct cause of the following exception:
+app-1  |
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+app-1  |     response = self.full_dispatch_request()
+app-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+app-1  |     rv = self.handle_user_exception(e)
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+app-1  |     rv = self.dispatch_request()
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+app-1  |     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/app/routes.py", line 317, in get_device_playlist_status
+app-1  |     device = Device.query.filter_by(device_id=device_id).first()
+app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+app-1  |     return self.limit(1)._iter().first()  # type: ignore
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+app-1  |     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+app-1  |                                                   ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+app-1  |     return self._execute_internal(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+app-1  |     result: Result[Any] = compile_state_cls.orm_execute_statement(
+app-1  |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+app-1  |     result = conn.execute(
+app-1  |              ^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+app-1  |     return meth(
+app-1  |            ^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+app-1  |     return connection._execute_clauseelement(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+app-1  |     ret = self._execute_context(
+app-1  |           ^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+app-1  |     return self._exec_single_context(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+app-1  |     self._handle_dbapi_exception(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+app-1  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  | [SQL: SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+app-1  | FROM devices
+app-1  | WHERE devices.device_id = %(device_id_1)s
+app-1  |  LIMIT %(param_1)s]
+app-1  | [parameters: {'device_id_1': 't-jblj', 'param_1': 1}]
+app-1  | (Background on this error at: https://sqlalche.me/e/20/f405)
+db-1   | 2025-09-10 22:03:28.459 UTC [44] ERROR:  column devices.pending_command does not exist at character 372
+db-1   | 2025-09-10 22:03:28.459 UTC [44] STATEMENT:  SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+db-1   |        FROM devices
+db-1   |        WHERE devices.device_id = 't-jblj'
+db-1   |         LIMIT 1
+app-1  | ERROR:app:Exception on /api/devices/t-jblj/playlist-status [GET]
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | psycopg2.errors.UndefinedColumn: column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  |
+app-1  | The above exception was the direct cause of the following exception:
+app-1  |
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+app-1  |     response = self.full_dispatch_request()
+app-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+app-1  |     rv = self.handle_user_exception(e)
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+app-1  |     rv = self.dispatch_request()
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+app-1  |     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/app/routes.py", line 317, in get_device_playlist_status
+app-1  |     device = Device.query.filter_by(device_id=device_id).first()
+app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+app-1  |     return self.limit(1)._iter().first()  # type: ignore
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+app-1  |     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+app-1  |                                                   ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+app-1  |     return self._execute_internal(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+app-1  |     result: Result[Any] = compile_state_cls.orm_execute_statement(
+app-1  |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+app-1  |     result = conn.execute(
+app-1  |              ^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+app-1  |     return meth(
+app-1  |            ^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+app-1  |     return connection._execute_clauseelement(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+app-1  |     ret = self._execute_context(
+app-1  |           ^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+app-1  |     return self._exec_single_context(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+app-1  |     self._handle_dbapi_exception(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+app-1  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  | [SQL: SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+app-1  | FROM devices
+app-1  | WHERE devices.device_id = %(device_id_1)s
+app-1  |  LIMIT %(param_1)s]
+app-1  | [parameters: {'device_id_1': 't-jblj', 'param_1': 1}]
+app-1  | (Background on this error at: https://sqlalche.me/e/20/f405)
+db-1   | 2025-09-10 22:03:30.535 UTC [45] ERROR:  column devices.pending_command does not exist at character 372
+db-1   | 2025-09-10 22:03:30.535 UTC [45] STATEMENT:  SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+db-1   |        FROM devices
+db-1   |        WHERE devices.device_id = 't-jblj'
+db-1   |         LIMIT 1
+app-1  | ERROR:app:Exception on /api/devices/t-jblj/playlist-status [GET]
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | psycopg2.errors.UndefinedColumn: column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  |
+app-1  | The above exception was the direct cause of the following exception:
+app-1  |
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+app-1  |     response = self.full_dispatch_request()
+app-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+app-1  |     rv = self.handle_user_exception(e)
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+app-1  |     rv = self.dispatch_request()
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+app-1  |     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/app/routes.py", line 317, in get_device_playlist_status
+app-1  |     device = Device.query.filter_by(device_id=device_id).first()
+app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+app-1  |     return self.limit(1)._iter().first()  # type: ignore
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+app-1  |     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+app-1  |                                                   ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+app-1  |     return self._execute_internal(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+app-1  |     result: Result[Any] = compile_state_cls.orm_execute_statement(
+app-1  |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+app-1  |     result = conn.execute(
+app-1  |              ^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+app-1  |     return meth(
+app-1  |            ^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+app-1  |     return connection._execute_clauseelement(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+app-1  |     ret = self._execute_context(
+app-1  |           ^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+app-1  |     return self._exec_single_context(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+app-1  |     self._handle_dbapi_exception(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+app-1  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  | [SQL: SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+app-1  | FROM devices
+app-1  | WHERE devices.device_id = %(device_id_1)s
+app-1  |  LIMIT %(param_1)s]
+app-1  | [parameters: {'device_id_1': 't-jblj', 'param_1': 1}]
+app-1  | (Background on this error at: https://sqlalche.me/e/20/f405)
+db-1   | 2025-09-10 22:03:32.610 UTC [45] ERROR:  column devices.pending_command does not exist at character 372
+db-1   | 2025-09-10 22:03:32.610 UTC [45] STATEMENT:  SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+db-1   |        FROM devices
+db-1   |        WHERE devices.device_id = 't-jblj'
+db-1   |         LIMIT 1
+app-1  | ERROR:app:Exception on /api/devices/t-jblj/playlist-status [GET]
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | psycopg2.errors.UndefinedColumn: column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  |
+app-1  | The above exception was the direct cause of the following exception:
+app-1  |
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+app-1  |     response = self.full_dispatch_request()
+app-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+app-1  |     rv = self.handle_user_exception(e)
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+app-1  |     rv = self.dispatch_request()
+app-1  |          ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+app-1  |     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/app/routes.py", line 317, in get_device_playlist_status
+app-1  |     device = Device.query.filter_by(device_id=device_id).first()
+app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+app-1  |     return self.limit(1)._iter().first()  # type: ignore
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+app-1  |     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+app-1  |                                                   ^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+app-1  |     return self._execute_internal(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+app-1  |     result: Result[Any] = compile_state_cls.orm_execute_statement(
+app-1  |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+app-1  |     result = conn.execute(
+app-1  |              ^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+app-1  |     return meth(
+app-1  |            ^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+app-1  |     return connection._execute_clauseelement(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+app-1  |     ret = self._execute_context(
+app-1  |           ^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+app-1  |     return self._exec_single_context(
+app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+app-1  |     self._handle_dbapi_exception(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+app-1  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
+app-1  |
+app-1  | [SQL: SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+app-1  | FROM devices
+app-1  | WHERE devices.device_id = %(device_id_1)s
+app-1  |  LIMIT %(param_1)s]
+app-1  | [parameters: {'device_id_1': 't-jblj', 'param_1': 1}]
+app-1  | (Background on this error at: https://sqlalche.me/e/20/f405)
+db-1   | 2025-09-10 22:03:34.684 UTC [45] ERROR:  column devices.pending_command does not exist at character 372
+db-1   | 2025-09-10 22:03:34.684 UTC [45] STATEMENT:  SELECT devices.id AS devices_id, devices.name AS devices_name, devices.device_id AS devices_device_id, devices.location AS devices_location, devices.status AS devices_status, devices.last_checkin AS devices_last_checkin, devices.current_playlist_id AS devices_current_playlist_id, devices.current_media AS devices_current_media, devices.ip_address AS devices_ip_address, devices.pending_command AS devices_pending_command, devices.command_timestamp AS devices_command_timestamp, devices.created_at AS devices_created_at
+db-1   |        FROM devices
+db-1   |        WHERE devices.device_id = 't-jblj'
+db-1   |         LIMIT 1
+app-1  | ERROR:app:Exception on /api/devices/t-jblj/playlist-status [GET]
+app-1  | Traceback (most recent call last):
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+app-1  |     self.dialect.do_execute(
+app-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+app-1  |     cursor.execute(statement, parameters)
+app-1  | psycopg2.errors.UndefinedColumn: column devices.pending_command does not exist
+app-1  | LINE 1: ..._media, devices.ip_address AS devices_ip_address, devices.pe...
+app-1  |                                                              ^
