@@ -149,7 +149,7 @@ class SignageClient:
                 self.logger.error(f"Error in rapid check loop: {e}")
 
     def check_playlist_status(self):
-        """Quick check if playlist has been updated"""
+        """Quick check if playlist has been updated AND check for urgent commands"""
         try:
             self.logger.debug(f"Checking playlist status...")
             response = requests.get(
@@ -161,6 +161,13 @@ class SignageClient:
                 data = response.json()
                 playlist_id = data.get('playlist_id')
                 last_updated = data.get('last_updated')
+                
+                # Check for urgent commands (like reboot) during rapid checks
+                if 'command' in data:
+                    command = data.get('command')
+                    self.logger.info(f"Received urgent command from server: {command}")
+                    self.execute_command(command)
+                    return True  # Command executed, playlist check not needed
                 
                 with self._playlist_lock:
                     current_id = self.current_playlist.get('id') if self.current_playlist else None

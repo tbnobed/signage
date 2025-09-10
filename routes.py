@@ -313,23 +313,39 @@ def device_checkin(device_id):
 
 @api.route('/devices/<device_id>/playlist-status')
 def get_device_playlist_status(device_id):
-    """Lightweight endpoint to check if playlist has been updated"""
+    """Lightweight endpoint to check if playlist has been updated AND urgent commands"""
     device = Device.query.filter_by(device_id=device_id).first()
     
     if not device:
         return jsonify({'error': 'Device not found'}), 404
     
+    response = {}
+    
+    # Include urgent commands (like reboot) in rapid checks for immediate delivery
+    if device.pending_command:
+        response['command'] = device.pending_command
+        response['command_timestamp'] = device.command_timestamp.isoformat() if device.command_timestamp else None
+        
+        # Clear the command after sending it (same as main checkin)
+        device.pending_command = None
+        device.command_timestamp = None
+        db.session.commit()
+    
     if not device.current_playlist_id:
-        return jsonify({'playlist_id': None, 'last_updated': None})
+        response.update({'playlist_id': None, 'last_updated': None})
+        return jsonify(response)
     
     playlist = Playlist.query.get(device.current_playlist_id)
     if not playlist or not playlist.is_active:
-        return jsonify({'playlist_id': None, 'last_updated': None})
+        response.update({'playlist_id': None, 'last_updated': None})
+        return jsonify(response)
     
-    return jsonify({
+    response.update({
         'playlist_id': playlist.id,
         'last_updated': playlist.updated_at.isoformat()
     })
+    
+    return jsonify(response)
 
 @api.route('/devices/<device_id>/playlist')
 def get_device_playlist(device_id):
