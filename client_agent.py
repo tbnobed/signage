@@ -182,11 +182,18 @@ class SignageClient:
             # Setup environment for desktop Ubuntu
             env = os.environ.copy()
             user_home = os.path.expanduser('~')
+            current_user = os.getenv('USER', getpass.getuser())
+            
+            # Essential X11 environment for desktop display
             env.update({
                 'HOME': user_home,
-                'USER': os.getenv('USER', getpass.getuser()),
+                'USER': current_user,
                 'DISPLAY': ':0',  # Use desktop display
-                'PULSE_RUNTIME_PATH': f'{user_home}/.pulse'
+                'XAUTHORITY': f'{user_home}/.Xauthority',  # X11 authorization file
+                'XDG_RUNTIME_DIR': f'/run/user/{os.getuid()}',  # User runtime directory
+                'PULSE_RUNTIME_PATH': f'/run/user/{os.getuid()}/pulse',  # PulseAudio runtime
+                'XDG_SESSION_TYPE': 'x11',  # Session type
+                'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME'  # Desktop environment
             })
             
             # Start VLC process

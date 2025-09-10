@@ -471,7 +471,7 @@ LOG_FILE={self.setup_dir}/client.log
         service_content = f"""[Unit]
 Description=Digital Signage Client
 After=graphical.target display-manager.service network-online.target
-Wants=network-online.target
+Wants=graphical.target network-online.target
 
 [Service]
 Type=simple
@@ -480,7 +480,10 @@ Group={username}
 Environment=HOME={user_home}
 Environment=USER={username}
 Environment=DISPLAY=:0
-Environment=XDG_RUNTIME_DIR=/run/user/%i
+Environment=XAUTHORITY={user_home}/.Xauthority
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+Environment=XDG_SESSION_TYPE=x11
+Environment=XDG_CURRENT_DESKTOP=ubuntu:GNOME
 WorkingDirectory={self.setup_dir}
 EnvironmentFile={self.config_file}
 ExecStart=/usr/bin/python3 {self.client_script}
