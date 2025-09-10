@@ -102,6 +102,19 @@ def delete_device(device_id):
     flash(f'Device "{device_name}" and its logs have been deleted successfully', 'success')
     return redirect(url_for('main.devices'))
 
+@main.route('/devices/<int:device_id>/reboot', methods=['POST'])
+@login_required
+def reboot_device(device_id):
+    device = Device.query.get_or_404(device_id)
+    
+    # Set pending reboot command
+    device.pending_command = 'reboot'
+    device.command_timestamp = datetime.utcnow()
+    db.session.commit()
+    
+    flash(f'Reboot command sent to "{device.name}". Device will reboot on next check-in.', 'info')
+    return redirect(url_for('main.devices'))
+
 @main.route('/media')
 @login_required
 def media():
@@ -285,6 +298,16 @@ def device_checkin(device_id):
         'status': 'ok',
         'playlist_id': device.current_playlist_id
     }
+    
+    # Check for pending commands
+    if device.pending_command:
+        response['command'] = device.pending_command
+        response['command_timestamp'] = device.command_timestamp.isoformat() if device.command_timestamp else None
+        
+        # Clear the command after sending it
+        device.pending_command = None
+        device.command_timestamp = None
+        db.session.commit()
     
     return jsonify(response)
 

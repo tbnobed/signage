@@ -106,6 +106,13 @@ class SignageClient:
             if response.status_code == 200:
                 result = response.json()
                 self.logger.debug(f"Checkin successful: {result}")
+                
+                # Check for pending commands from server
+                if 'command' in result:
+                    command = result.get('command')
+                    self.logger.info(f"Received command from server: {command}")
+                    self.execute_command(command)
+                
                 return result
             else:
                 self.logger.error(f"Checkin failed: {response.status_code}")
@@ -403,6 +410,35 @@ class SignageClient:
         
         self.logger.info("Signage client stopped")
         self.send_log('info', 'Signage client stopped')
+
+    def execute_command(self, command):
+        """Execute remote command from server"""
+        self.logger.info(f"Executing remote command: {command}")
+        self.send_log('info', f'Executing remote command: {command}')
+        
+        try:
+            if command == 'reboot':
+                self.logger.info("Rebooting device as requested by server")
+                self.send_log('info', 'Rebooting device as requested by server')
+                # Stop current media first
+                self.stop_current_media()
+                # Execute reboot command
+                subprocess.run(['sudo', 'reboot'], timeout=10)
+            
+            elif command == 'restart_service':
+                self.logger.info("Restarting signage service as requested by server")
+                self.send_log('info', 'Restarting signage service as requested by server')
+                # This will cause the service to restart
+                self.running = False
+                
+            else:
+                self.logger.warning(f"Unknown command received: {command}")
+                self.send_log('warning', f'Unknown command received: {command}')
+                
+        except Exception as e:
+            error_msg = f"Failed to execute command '{command}': {e}"
+            self.logger.error(error_msg)
+            self.send_log('error', error_msg)
 
 
 if __name__ == "__main__":

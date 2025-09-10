@@ -96,10 +96,17 @@
                             <button type="submit" class="btn btn-sm btn-outline-primary">
                                 <i class="fas fa-save me-1"></i>Update
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger" 
-                                    onclick="confirmDelete('{{ device.name }}', '{{ device.id }}')">
-                                <i class="fas fa-trash me-1"></i>Delete
-                            </button>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-warning me-1" 
+                                        onclick="confirmReboot('{{ device.name }}', '{{ device.id }}')"
+                                        {% if not device.is_online() %}disabled title="Device is offline"{% endif %}>
+                                    <i class="fas fa-power-off me-1"></i>Reboot
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        onclick="confirmDelete('{{ device.name }}', '{{ device.id }}')">
+                                    <i class="fas fa-trash me-1"></i>Delete
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -260,6 +267,43 @@
     </div>
 </div>
 
+<!-- Reboot Confirmation Modal -->
+<div class="modal fade" id="rebootDeviceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-warning">
+                    <i class="fas fa-power-off me-2"></i>Reboot Device
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to reboot the device <strong><span id="deviceNameToReboot"></span></strong>?</p>
+                
+                <div class="alert alert-info">
+                    <strong>What will happen:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>The reboot command will be sent on the next check-in</li>
+                        <li>Current media playback will stop</li>
+                        <li>The device will restart completely</li>
+                        <li>Media playback will resume automatically after reboot</li>
+                    </ul>
+                </div>
+                
+                <p class="mb-0">The device will be offline for about 1-2 minutes during the reboot process.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="rebootDeviceForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-power-off me-1"></i>Reboot Device
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteDeviceModal" tabindex="-1">
     <div class="modal-dialog">
@@ -316,6 +360,13 @@ function copyToClipboard(text) {
         console.error('Could not copy text: ', err);
         showAlert('Could not copy to clipboard', 'warning');
     });
+}
+
+// Reboot device confirmation
+function confirmReboot(deviceName, deviceId) {
+    document.getElementById('deviceNameToReboot').textContent = deviceName;
+    document.getElementById('rebootDeviceForm').action = "{{ url_for('main.reboot_device', device_id=0) }}".replace('0', deviceId);
+    new bootstrap.Modal(document.getElementById('rebootDeviceModal')).show();
 }
 
 // Delete device confirmation
