@@ -1,0 +1,23 @@
+obtv@display1:~/signage$ journalctl --user -u signage-client -f
+Sep 10 14:08:03 display1 systemd[1113]: signage-client.service: Consumed 22.115s CPU time, 502.7M memory peak, 0B memory swap peak.
+Sep 10 14:08:12 display1 systemd[1113]: Started signage-client.service - Digital Signage Client.
+Sep 10 14:08:12 display1 python3[3419]: 2025-09-10 14:08:12,776 - INFO - Found VLC media player
+Sep 10 14:08:12 display1 python3[3419]: 2025-09-10 14:08:12,776 - INFO - Signage client started for device: t-jblj
+Sep 10 14:08:12 display1 python3[3419]: 2025-09-10 14:08:12,776 - INFO - Server URL: https://display.obtv.io
+Sep 10 14:08:12 display1 python3[3419]: 2025-09-10 14:08:12,776 - INFO - Media player: vlc
+Sep 10 14:08:12 display1 python3[3419]: 2025-09-10 14:08:12,776 - INFO - Rapid playlist checks every 2 seconds for instant updates
+Sep 10 14:08:13 display1 python3[3419]: 2025-09-10 14:08:13,040 - INFO - New playlist received: Test playlist
+Sep 10 14:08:13 display1 python3[3419]: 2025-09-10 14:08:13,040 - INFO - Starting immediate playback of new playlist
+Sep 10 14:08:13 display1 python3[3419]: 2025-09-10 14:08:13,105 - INFO - Playing: 452bf30e25f440098021a2286724b298.mp4
+^C
+obtv@display1:~/signage$ journalctl --user -u signage-client -f
+Sep 10 14:08:03 display1 systemd[1113]: signage-client.service: Consumed 22.115s CPU time, 502.7M memory peak, 0B memory swap peak.
+Sep 10 14:08:12 display1 systemd[1113]: Started signage-client.service - Digital Signage Client.
+Sep 10 14:08:12 display1 python3[3419]: 2025-09-10 14:08:12,776 - INFO - Found VLC media player
+Sep 10 14:08:12 display1 python3[3419]: 2025-09-10 14:08:12,776 - INFO - Signage client started for device: t-jblj
+Sep 10 14:08:12 display1 python3[3419]: 2025-09-10 14:08:12,776 - INFO - Server URL: https://display.obtv.io
+Sep 10 14:08:12 display1 python3[3419]: 2025-09-10 14:08:12,776 - INFO - Media player: vlc
+Sep 10 14:08:12 display1 python3[3419]: 2025-09-10 14:08:12,776 - INFO - Rapid playlist checks every 2 seconds for instant updates
+Sep 10 14:08:13 display1 python3[3419]: 2025-09-10 14:08:13,040 - INFO - New playlist received: Test playlist
+Sep 10 14:08:13 display1 python3[3419]: 2025-09-10 14:08:13,040 - INFO - Starting immediate playback of new playlist
+Sep 10 14:08:13 display1 python3[3419]: 2025-09-10 14:08:13,105 - INFO - Playing: 452bf30e25f440098021a2286724b298.mp4

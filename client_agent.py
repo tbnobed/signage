@@ -54,7 +54,7 @@ class SignageClient:
 
     def setup_logging(self):
         logging.basicConfig(
-            level=logging.INFO,
+            level=logging.DEBUG,  # Enable debug logging to see rapid checks
             format='%(asctime)s - %(levelname)s - %(message)s',
             handlers=[
                 logging.FileHandler(LOG_FILE),
@@ -125,6 +125,7 @@ class SignageClient:
     def check_playlist_status(self):
         """Quick check if playlist has been updated"""
         try:
+            self.logger.debug(f"Checking playlist status...")
             response = requests.get(
                 f"{SERVER_URL}/api/devices/{DEVICE_ID}/playlist-status",
                 timeout=5
@@ -135,6 +136,11 @@ class SignageClient:
                 playlist_id = data.get('playlist_id')
                 last_updated = data.get('last_updated')
                 
+                self.logger.debug(f"Current playlist: {self.current_playlist.get('id') if self.current_playlist else None}, "
+                                f"Server playlist: {playlist_id}, "
+                                f"Current timestamp: {self.current_playlist.get('last_updated') if self.current_playlist else None}, "
+                                f"Server timestamp: {last_updated}")
+                
                 # Check if we need to fetch full playlist
                 if (not self.current_playlist or 
                     self.current_playlist.get('id') != playlist_id or
@@ -143,9 +149,11 @@ class SignageClient:
                     self.logger.info(f"Playlist update detected - stopping current media and fetching new playlist")
                     self.stop_current_media()  # Stop immediately to start new content
                     return self.fetch_playlist()
+            else:
+                self.logger.debug(f"Playlist status check got {response.status_code}")
                     
         except Exception as e:
-            self.logger.debug(f"Playlist status check failed: {e}")
+            self.logger.error(f"Playlist status check failed: {e}")
             
         return False
 
@@ -353,6 +361,7 @@ class SignageClient:
                 
                 # Rapid playlist status checks for instant updates (independent of checkin)
                 if datetime.now() - last_rapid_check >= timedelta(seconds=RAPID_CHECK_INTERVAL):
+                    self.logger.debug(f"Running rapid playlist check...")
                     self.check_playlist_status()
                     last_rapid_check = datetime.now()
                 
