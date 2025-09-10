@@ -238,7 +238,7 @@ class SignageClient:
             self.logger.error(f"Download failed for {filename}: {e}")
             return None
 
-    def play_media(self, media_path, duration=None):
+    def play_media(self, media_path, duration=None, allow_loop=False):
         """Play media file using VLC on desktop Ubuntu"""
         if not self.media_player:
             self.logger.error("No media player available")
@@ -285,7 +285,15 @@ class SignageClient:
                 env=env
             )
             
-            # Wait for specified duration or until process ends
+            # If allow_loop is True, let VLC run indefinitely with its internal loop
+            # This prevents the constant stopping/starting that causes visual interruptions
+            if allow_loop:
+                self.logger.info("Allowing VLC to loop indefinitely")
+                # Don't wait with timeout - let VLC loop internally
+                # The process will only be stopped when playlist changes or client shuts down
+                return True
+            
+            # For timed playback (multi-item playlists)
             if duration:
                 try:
                     self.current_process.wait(timeout=duration)
@@ -322,6 +330,34 @@ class SignageClient:
             return
         
         items = self.current_playlist['items']
+        
+        # Special handling for single-item playlists - allow seamless looping
+        if len(items) == 1 and self.current_playlist.get('loop', True):
+            media_item = items[0]
+            local_path = self.download_media(media_item)
+            
+            if local_path:
+                self.logger.info("Single video playlist - enabling seamless loop mode")
+                # Let VLC loop indefinitely without client intervention
+                success = self.play_media(local_path, allow_loop=True)
+                
+                if success:
+                    # Keep VLC running and only check for playlist updates
+                    # The video will loop seamlessly without VLC restarting
+                    while self.running and self.current_process and self.current_process.poll() is None:
+                        time.sleep(5)  # Check every 5 seconds if VLC is still running
+                        # Playlist update checks will happen via background thread
+                    
+                    self.logger.info("VLC process ended, restarting playback")
+                else:
+                    self.send_log('error', f"Failed to play: {media_item['original_filename']}")
+                    time.sleep(10)
+            else:
+                self.send_log('error', f"Failed to download: {media_item['original_filename']}")
+                time.sleep(10)
+            return
+        
+        # Multi-item playlist handling (existing behavior)
         if self.current_media_index >= len(items):
             if self.current_playlist.get('loop', True):
                 self.current_media_index = 0
