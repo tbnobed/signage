@@ -244,6 +244,11 @@ def delete_playlist(playlist_id):
 
 # API Endpoints for client communication
 
+@api.route('/devices/ping')
+def devices_ping():
+    """Simple ping endpoint for health checks"""
+    return jsonify({'status': 'ok', 'message': 'pong'})
+
 @api.route('/devices/<device_id>/checkin', methods=['POST'])
 def device_checkin(device_id):
     device = Device.query.filter_by(device_id=device_id).first()
