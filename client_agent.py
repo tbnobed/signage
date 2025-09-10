@@ -316,6 +316,99 @@ class SignageClient:
             self.logger.error(f"Failed to play media: {e}")
             return False
 
+    def play_continuous_playlist(self, media_paths, loop=True):
+        """Play multiple media files as a continuous VLC playlist without interruptions"""
+        if not self.media_player or not media_paths:
+            return False
+            
+        try:
+            # Create VLC playlist file (.xspf format for better reliability)
+            playlist_file = os.path.join(MEDIA_DIR, 'current_playlist.xspf')
+            
+            # Generate XML playlist content
+            playlist_content = '''<?xml version="1.0" encoding="UTF-8"?>
+<playlist xmlns="http://xspf.org/ns/0/" version="1">
+    <title>Digital Signage Playlist</title>
+    <trackList>
+'''
+            
+            for i, media_path in enumerate(media_paths):
+                # Create proper file URI using pathlib
+                file_uri = Path(media_path).resolve().as_uri()
+                # Escape XML special characters
+                escaped_uri = file_uri.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                playlist_content += f'''        <track>
+            <location>{escaped_uri}</location>
+            <title>Media {i+1}</title>
+        </track>
+'''
+            
+            playlist_content += '''    </trackList>
+</playlist>'''
+            
+            # Write playlist file
+            with open(playlist_file, 'w', encoding='utf-8') as f:
+                f.write(playlist_content)
+            
+            self.logger.info(f"Created VLC playlist with {len(media_paths)} items: {playlist_file}")
+            
+            # Build VLC command for continuous playlist playback
+            command = PLAYER_COMMANDS[self.media_player].copy()
+            
+            # Add screen targeting for multi-monitor setups
+            if SCREEN_INDEX > 0:
+                command.extend(['--qt-fullscreen-screennumber', str(SCREEN_INDEX)])
+            
+            # Handle loop setting properly (avoid duplicating --loop from PLAYER_COMMANDS)
+            if '--loop' in command:
+                command.remove('--loop')  # Remove default to control explicitly
+            
+            if loop:
+                command.append('--loop')  # Loop the entire playlist
+            else:
+                command.append('--no-loop')
+            
+            # Add the playlist file
+            command.append(playlist_file)
+            
+            self.logger.info(f"Starting continuous VLC playlist: {len(media_paths)} videos")
+            if SCREEN_INDEX > 0:
+                self.logger.info(f"Target screen: {SCREEN_INDEX}")
+            
+            # Kill any existing player process
+            self.stop_current_media()
+            
+            # Use inherited environment (Wayland/X11) from user service
+            env = os.environ.copy()
+            
+            # Log current display environment for debugging
+            display_env = env.get('DISPLAY', 'not set')
+            wayland_display = env.get('WAYLAND_DISPLAY', 'not set')
+            session_type = env.get('XDG_SESSION_TYPE', 'not set')
+            self.logger.debug(f"Display environment - DISPLAY: {display_env}, WAYLAND_DISPLAY: {wayland_display}, SESSION_TYPE: {session_type}")
+            
+            # Only add XAUTHORITY if we have an X11 display and the file exists
+            if env.get('DISPLAY') and not env.get('XAUTHORITY'):
+                user_home = os.path.expanduser('~')
+                xauth_path = f'{user_home}/.Xauthority'
+                if os.path.exists(xauth_path):
+                    env['XAUTHORITY'] = xauth_path
+            
+            # Start VLC with playlist - no more stopping between videos!
+            self.current_process = subprocess.Popen(
+                command,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                env=env
+            )
+            
+            self.logger.info("VLC continuous playlist started - no more visual interruptions between videos!")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error creating continuous playlist: {e}")
+            return False
+
     def stop_current_media(self):
         """Stop currently playing media"""
         with self._playlist_lock:
@@ -364,31 +457,37 @@ class SignageClient:
                 time.sleep(10)
             return
         
-        # Multi-item playlist handling (existing behavior)
-        if self.current_media_index >= len(items):
-            if self.current_playlist.get('loop', True):
-                self.current_media_index = 0
+        # Multi-item playlist handling - use continuous VLC playlist to avoid interruptions
+        self.logger.info(f"Multi-video playlist with {len(items)} items - creating continuous VLC playlist")
+        
+        # Download all media files first
+        media_paths = []
+        for item in items:
+            local_path = self.download_media(item)
+            if local_path:
+                media_paths.append(local_path)
             else:
-                self.logger.info("Playlist completed, not looping")
-                time.sleep(10)
-                return
+                self.send_log('error', f"Failed to download: {item['original_filename']}")
         
-        media_item = items[self.current_media_index]
-        local_path = self.download_media(media_item)
-        
-        if local_path:
-            duration = media_item.get('duration', self.current_playlist.get('default_duration', 10))
-            success = self.play_media(local_path, duration)
+        if not media_paths:
+            self.logger.error("No media files available to play")
+            time.sleep(10)
+            return
             
-            if success:
-                self.current_media_index += 1
-                self.last_media_change = datetime.now()
-            else:
-                self.send_log('error', f"Failed to play: {media_item['original_filename']}")
-                self.current_media_index += 1  # Skip failed media
+        # Create VLC playlist to avoid stopping/starting between videos
+        success = self.play_continuous_playlist(media_paths, loop=self.current_playlist.get('loop', True))
+        
+        if success:
+            # Keep VLC running continuously - no more stopping between videos!
+            # VLC will handle all transitions internally without visual interruptions
+            while self.running and self.current_process and self.current_process.poll() is None:
+                time.sleep(5)  # Check every 5 seconds if VLC is still running
+                # Playlist update checks will happen via background thread
+            
+            self.logger.info("VLC playlist process ended, restarting playback")
         else:
-            self.send_log('error', f"Failed to download: {media_item['original_filename']}")
-            self.current_media_index += 1  # Skip failed media
+            self.send_log('error', "Failed to start continuous playlist playback")
+            time.sleep(10)
 
     def cleanup_old_media(self):
         """Remove old media files to save space"""
