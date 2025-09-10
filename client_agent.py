@@ -26,8 +26,11 @@ LOG_FILE = os.environ.get('LOG_FILE', os.path.expanduser('~/signage/client.log')
 
 # Media player commands for desktop Ubuntu
 PLAYER_COMMANDS = {
-    'vlc': ['vlc', '--fullscreen', '--no-osd', '--loop', '--intf', 'dummy', '--no-video-title-show']
+    'vlc': ['vlc', '--fullscreen', '--no-osd', '--loop', '--no-video-title-show', '--qt-minimal-view', '--no-qt-privacy-ask']
 }
+
+# Screen targeting support for multi-monitor setups
+SCREEN_INDEX = int(os.environ.get('SCREEN_INDEX', '0'))  # Default to primary screen
 
 class SignageClient:
     def __init__(self):
@@ -172,29 +175,36 @@ class SignageClient:
         
         try:
             command = PLAYER_COMMANDS[self.media_player].copy()
+            
+            # Add screen targeting for multi-monitor setups
+            if SCREEN_INDEX > 0:
+                command.extend(['--qt-fullscreen-screennumber', str(SCREEN_INDEX)])
+            
             command.append(media_path)
             
             self.logger.info(f"Playing: {os.path.basename(media_path)}")
+            if SCREEN_INDEX > 0:
+                self.logger.info(f"Target screen: {SCREEN_INDEX}")
             
             # Kill any existing player process
             self.stop_current_media()
             
-            # Setup environment for desktop Ubuntu
+            # Use inherited environment (Wayland/X11) from user service
+            # Don't override DISPLAY, WAYLAND_DISPLAY, or XDG_SESSION_TYPE
             env = os.environ.copy()
-            user_home = os.path.expanduser('~')
-            current_user = os.getenv('USER', getpass.getuser())
             
-            # Essential X11 environment for desktop display
-            env.update({
-                'HOME': user_home,
-                'USER': current_user,
-                'DISPLAY': ':0',  # Use desktop display
-                'XAUTHORITY': f'{user_home}/.Xauthority',  # X11 authorization file
-                'XDG_RUNTIME_DIR': f'/run/user/{os.getuid()}',  # User runtime directory
-                'PULSE_RUNTIME_PATH': f'/run/user/{os.getuid()}/pulse',  # PulseAudio runtime
-                'XDG_SESSION_TYPE': 'x11',  # Session type
-                'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME'  # Desktop environment
-            })
+            # Log current display environment for debugging
+            display_env = env.get('DISPLAY', 'not set')
+            wayland_display = env.get('WAYLAND_DISPLAY', 'not set')
+            session_type = env.get('XDG_SESSION_TYPE', 'not set')
+            self.logger.debug(f"Display environment - DISPLAY: {display_env}, WAYLAND_DISPLAY: {wayland_display}, SESSION_TYPE: {session_type}")
+            
+            # Only add XAUTHORITY if we have an X11 display and the file exists
+            if env.get('DISPLAY') and not env.get('XAUTHORITY'):
+                user_home = os.path.expanduser('~')
+                xauth_path = f'{user_home}/.Xauthority'
+                if os.path.exists(xauth_path):
+                    env['XAUTHORITY'] = xauth_path
             
             # Start VLC process
             self.current_process = subprocess.Popen(

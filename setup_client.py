@@ -37,6 +37,7 @@ class SignageSetup:
         self.server_url = ""
         self.device_id = ""
         self.check_interval = 60
+        self.screen_index = 0
         
         # Always initialize with user home directory - will be updated if running as root
         current_user = os.getenv('USER', 'user')
@@ -332,6 +333,32 @@ class SignageSetup:
                 # Non-interactive: keep default
                 print(f"Non-interactive mode: Using default check interval {self.check_interval} seconds")
             
+            # Screen index for multi-monitor HDMI targeting
+            if is_interactive:
+                print()
+                print("🖥️  Multi-monitor setup:")
+                print("   Screen 0: Primary display (usually laptop/main monitor)")
+                print("   Screen 1: Secondary display (usually HDMI/external monitor)")
+                print("   Screen 2+: Additional monitors if connected")
+                
+                while True:
+                    screen_input = input(f"Which screen for fullscreen display? (default: {self.screen_index}): ").strip()
+                    if not screen_input:
+                        break
+                    try:
+                        self.screen_index = int(screen_input)
+                        if self.screen_index < 0:
+                            print("❌ Screen index must be 0 or higher")
+                            continue
+                        if self.screen_index > 0:
+                            print(f"   Will target screen {self.screen_index} (external monitor)")
+                        break
+                    except ValueError:
+                        print("❌ Please enter a valid number")
+            else:
+                # Non-interactive: keep default (primary screen)
+                print(f"Non-interactive mode: Using default screen {self.screen_index} (primary)")
+            
         except (EOFError, KeyboardInterrupt):
             print("\n❌ Configuration cancelled by user or non-interactive session")
             print("   Device ID is required and must be registered in the dashboard first.")
@@ -349,6 +376,7 @@ class SignageSetup:
         print(f"  Server URL: {self.server_url}")
         print(f"  Device ID: {self.device_id}")
         print(f"  Check Interval: {self.check_interval} seconds")
+        print(f"  Target Screen: {self.screen_index} {'(external/HDMI)' if self.screen_index > 0 else '(primary)'}")
         print()
         
         if not self.ask_yes_no("Is this correct?", default=True):
@@ -406,6 +434,7 @@ class SignageSetup:
 SIGNAGE_SERVER_URL={self.server_url}
 DEVICE_ID={self.device_id}
 CHECK_INTERVAL={self.check_interval}
+SCREEN_INDEX={self.screen_index}
 MEDIA_DIR={self.setup_dir}/media
 LOG_FILE={self.setup_dir}/client.log
 """
@@ -460,30 +489,27 @@ LOG_FILE={self.setup_dir}/client.log
     
     
     def create_systemd_service(self):
-        """Create systemd service for desktop Ubuntu"""
-        print("🚀 Setting up auto-start service...")
+        """Create systemd user service for desktop Ubuntu with Wayland support"""
+        print("🚀 Setting up auto-start user service...")
         
         # Use the target user we already determined
         username = self.target_user or getpass.getuser()
         
-        # Service configuration for desktop Ubuntu
-        user_home = f"/home/{username}"
+        # Create user systemd directory
+        user_systemd_dir = Path(f"/home/{username}/.config/systemd/user")
+        user_systemd_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Update service file path to user directory
+        self.service_file = user_systemd_dir / "signage-client.service"
+        
+        # Service configuration for desktop Ubuntu user service
         service_content = f"""[Unit]
 Description=Digital Signage Client
-After=graphical.target display-manager.service network-online.target
-Wants=graphical.target network-online.target
+After=graphical-session.target network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
-User={username}
-Group={username}
-Environment=HOME={user_home}
-Environment=USER={username}
-Environment=DISPLAY=:0
-Environment=XAUTHORITY={user_home}/.Xauthority
-Environment=XDG_RUNTIME_DIR=/run/user/%U
-Environment=XDG_SESSION_TYPE=x11
-Environment=XDG_CURRENT_DESKTOP=ubuntu:GNOME
 WorkingDirectory={self.setup_dir}
 EnvironmentFile={self.config_file}
 ExecStart=/usr/bin/python3 {self.client_script}
@@ -493,43 +519,62 @@ StandardOutput=journal
 StandardError=journal
 
 [Install]
-WantedBy=graphical.target
+WantedBy=graphical-session.target
 """
         
         try:
-            # Check if we have sudo privileges
-            sudo_check = subprocess.run(['sudo', '-n', 'true'], 
-                                      capture_output=True, check=False)
-            
-            if sudo_check.returncode != 0:
-                print("   ⚠️  This script needs sudo privileges to create systemd service")
-                print("   Please run the setup with sudo:")
-                print("   sudo python3 setup_client.py")
-                return False
-            
-            # Create the service file
-            process = subprocess.Popen(['sudo', 'tee', self.service_file], 
-                                     stdin=subprocess.PIPE, 
-                                     stdout=subprocess.PIPE, 
-                                     stderr=subprocess.PIPE,
-                                     text=True)
-            stdout, stderr = process.communicate(input=service_content)
-            
-            if process.returncode != 0:
-                print(f"   ❌ Failed to create service file: {stderr}")
-                return False
-            
-            # Reload systemd and enable service
-            subprocess.run(['sudo', 'systemctl', 'daemon-reload'], check=True)
-            subprocess.run(['sudo', 'systemctl', 'enable', 'signage-client.service'], check=True)
+            # Write service file directly to user directory (no sudo needed)
+            with open(self.service_file, 'w') as f:
+                f.write(service_content)
             
             print(f"   ✅ Service created: {self.service_file}")
-            print("   ✅ Service enabled for auto-start")
             
-        except subprocess.CalledProcessError as e:
-            print(f"   ❌ Failed to setup service: {e}")
-            print("   Please run this script with sudo privileges")
-            return False
+            # Set ownership and permissions if running as root
+            if os.geteuid() == 0:  # If running as root, change ownership to user
+                import pwd
+                user_uid = pwd.getpwnam(username).pw_uid
+                user_gid = pwd.getpwnam(username).pw_gid
+                os.chown(self.service_file, user_uid, user_gid)
+                # Also ensure the .config/systemd/user directory is owned by user
+                os.chown(user_systemd_dir, user_uid, user_gid)
+                os.chown(user_systemd_dir.parent, user_uid, user_gid)  # .config/systemd
+                os.chown(user_systemd_dir.parent.parent, user_uid, user_gid)  # .config
+            
+            # Reload user systemd and enable service in proper user context
+            if os.geteuid() == 0:  # If running as root, run as target user
+                import pwd
+                user_uid = pwd.getpwnam(username).pw_uid
+                user_env = {
+                    'XDG_RUNTIME_DIR': f'/run/user/{user_uid}',
+                    'HOME': f'/home/{username}',
+                    'USER': username
+                }
+                
+                subprocess.run(['sudo', '-u', username] + 
+                             [f'{k}={v}' for k, v in user_env.items()] +
+                             ['systemctl', '--user', 'daemon-reload'], 
+                             check=True, env={**os.environ, **user_env})
+                
+                subprocess.run(['sudo', '-u', username] + 
+                             [f'{k}={v}' for k, v in user_env.items()] +
+                             ['systemctl', '--user', 'enable', 'signage-client.service'], 
+                             check=True, env={**os.environ, **user_env})
+            else:
+                # Running as regular user
+                subprocess.run(['systemctl', '--user', 'daemon-reload'], check=True)
+                subprocess.run(['systemctl', '--user', 'enable', 'signage-client.service'], check=True)
+            
+            print("   ✅ User service enabled for auto-start")
+            
+            # Enable lingering so service starts on boot even without login
+            try:
+                subprocess.run(['sudo', 'loginctl', 'enable-linger', username], 
+                             check=True, capture_output=True)
+                print("   ✅ User lingering enabled (starts on boot)")
+            except subprocess.CalledProcessError:
+                print("   ⚠️  Could not enable user lingering")
+                print("       Service will start when user logs in")
+            
         except Exception as e:
             print(f"   ❌ Service setup error: {e}")
             return False
@@ -537,19 +582,47 @@ WantedBy=graphical.target
         return True
     
     def start_service(self):
-        """Start the signage service"""
+        """Start the user signage service"""
+        username = self.target_user or getpass.getuser()
+        
         if self.ask_yes_no("Start the signage client now?", default=True):
             try:
-                subprocess.run(['sudo', 'systemctl', 'start', 'signage-client.service'], check=True)
-                print("   ✅ Service started")
-                
-                # Show service status
-                print("\n📊 Service Status:")
-                subprocess.run(['sudo', 'systemctl', 'status', 'signage-client.service', '--no-pager', '-l'])
+                # Start user service in proper user context
+                if os.geteuid() == 0:  # If running as root, run as target user
+                    import pwd
+                    user_uid = pwd.getpwnam(username).pw_uid
+                    user_env = {
+                        'XDG_RUNTIME_DIR': f'/run/user/{user_uid}',
+                        'HOME': f'/home/{username}',
+                        'USER': username
+                    }
+                    
+                    subprocess.run(['sudo', '-u', username] + 
+                                 [f'{k}={v}' for k, v in user_env.items()] +
+                                 ['systemctl', '--user', 'start', 'signage-client.service'], 
+                                 check=True, env={**os.environ, **user_env})
+                    
+                    print("   ✅ User service started")
+                    
+                    # Show service status
+                    print("\n📊 Service Status:")
+                    subprocess.run(['sudo', '-u', username] + 
+                                 [f'{k}={v}' for k, v in user_env.items()] +
+                                 ['systemctl', '--user', 'status', 'signage-client.service', '--no-pager', '-l'], 
+                                 check=False, env={**os.environ, **user_env})
+                else:
+                    # Running as regular user
+                    subprocess.run(['systemctl', '--user', 'start', 'signage-client.service'], check=True)
+                    print("   ✅ User service started")
+                    
+                    # Show service status
+                    print("\n📊 Service Status:")
+                    subprocess.run(['systemctl', '--user', 'status', 'signage-client.service', '--no-pager', '-l'], check=False)
                 
             except subprocess.CalledProcessError:
-                print("   ❌ Failed to start service")
-                print("   Try manually: sudo systemctl start signage-client.service")
+                print("   ❌ Failed to start user service")
+                print(f"   Try manually: systemctl --user start signage-client.service")
+                print(f"   Or as root: sudo -u {username} systemctl --user start signage-client.service")
     
     def show_completion_info(self):
         """Show completion information"""
