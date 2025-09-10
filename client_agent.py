@@ -11,6 +11,7 @@ import json
 import subprocess
 import logging
 import requests
+import getpass
 from pathlib import Path
 from datetime import datetime, timedelta
 import signal
@@ -20,14 +21,12 @@ import threading
 SERVER_URL = os.environ.get('SIGNAGE_SERVER_URL', 'http://localhost:5000')
 DEVICE_ID = os.environ.get('DEVICE_ID', 'device-001')
 CHECK_INTERVAL = int(os.environ.get('CHECK_INTERVAL', '60'))  # seconds
-MEDIA_DIR = os.path.expanduser('~/signage_media')
-LOG_FILE = os.path.expanduser('~/signage_agent.log')
+MEDIA_DIR = os.environ.get('MEDIA_DIR', os.path.expanduser('~/signage/media'))
+LOG_FILE = os.environ.get('LOG_FILE', os.path.expanduser('~/signage/client.log'))
 
-# Media player commands
+# Media player commands for desktop Ubuntu
 PLAYER_COMMANDS = {
-    'omxplayer': ['omxplayer', '-o', 'hdmi', '--loop', '--no-osd'],
-    'vlc': ['vlc', '--fullscreen', '--no-osd', '--loop', '--intf', 'dummy', '--no-video-title-show', '--vout', 'fb'],
-    'ffplay': ['ffplay', '-fs', '-loop', '0', '-loglevel', 'quiet', '-vf', 'scale=1920:1080']
+    'vlc': ['vlc', '--fullscreen', '--no-osd', '--loop', '--intf', 'dummy', '--no-video-title-show']
 }
 
 class SignageClient:
@@ -59,18 +58,14 @@ class SignageClient:
         self.logger = logging.getLogger(__name__)
 
     def detect_media_player(self):
-        """Detect available media player"""
-        for player, command in PLAYER_COMMANDS.items():
-            try:
-                subprocess.run([command[0], '--version'], 
-                             capture_output=True, timeout=5)
-                self.logger.info(f"Found media player: {player}")
-                return player
-            except (subprocess.TimeoutExpired, FileNotFoundError):
-                continue
-        
-        self.logger.error("No supported media player found!")
-        return None
+        """Detect VLC media player for desktop Ubuntu"""
+        try:
+            subprocess.run(['vlc', '--version'], capture_output=True, timeout=5)
+            self.logger.info("Found VLC media player")
+            return 'vlc'
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            self.logger.error("VLC media player not found! Please install VLC.")
+            return None
 
     def send_checkin(self):
         """Send heartbeat to server"""
@@ -170,7 +165,7 @@ class SignageClient:
             return None
 
     def play_media(self, media_path, duration=None):
-        """Play media file using available player"""
+        """Play media file using VLC on desktop Ubuntu"""
         if not self.media_player:
             self.logger.error("No media player available")
             return False
@@ -184,28 +179,17 @@ class SignageClient:
             # Kill any existing player process
             self.stop_current_media()
             
-            # Setup display environment for GUI applications
+            # Setup environment for desktop Ubuntu
             env = os.environ.copy()
-            
-            # For digital signage, use framebuffer output (confirmed working)
-            # Framebuffer output works directly with Intel i915 graphics
-            if os.path.exists('/dev/fb0'):
-                self.logger.info("Using framebuffer output for display")
-                # Remove DISPLAY variable for console mode
-                env.pop('DISPLAY', None)
-            else:
-                self.logger.warning("No framebuffer device detected - video may not be visible")
-                env.pop('DISPLAY', None)
-            
-            # Set up other environment variables
             user_home = os.path.expanduser('~')
             env.update({
                 'HOME': user_home,
-                'USER': os.getenv('USER', 'obtv1'),
+                'USER': os.getenv('USER', getpass.getuser()),
+                'DISPLAY': ':0',  # Use desktop display
                 'PULSE_RUNTIME_PATH': f'{user_home}/.pulse'
             })
             
-            # Start new player process with proper environment
+            # Start VLC process
             self.current_process = subprocess.Popen(
                 command,
                 stdout=subprocess.DEVNULL,

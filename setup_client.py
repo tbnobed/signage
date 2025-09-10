@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 Digital Signage Client Setup Script
-Interactive setup script for client devices
+Setup script for desktop Ubuntu client devices
 
 This script:
 1. Downloads the latest client agent from GitHub
-2. Asks user for configuration details
-3. Sets up environment and systemd service
-4. Tests the connection
+2. Installs VLC media player if needed
+3. Asks user for configuration details
+4. Sets up environment and systemd service
+5. Tests the connection
 
 Usage:
     curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.py | python3
@@ -38,15 +39,16 @@ class SignageSetup:
         self.check_interval = 60
         
         # Always initialize with user home directory - will be updated if running as root
-        current_user = os.getenv('USER', 'pi')
+        current_user = os.getenv('USER', 'user')
         self.target_user = current_user
         self.target_uid = None
         self.target_gid = None
         
         # Set default setup directory
         if os.geteuid() == 0:
-            # Default to pi user when running as root
-            self.setup_dir = Path("/home/pi/signage")
+            # Use SUDO_USER when running as root
+            sudo_user = os.getenv('SUDO_USER', 'user')
+            self.setup_dir = Path(f"/home/{sudo_user}/signage")
         else:
             self.setup_dir = Path.home() / "signage"
         
@@ -97,54 +99,28 @@ class SignageSetup:
         print()
         
     def install_dependencies(self):
-        """Install required dependencies including media players"""
-        print("📦 Installing dependencies...")
-        
-        # Check system type
-        package_manager = self.detect_package_manager()
-        if not package_manager:
-            print("⚠️  Unsupported system. Please install dependencies manually:")
-            print("   - Python 3 and pip")
-            print("   - Media player (omxplayer, vlc, or ffmpeg)")
-            print("   - requests module: pip3 install requests")
-            if not self.ask_yes_no("Continue anyway?", default=True):
-                sys.exit(1)
-            return
+        """Install required dependencies for desktop Ubuntu"""
+        print("📦 Installing dependencies for desktop Ubuntu...")
         
         # Check if we have sudo access
         has_sudo = self.check_sudo_access()
+        if not has_sudo:
+            print("❌ This setup requires sudo access to install VLC and other packages.")
+            print("   Please run: sudo python3 setup_client.py")
+            sys.exit(1)
         
-        if package_manager == 'apt':
-            self.install_with_apt(has_sudo)
-        elif package_manager == 'yum':
-            self.install_with_yum(has_sudo)
-        elif package_manager == 'dnf':
-            self.install_with_dnf(has_sudo)
+        # Install VLC and Python requirements
+        self.install_desktop_packages()
         
-        # Install Python requests module via pip
+        # Install Python requests module 
         self.install_python_requests()
         
-        # Verify essential tools are available after installation
-        print("\n🔍 Verifying installations...")
-        
-        # Check if pip is now available
-        if shutil.which('pip3') or shutil.which('pip'):
-            print("   ✅ pip/pip3 available")
+        # Verify VLC installation
+        print("\n🎬 Verifying VLC installation...")
+        if shutil.which('vlc'):
+            print("   ✅ VLC media player installed")
         else:
-            print("   ⚠️  pip/pip3 not found after installation")
-        
-        # Check if requests module is importable
-        try:
-            import requests
-            print("   ✅ Python requests module available")
-        except ImportError:
-            print("   ❌ Python requests module not available")
-            print("   This may cause connection issues")
-        
-        # Verify media players
-        print("\n🎬 Verifying media players...")
-        if not self.detect_media_players():
-            print("❌ No media players were successfully installed!")
+            print("   ❌ VLC not found after installation!")
             if not self.ask_yes_no("Continue anyway?", default=False):
                 print("Setup cancelled.")
                 sys.exit(1)
@@ -170,136 +146,36 @@ class SignageSetup:
             print("   Continuing with limited functionality...")
             return False
     
-    def install_with_apt(self, has_sudo):
-        """Install dependencies using apt (Debian/Ubuntu)"""
-        print("   Using apt package manager...")
+    def install_desktop_packages(self):
+        """Install packages for desktop Ubuntu"""
+        print("   Installing packages for desktop Ubuntu...")
         
-        # Update package list with better error handling
-        if has_sudo:
-            print("   Updating package list...")
+        # Update package list
+        print("   Updating package list...")
+        try:
+            subprocess.run(['sudo', 'apt', 'update'], check=True, capture_output=True, timeout=60)
+            print("   ✅ Package list updated")
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+            print(f"   ⚠️  Package update had issues: {e}")
+        
+        # Essential packages for desktop Ubuntu
+        packages = [
+            'vlc',               # VLC media player
+            'python3-pip',       # Python package manager
+            'python3-requests',  # Python HTTP library
+        ]
+        
+        for package in packages:
+            print(f"   Installing {package}...")
             try:
-                result = subprocess.run(['sudo', 'apt', 'update'], 
-                                      capture_output=True, text=True, timeout=60)
-                if result.returncode == 0:
-                    print("   ✅ Package list updated")
-                else:
-                    print(f"   ⚠️  Package list update had warnings: {result.stderr[:100]}")
-            except subprocess.TimeoutExpired:
-                print("   ⚠️  Package list update timed out")
+                subprocess.run(['sudo', 'apt', 'install', '-y', package], 
+                             check=True, capture_output=True, timeout=120)
+                print(f"   ✅ {package} installed")
             except subprocess.CalledProcessError as e:
-                print(f"   ⚠️  Failed to update package list: {e}")
-        
-        # Install essential Python packages with better error handling
-        essential_packages = ['python3-pip', 'python3-requests', 'python3-setuptools', 'python3-dev']
-        
-        if has_sudo:
-            for package in essential_packages:
-                try:
-                    result = subprocess.run(['sudo', 'apt', 'install', '-y', package], 
-                                         capture_output=True, text=True, timeout=120)
-                    if result.returncode == 0:
-                        print(f"   ✅ {package} installed")
-                    else:
-                        print(f"   ⚠️  Failed to install {package}: {result.stderr[:100]}")
-                except subprocess.TimeoutExpired:
-                    print(f"   ⏰ {package} installation timed out")
-                except subprocess.CalledProcessError as e:
-                    print(f"   ⚠️  Failed to install {package}: {e}")
-        else:
-            print("   ❌ Cannot install Python packages without sudo")
-        
-        # Check if this is Ubuntu Server (no desktop environment)
-        is_server = not os.path.exists('/usr/bin/gnome-session') and not os.path.exists('/usr/bin/startx')
-        
-        # Install display components for Ubuntu Server - focus on direct hardware output
-        if is_server and has_sudo:
-            print("   Detected Ubuntu Server - installing display components...")
-            print("   ⚠️  Installing packages for direct display output...")
-            
-            # Set non-interactive mode to prevent prompts
-            env = os.environ.copy()
-            env['DEBIAN_FRONTEND'] = 'noninteractive'
-            
-            # Install packages for KMS (Kernel Mode Setting) direct hardware output
-            essential_packages = [
-                'libdrm2',       # Direct Rendering Manager
-                'mesa-utils',    # OpenGL utilities
-                'pulseaudio',    # Audio system
-                'alsa-utils'     # Audio drivers
-            ]
-            
-            for package in essential_packages:
-                print(f"   Installing {package}...")
-                try:
-                    # Quick install with shorter timeout
-                    result = subprocess.run(['sudo', 'apt', 'install', '-y', package], 
-                                         env=env, timeout=120, capture_output=True, text=True)
-                    
-                    if result.returncode == 0:
-                        print(f"   ✅ {package} installed")
-                    else:
-                        print(f"   ⚠️  Failed to install {package}")
-                        
-                except subprocess.TimeoutExpired:
-                    print(f"   ⏰ {package} installation timed out (2 minutes)")
-                except Exception as e:
-                    print(f"   ⚠️  Error installing {package}: {e}")
-            
-            print("   Display components installed!")
-        
-        # Install media players based on platform
-        is_raspberry_pi = self.detect_raspberry_pi()
-        if is_raspberry_pi:
-            print("   Detected Raspberry Pi - installing omxplayer...")
-            media_packages = ['omxplayer', 'vlc']
-        else:
-            print("   Detected generic Linux - installing VLC and FFmpeg...")
-            media_packages = ['vlc', 'ffmpeg']
-        
-        for package in media_packages:
-            if has_sudo:
-                try:
-                    subprocess.run(['sudo', 'apt', 'install', '-y', package], 
-                                 check=True, capture_output=True)
-                    print(f"   ✅ {package} installed")
-                except subprocess.CalledProcessError:
-                    print(f"   ⚠️  Failed to install {package}")
-            else:
-                print(f"   ❌ Cannot install {package} without sudo")
+                print(f"   ⚠️  Failed to install {package}")
+            except subprocess.TimeoutExpired:
+                print(f"   ⏰ {package} installation timed out")
     
-    def install_with_yum(self, has_sudo):
-        """Install dependencies using yum (CentOS/RHEL)"""
-        print("   Using yum package manager...")
-        
-        media_packages = ['vlc', 'ffmpeg']
-        
-        for package in media_packages:
-            if has_sudo:
-                try:
-                    subprocess.run(['sudo', 'yum', 'install', '-y', package], 
-                                 check=True, capture_output=True)
-                    print(f"   ✅ {package} installed")
-                except subprocess.CalledProcessError:
-                    print(f"   ⚠️  Failed to install {package}")
-            else:
-                print(f"   ❌ Cannot install {package} without sudo")
-    
-    def install_with_dnf(self, has_sudo):
-        """Install dependencies using dnf (Fedora)"""
-        print("   Using dnf package manager...")
-        
-        media_packages = ['vlc', 'ffmpeg']
-        
-        for package in media_packages:
-            if has_sudo:
-                try:
-                    subprocess.run(['sudo', 'dnf', 'install', '-y', package], 
-                                 check=True, capture_output=True)
-                    print(f"   ✅ {package} installed")
-                except subprocess.CalledProcessError:
-                    print(f"   ⚠️  Failed to install {package}")
-            else:
-                print(f"   ❌ Cannot install {package} without sudo")
     
     def install_python_requests(self):
         """Install Python requests module"""
@@ -338,37 +214,6 @@ class SignageSetup:
                     print("   ⚠️  Failed to install Python requests module")
                     print("   The system python3-requests package should work")
     
-    def detect_raspberry_pi(self):
-        """Detect if running on Raspberry Pi"""
-        try:
-            with open('/proc/cpuinfo', 'r') as f:
-                cpu_info = f.read()
-            return 'BCM' in cpu_info or 'Raspberry Pi' in cpu_info
-        except:
-            return False
-    
-    def detect_media_players(self):
-        """Detect available media players"""
-        players = {
-            'omxplayer': 'Hardware-accelerated (Raspberry Pi)',
-            'vlc': 'Cross-platform media player',
-            'ffplay': 'FFmpeg-based player (part of ffmpeg)',
-            'mplayer': 'Classic media player'
-        }
-        
-        available_players = []
-        for player, description in players.items():
-            if shutil.which(player):
-                available_players.append(f"   ✅ {player} - {description}")
-            else:
-                available_players.append(f"   ❌ {player} - {description}")
-        
-        print("\n".join(available_players))
-        
-        if not any("✅" in player for player in available_players):
-            print("   ⚠️  No media players detected!")
-        
-        return any("✅" in player for player in available_players)
     
     def get_user_input(self):
         """Get configuration from user"""
@@ -383,20 +228,11 @@ class SignageSetup:
         if os.geteuid() == 0:
             # Get target user
             if is_interactive:
-                target_user = input("Username to run signage as (default: obtv1): ").strip() or "obtv1"
+                current_user = os.getenv('SUDO_USER', 'user')
+                target_user = input(f"Username to run signage as (default: {current_user}): ").strip() or current_user
             else:
-                target_user = "obtv1"
-                print(f"Non-interactive mode: Using default user '{target_user}'")
-            
-            # For existing obtv1 user on this system, try to use it
-            if target_user == "pi":
-                try:
-                    import pwd
-                    pwd.getpwnam("obtv1")
-                    target_user = "obtv1"
-                    print("Found obtv1 user, using that instead of pi")
-                except KeyError:
-                    pass
+                target_user = os.getenv('SUDO_USER', 'user')
+                print(f"Non-interactive mode: Using user '{target_user}'")
             
             try:
                 import pwd
@@ -570,10 +406,8 @@ class SignageSetup:
 SIGNAGE_SERVER_URL={self.server_url}
 DEVICE_ID={self.device_id}
 CHECK_INTERVAL={self.check_interval}
-
-# Optional: Custom directories
-# MEDIA_DIR={self.setup_dir}/media
-# LOG_FILE={self.setup_dir}/client.log
+MEDIA_DIR={self.setup_dir}/media
+LOG_FILE={self.setup_dir}/client.log
 """
         
         with open(self.config_file, 'w') as f:
@@ -624,217 +458,31 @@ CHECK_INTERVAL={self.check_interval}
         
         return True
     
-    def setup_display_access(self, username):
-        """Setup autologin and display access for digital signage"""
-        print("   📺 Setting up display access...")
-        
-        try:
-            # Setup autologin via LightDM (more reliable for headless systems)
-            lightdm_config = f"""[Seat:*]
-autologin-user={username}
-autologin-user-timeout=0
-user-session=openbox
-"""
-            
-            # Ensure lightdm directory exists and write config
-            subprocess.run(['sudo', 'mkdir', '-p', '/etc/lightdm'], check=False)
-            
-            process = subprocess.Popen(['sudo', 'tee', '/etc/lightdm/lightdm.conf'], 
-                                     stdin=subprocess.PIPE, 
-                                     stdout=subprocess.PIPE, 
-                                     stderr=subprocess.PIPE,
-                                     text=True)
-            stdout, stderr = process.communicate(input=lightdm_config)
-            
-            # For Ubuntu 24.04, also configure systemd auto-login
-            systemd_override_dir = "/etc/systemd/system/getty@tty1.service.d"
-            subprocess.run(['sudo', 'mkdir', '-p', systemd_override_dir], check=False)
-            
-            systemd_override = f"""[Service]
-ExecStart=
-ExecStart=-/sbin/agetty --autologin {username} --noclear %I $TERM
-"""
-            
-            process3 = subprocess.Popen(['sudo', 'tee', f'{systemd_override_dir}/override.conf'], 
-                                      stdin=subprocess.PIPE, 
-                                      stdout=subprocess.PIPE, 
-                                      stderr=subprocess.PIPE,
-                                      text=True)
-            stdout3, stderr3 = process3.communicate(input=systemd_override)
-            
-            # Also configure NodeDM/LightDM as fallback
-            lightdm_config = f"""[Seat:*]
-autologin-user={username}
-autologin-user-timeout=0
-autologin-session=ubuntu
-"""
-            subprocess.run(['sudo', 'mkdir', '-p', '/etc/lightdm'], check=False)
-            
-            process_lightdm = subprocess.Popen(['sudo', 'tee', '/etc/lightdm/lightdm.conf'], 
-                                     stdin=subprocess.PIPE, 
-                                     stdout=subprocess.PIPE, 
-                                     stderr=subprocess.PIPE,
-                                     text=True)
-            stdout_lightdm, stderr_lightdm = process_lightdm.communicate(input=lightdm_config)
-            
-            # Reload systemd to apply changes
-            subprocess.run(['sudo', 'systemctl', 'daemon-reload'], check=False)
-            subprocess.run(['sudo', 'systemctl', 'set-default', 'graphical.target'], check=False)
-            
-            # Disable screen locking and power management for the user
-            user_home = f"/home/{username}"
-            
-            # Create script to disable screensaver and power management
-            disable_script = f"""{user_home}/.disable-screensaver.sh"""
-            script_content = f"""#!/bin/bash
-# Disable screen lock and screensaver
-export DISPLAY=:0
-gsettings set org.gnome.desktop.session idle-delay 0
-gsettings set org.gnome.desktop.screensaver lock-enabled false
-gsettings set org.gnome.desktop.screensaver ubuntu-lock-on-suspend false
-gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing'
-gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 'nothing'
-
-# Disable DPMS (monitor power management)
-xset -dpms
-xset s off
-xset s noblank
-"""
-            
-            # Create the disable script
-            process4 = subprocess.Popen(['sudo', '-u', username, 'tee', disable_script], 
-                                      stdin=subprocess.PIPE, 
-                                      stdout=subprocess.PIPE, 
-                                      stderr=subprocess.PIPE,
-                                      text=True)
-            stdout4, stderr4 = process4.communicate(input=script_content)
-            subprocess.run(['sudo', 'chmod', '+x', disable_script], check=False)
-            
-            # Add to user's .profile to run on login
-            profile_addition = f"""
-# Digital Signage - Disable screensaver and power management
-if [ "$DISPLAY" != "" ]; then
-    {disable_script} &
-fi
-"""
-            
-            process5 = subprocess.Popen(['sudo', '-u', username, 'tee', '-a', f'{user_home}/.profile'], 
-                                      stdin=subprocess.PIPE, 
-                                      stdout=subprocess.PIPE, 
-                                      stderr=subprocess.PIPE,
-                                      text=True)
-            stdout5, stderr5 = process5.communicate(input=profile_addition)
-            
-            if process.returncode == 0 or process3.returncode == 0:
-                print("   ✅ Autologin configured (GDM3 + systemd)")
-                print("   ✅ Screen lock and power management disabled")
-                print("   ⚠️  Reboot required for autologin to take effect")
-            else:
-                print("   ⚠️  Could not configure autologin (may require manual setup)")
-            
-            # Add user to video group for hardware access
-            subprocess.run(['sudo', 'usermod', '-a', '-G', 'video', username], 
-                          check=False)
-            
-            # Setup screen blanking disable
-            autostart_dir = f"/home/{username}/.config/autostart"
-            subprocess.run(['sudo', '-u', username, 'mkdir', '-p', autostart_dir], 
-                          check=False)
-            
-            disable_script = """[Desktop Entry]
-Type=Application
-Name=Disable Screen Blanking
-Exec=bash -c "xset s off; xset -dpms; xset s noblank"
-Hidden=false
-NoDisplay=false
-X-GNOME-Autostart-enabled=true
-"""
-            
-            disable_file = f"{autostart_dir}/disable-blanking.desktop"
-            process = subprocess.Popen(['sudo', 'tee', disable_file], 
-                                     stdin=subprocess.PIPE, 
-                                     stdout=subprocess.PIPE, 
-                                     stderr=subprocess.PIPE,
-                                     text=True)
-            stdout, stderr = process.communicate(input=disable_script)
-            
-            # Fix ownership
-            subprocess.run(['sudo', 'chown', '-R', f'{username}:{username}', 
-                           f'/home/{username}/.config'], check=False)
-            
-            print("   ✅ Display access configured")
-            
-        except Exception as e:
-            print(f"   ⚠️  Display setup warning: {e}")
     
     def create_systemd_service(self):
-        """Create systemd service for auto-start with display access"""
+        """Create systemd service for desktop Ubuntu"""
         print("🚀 Setting up auto-start service...")
         
         # Use the target user we already determined
         username = self.target_user or getpass.getuser()
         
-        # Setup autologin and display access first
-        self.setup_display_access(username)
-        
-        # Create display setup script for direct hardware output
-        display_script = f"""#!/bin/bash
-# Setup direct display output for digital signage
-
-# Add user to video and render groups for display access
-usermod -a -G video,render {self.target_user or 'obtv1'}
-
-# Check for display hardware and set up KMS access
-if [ -d /dev/dri ]; then
-    echo "DRM devices detected in /dev/dri"
-    chmod 666 /dev/dri/card*
-    chmod 666 /dev/dri/renderD*
-    # Set up KMS for direct hardware output
-    echo "Setting up KMS for direct display output"
-elif [ -e /dev/fb0 ]; then
-    echo "Framebuffer device detected: /dev/fb0"
-    chmod 666 /dev/fb0
-else
-    echo "No display hardware detected"
-fi
-
-# Configure VLC for framebuffer output (confirmed working)
-mkdir -p {self.setup_dir}/.config/vlc
-cat > {self.setup_dir}/.config/vlc/vlcrc << 'EOF'
-[dummy]
-intf=dummy
-
-[core]
-vout=fb
-aout=pulse
-EOF
-
-# Set permissions
-chown -R {self.target_user or 'obtv1'}:{self.target_user or 'obtv1'} {self.setup_dir}/.config
-
-echo "Display setup complete"
-"""
-        
-        with open(f'{self.setup_dir}/setup_display.sh', 'w') as f:
-            f.write(display_script)
-        
-        subprocess.run(['chmod', '+x', f'{self.setup_dir}/setup_display.sh'], check=True)
-        
+        # Service configuration for desktop Ubuntu
+        user_home = f"/home/{username}"
         service_content = f"""[Unit]
 Description=Digital Signage Client
-After=multi-user.target
-Wants=multi-user.target
+After=graphical.target display-manager.service network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
 User={username}
 Group={username}
-Environment=HOME=/home/{username}
+Environment=HOME={user_home}
 Environment=USER={username}
-Environment=PULSE_RUNTIME_PATH=/home/{username}/.pulse
+Environment=DISPLAY=:0
+Environment=XDG_RUNTIME_DIR=/run/user/%i
 WorkingDirectory={self.setup_dir}
 EnvironmentFile={self.config_file}
-ExecStartPre={self.setup_dir}/setup_display.sh
 ExecStart=/usr/bin/python3 {self.client_script}
 Restart=always
 RestartSec=10
@@ -842,7 +490,7 @@ StandardOutput=journal
 StandardError=journal
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=graphical.target
 """
         
         try:
@@ -854,17 +502,9 @@ WantedBy=multi-user.target
                 print("   ⚠️  This script needs sudo privileges to create systemd service")
                 print("   Please run the setup with sudo:")
                 print("   sudo python3 setup_client.py")
-                print("")
-                print("   Or run these commands manually after setup:")
-                print(f"   sudo tee /etc/systemd/system/signage-client.service > /dev/null << 'EOF'")
-                print(service_content.strip())
-                print("EOF")
-                print("   sudo systemctl daemon-reload")
-                print("   sudo systemctl enable signage-client.service")
-                print("   sudo systemctl start signage-client.service")
                 return False
             
-            # Use sudo to create the service file
+            # Create the service file
             process = subprocess.Popen(['sudo', 'tee', self.service_file], 
                                      stdin=subprocess.PIPE, 
                                      stdout=subprocess.PIPE, 
@@ -876,7 +516,7 @@ WantedBy=multi-user.target
                 print(f"   ❌ Failed to create service file: {stderr}")
                 return False
             
-            # Reload systemd and enable service with sudo
+            # Reload systemd and enable service
             subprocess.run(['sudo', 'systemctl', 'daemon-reload'], check=True)
             subprocess.run(['sudo', 'systemctl', 'enable', 'signage-client.service'], check=True)
             
