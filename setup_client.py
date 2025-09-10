@@ -221,9 +221,8 @@ class SignageSetup:
         print("⚙️  Configuration")
         print("-" * 20)
         
-        # Check if we're in non-interactive mode (piped from curl)
-        # Interactive only when stdin is a TTY and not explicitly forced non-interactive
-        is_interactive = sys.stdin.isatty() and os.environ.get('FORCE_NON_INTERACTIVE', '0') != '1'
+        # Default to interactive mode unless explicitly running non-interactive
+        is_interactive = os.environ.get('FORCE_NON_INTERACTIVE', '0') != '1'
         
         # If running as root, ask for target user
         if os.geteuid() == 0:
