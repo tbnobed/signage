@@ -434,6 +434,7 @@ class SignageSetup:
 SIGNAGE_SERVER_URL={self.server_url}
 DEVICE_ID={self.device_id}
 CHECK_INTERVAL={self.check_interval}
+RAPID_CHECK_INTERVAL=2
 SCREEN_INDEX={self.screen_index}
 MEDIA_DIR={self.setup_dir}/media
 LOG_FILE={self.setup_dir}/client.log

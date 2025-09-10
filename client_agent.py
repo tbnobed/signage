@@ -21,6 +21,7 @@ import threading
 SERVER_URL = os.environ.get('SIGNAGE_SERVER_URL', 'http://localhost:5000')
 DEVICE_ID = os.environ.get('DEVICE_ID', 'device-001')
 CHECK_INTERVAL = int(os.environ.get('CHECK_INTERVAL', '60'))  # seconds
+RAPID_CHECK_INTERVAL = int(os.environ.get('RAPID_CHECK_INTERVAL', '2'))  # seconds for playlist status checks
 MEDIA_DIR = os.environ.get('MEDIA_DIR', os.path.expanduser('~/signage/media'))
 LOG_FILE = os.environ.get('LOG_FILE', os.path.expanduser('~/signage/client.log'))
 
@@ -41,6 +42,7 @@ class SignageClient:
         self.running = True
         self.current_media_index = 0
         self.last_media_change = datetime.now()
+        self.last_playlist_check = None  # Track when we last got playlist timestamp
         
         # Create media directory
         Path(MEDIA_DIR).mkdir(exist_ok=True)
@@ -48,6 +50,7 @@ class SignageClient:
         self.logger.info(f"Signage client started for device: {DEVICE_ID}")
         self.logger.info(f"Server URL: {SERVER_URL}")
         self.logger.info(f"Media player: {self.media_player}")
+        self.logger.info(f"Rapid playlist checks every {RAPID_CHECK_INTERVAL} seconds for instant updates")
 
     def setup_logging(self):
         logging.basicConfig(
@@ -119,6 +122,33 @@ class SignageClient:
         except Exception as e:
             self.logger.error(f"Failed to send log to server: {e}")
 
+    def check_playlist_status(self):
+        """Quick check if playlist has been updated"""
+        try:
+            response = requests.get(
+                f"{SERVER_URL}/api/devices/{DEVICE_ID}/playlist-status",
+                timeout=5
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                playlist_id = data.get('playlist_id')
+                last_updated = data.get('last_updated')
+                
+                # Check if we need to fetch full playlist
+                if (not self.current_playlist or 
+                    self.current_playlist.get('id') != playlist_id or
+                    self.current_playlist.get('last_updated') != last_updated):
+                    
+                    self.logger.info(f"Playlist update detected - stopping current media and fetching new playlist")
+                    self.stop_current_media()  # Stop immediately to start new content
+                    return self.fetch_playlist()
+                    
+        except Exception as e:
+            self.logger.debug(f"Playlist status check failed: {e}")
+            
+        return False
+
     def fetch_playlist(self):
         """Fetch current playlist from server"""
         try:
@@ -133,8 +163,10 @@ class SignageClient:
                 
                 if playlist != self.current_playlist:
                     self.logger.info(f"New playlist received: {playlist['name'] if playlist else 'None'}")
+                    self.stop_current_media()  # Stop current media immediately
                     self.current_playlist = playlist
                     self.current_media_index = 0
+                    self.logger.info(f"Starting immediate playback of new playlist")
                     return True
                     
         except Exception as e:
@@ -306,17 +338,23 @@ class SignageClient:
         signal.signal(signal.SIGINT, self.signal_handler)
         
         last_checkin = datetime.now() - timedelta(seconds=CHECK_INTERVAL)
+        last_rapid_check = datetime.now() - timedelta(seconds=RAPID_CHECK_INTERVAL)
         last_cleanup = datetime.now()
         
         self.send_log('info', 'Signage client started')
         
         while self.running:
             try:
-                # Send periodic checkin
+                # Send periodic checkin and full sync
                 if datetime.now() - last_checkin >= timedelta(seconds=CHECK_INTERVAL):
                     self.send_checkin()
                     self.fetch_playlist()
                     last_checkin = datetime.now()
+                
+                # Rapid playlist status checks for instant updates
+                elif datetime.now() - last_rapid_check >= timedelta(seconds=RAPID_CHECK_INTERVAL):
+                    self.check_playlist_status()
+                    last_rapid_check = datetime.now()
                 
                 # Play current playlist
                 self.play_playlist()

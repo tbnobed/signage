@@ -272,6 +272,26 @@ def device_checkin(device_id):
     
     return jsonify(response)
 
+@api.route('/devices/<device_id>/playlist-status')
+def get_device_playlist_status(device_id):
+    """Lightweight endpoint to check if playlist has been updated"""
+    device = Device.query.filter_by(device_id=device_id).first()
+    
+    if not device:
+        return jsonify({'error': 'Device not found'}), 404
+    
+    if not device.current_playlist_id:
+        return jsonify({'playlist_id': None, 'last_updated': None})
+    
+    playlist = Playlist.query.get(device.current_playlist_id)
+    if not playlist or not playlist.is_active:
+        return jsonify({'playlist_id': None, 'last_updated': None})
+    
+    return jsonify({
+        'playlist_id': playlist.id,
+        'last_updated': playlist.updated_at.isoformat()
+    })
+
 @api.route('/devices/<device_id>/playlist')
 def get_device_playlist(device_id):
     device = Device.query.filter_by(device_id=device_id).first()
@@ -291,6 +311,7 @@ def get_device_playlist(device_id):
         'name': playlist.name,
         'loop': playlist.loop_playlist,
         'default_duration': playlist.default_duration,
+        'last_updated': playlist.updated_at.isoformat(),
         'items': []
     }
     
