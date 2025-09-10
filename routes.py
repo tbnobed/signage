@@ -451,6 +451,15 @@ def download_setup_python():
     except FileNotFoundError:
         return "Python setup script not found", 404
 
+@main.route('/download/client_agent.py')
+def download_client_agent():
+    """Download the fixed client agent script"""
+    from flask import send_file
+    try:
+        return send_file('client_agent.py', as_attachment=True, download_name='client_agent.py')
+    except FileNotFoundError:
+        return "Client agent script not found", 404
+
 @main.route('/install')
 def install_script():
     """Generate dynamic install script with correct server URL"""
