@@ -368,6 +368,9 @@ class SignageClient:
             else:
                 command.append('--no-loop')
             
+            # Add image duration for proper image display (10 seconds default)
+            command.extend(['--image-duration', '10'])  # Images show for 10 seconds each
+            
             # Add the playlist file
             command.append(playlist_file)
             
@@ -431,34 +434,9 @@ class SignageClient:
         
         items = self.current_playlist['items']
         
-        # Special handling for single-item playlists - allow seamless looping
-        if len(items) == 1 and self.current_playlist.get('loop', True):
-            media_item = items[0]
-            local_path = self.download_media(media_item)
-            
-            if local_path:
-                self.logger.info("Single video playlist - enabling seamless loop mode")
-                # Let VLC loop indefinitely without client intervention
-                success = self.play_media(local_path, allow_loop=True)
-                
-                if success:
-                    # Keep VLC running and only check for playlist updates
-                    # The video will loop seamlessly without VLC restarting
-                    while self.running and self.current_process and self.current_process.poll() is None:
-                        time.sleep(5)  # Check every 5 seconds if VLC is still running
-                        # Playlist update checks will happen via background thread
-                    
-                    self.logger.info("VLC process ended, restarting playback")
-                else:
-                    self.send_log('error', f"Failed to play: {media_item['original_filename']}")
-                    time.sleep(10)
-            else:
-                self.send_log('error', f"Failed to download: {media_item['original_filename']}")
-                time.sleep(10)
-            return
-        
-        # Multi-item playlist handling - use continuous VLC playlist to avoid interruptions
-        self.logger.info(f"Multi-video playlist with {len(items)} items - creating continuous VLC playlist")
+        # Use continuous playlist approach for ALL playlists (single or multi-item)
+        # This prevents VLC from restarting between images/videos AND handles image looping properly
+        self.logger.info(f"Playlist with {len(items)} items - creating continuous VLC playlist to prevent restarts")
         
         # Download all media files first
         media_paths = []
