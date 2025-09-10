@@ -86,6 +86,22 @@ def assign_playlist(device_id):
     flash('Playlist assigned successfully', 'success')
     return redirect(url_for('main.devices'))
 
+@main.route('/devices/<int:device_id>/delete', methods=['POST'])
+@login_required
+def delete_device(device_id):
+    device = Device.query.get_or_404(device_id)
+    device_name = device.name
+    
+    # Delete associated device logs first (cascade)
+    DeviceLog.query.filter_by(device_id=device_id).delete()
+    
+    # Delete the device
+    db.session.delete(device)
+    db.session.commit()
+    
+    flash(f'Device "{device_name}" and its logs have been deleted successfully', 'success')
+    return redirect(url_for('main.devices'))
+
 @main.route('/media')
 @login_required
 def media():

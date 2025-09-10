@@ -92,9 +92,15 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-save me-1"></i>Update
-                        </button>
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-save me-1"></i>Update
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                    onclick="confirmDelete('{{ device.name }}', '{{ device.id }}')">
+                                <i class="fas fa-trash me-1"></i>Delete
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -253,6 +259,43 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteDeviceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Device
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the device <strong><span id="deviceNameToDelete"></span></strong>?</p>
+                
+                <div class="alert alert-warning">
+                    <strong>This action cannot be undone!</strong><br>
+                    This will permanently remove:
+                    <ul class="mb-0 mt-2">
+                        <li>The device registration</li>
+                        <li>All device logs and history</li>
+                        <li>Any playlist assignments</li>
+                    </ul>
+                </div>
+                
+                <p class="mb-0">The client will no longer be able to connect to the server until it's re-registered.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteDeviceForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Delete Device
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -273,6 +316,13 @@ function copyToClipboard(text) {
         console.error('Could not copy text: ', err);
         showAlert('Could not copy to clipboard', 'warning');
     });
+}
+
+// Delete device confirmation
+function confirmDelete(deviceName, deviceId) {
+    document.getElementById('deviceNameToDelete').textContent = deviceName;
+    document.getElementById('deleteDeviceForm').action = "{{ url_for('main.delete_device', device_id=0) }}".replace('0', deviceId);
+    new bootstrap.Modal(document.getElementById('deleteDeviceModal')).show();
 }
 </script>
 {% endblock %}
