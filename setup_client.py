@@ -488,6 +488,75 @@ LOG_FILE={self.setup_dir}/client.log
         
         return True
     
+    def configure_sudo_permissions(self):
+        """Configure passwordless sudo for reboot commands"""
+        print("🔒 Configuring sudo permissions for reboot functionality...")
+        
+        # Get the target username
+        username = self.target_user or getpass.getuser()
+        
+        # Define sudoers file and content
+        sudoers_file = f"/etc/sudoers.d/signage-reboot-{username}"
+        sudoers_content = f"""# Allow {username} to reboot without password for digital signage
+{username} ALL=(ALL) NOPASSWD: /sbin/reboot, /usr/sbin/reboot, /bin/systemctl reboot, /usr/bin/systemctl reboot
+"""
+        
+        # Create temporary file for validation
+        import tempfile
+        try:
+            # Create temporary file with sudoers content
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.tmp', delete=False) as temp_file:
+                temp_file.write(sudoers_content)
+                temp_file_path = temp_file.name
+            
+            # Validate the sudoers content using visudo
+            print("   Validating sudoers configuration...")
+            try:
+                subprocess.run(['sudo', 'visudo', '-cf', temp_file_path], 
+                             check=True, capture_output=True, timeout=10)
+                print("   ✅ Sudoers configuration is valid")
+            except subprocess.CalledProcessError as e:
+                print(f"   ❌ Invalid sudoers configuration: {e}")
+                os.unlink(temp_file_path)  # Clean up temp file
+                return False
+            
+            # Install the validated file with proper ownership and permissions
+            try:
+                subprocess.run(['sudo', 'install', '-m', '440', '-o', 'root', '-g', 'root', 
+                               temp_file_path, sudoers_file], 
+                             check=True, capture_output=True, timeout=10)
+                print(f"   ✅ Sudo permissions installed: {sudoers_file}")
+                print(f"   User '{username}' can now reboot without password")
+            except subprocess.CalledProcessError as e:
+                print(f"   ❌ Failed to install sudoers file: {e}")
+                os.unlink(temp_file_path)  # Clean up temp file
+                return False
+            
+            # Clean up temporary file
+            os.unlink(temp_file_path)
+            
+            # Verify the configuration works
+            try:
+                result = subprocess.run(['sudo', '-l', '-U', username], 
+                                      capture_output=True, text=True, timeout=5)
+                # Check if any of the required commands are listed
+                required_commands = ['/sbin/reboot', '/usr/sbin/reboot', '/bin/systemctl reboot', '/usr/bin/systemctl reboot']
+                found_commands = [cmd for cmd in required_commands if cmd in result.stdout]
+                
+                if found_commands:
+                    print(f"   ✅ Sudo configuration verified: {', '.join(found_commands)}")
+                else:
+                    print("   ⚠️  Sudo configuration created but verification unclear")
+            except Exception:
+                print("   ⚠️  Could not verify sudo configuration, but file was installed")
+            
+            return True
+            
+        except Exception as e:
+            print(f"   ❌ Failed to configure sudo permissions: {e}")
+            print("   Manual configuration required. Add this line to /etc/sudoers:")
+            print(f"   {username} ALL=(ALL) NOPASSWD: /sbin/reboot, /usr/sbin/reboot, /bin/systemctl reboot, /usr/bin/systemctl reboot")
+            return False
     
     def create_systemd_service(self):
         """Create systemd user service for desktop Ubuntu with Wayland support"""
@@ -686,6 +755,9 @@ WantedBy=graphical-session.target
             self.create_directory()
             self.download_client()
             self.create_config()
+            
+            # Configure sudo permissions for remote reboot
+            self.configure_sudo_permissions()
             
             # Always try to create systemd service regardless of connection test
             connection_ok = self.test_connection()
