@@ -20,6 +20,7 @@ import os
 import sys
 import subprocess
 import urllib.request
+import urllib.error
 import json
 import getpass
 import platform
@@ -696,6 +697,105 @@ Comment=Apply kiosk mode settings on login
         print("      • Settings will re-apply on each login")
         print()
     
+    def install_teamviewer(self):
+        """Download and install TeamViewer for remote management"""
+        print("📱 Installing TeamViewer for remote management...")
+        
+        # TeamViewer download URL
+        teamviewer_url = "https://download.teamviewer.com/download/linux/teamviewer_amd64.deb?utm_source=google&utm_medium=cpc&utm_campaign=us%7Cb%7Cpr%7C22%7Caug%7Ctv-core-download-sn%7Cnew%7Ct0%7C0&utm_content=Download&utm_term=teamviewer+download"
+        
+        # Download path
+        download_dir = Path("/tmp")
+        teamviewer_deb = download_dir / "teamviewer_amd64.deb"
+        
+        try:
+            print("   ⬇️  Downloading TeamViewer package...")
+            urllib.request.urlretrieve(teamviewer_url, teamviewer_deb)
+            print(f"   ✅ Downloaded: {teamviewer_deb}")
+            
+            # Verify file was downloaded and has reasonable size
+            if teamviewer_deb.exists() and teamviewer_deb.stat().st_size > 1024:  # At least 1KB
+                file_size_mb = teamviewer_deb.stat().st_size / (1024 * 1024)
+                print(f"   📦 Package size: {file_size_mb:.1f} MB")
+            else:
+                print("   ❌ Downloaded file appears invalid")
+                return False
+            
+            # Install TeamViewer using dpkg
+            print("   📦 Installing TeamViewer package...")
+            try:
+                # First try to install the package
+                subprocess.run(['sudo', 'dpkg', '-i', str(teamviewer_deb)], 
+                             check=True, capture_output=True, timeout=60)
+                print("   ✅ TeamViewer package installed")
+            except subprocess.CalledProcessError as e:
+                print("   ⚠️  Package installation had dependency issues, fixing...")
+                # Try to fix dependency issues
+                try:
+                    subprocess.run(['sudo', 'apt', 'install', '-f', '-y'], 
+                                 check=True, capture_output=True, timeout=120)
+                    print("   ✅ Dependencies resolved")
+                except subprocess.CalledProcessError:
+                    print("   ❌ Could not resolve dependencies automatically")
+                    return False
+            
+            # Verify TeamViewer was installed
+            if shutil.which('teamviewer'):
+                print("   ✅ TeamViewer installed successfully")
+                
+                # Enable TeamViewer daemon to start on boot
+                try:
+                    subprocess.run(['sudo', 'systemctl', 'enable', 'teamviewerd'], 
+                                 check=True, capture_output=True, timeout=10)
+                    print("   ✅ TeamViewer daemon enabled for auto-start")
+                except subprocess.CalledProcessError:
+                    print("   ⚠️  Could not enable TeamViewer daemon (this is usually ok)")
+                
+                # Start TeamViewer daemon
+                try:
+                    subprocess.run(['sudo', 'systemctl', 'start', 'teamviewerd'], 
+                                 check=True, capture_output=True, timeout=15)
+                    print("   ✅ TeamViewer daemon started")
+                except subprocess.CalledProcessError:
+                    print("   ⚠️  Could not start TeamViewer daemon (will start on reboot)")
+                
+                # Show TeamViewer ID information
+                try:
+                    result = subprocess.run(['teamviewer', '--info'], 
+                                          capture_output=True, text=True, timeout=10)
+                    if result.returncode == 0 and "TeamViewer ID:" in result.stdout:
+                        for line in result.stdout.split('\n'):
+                            if 'TeamViewer ID:' in line:
+                                print(f"   🆔 {line.strip()}")
+                    else:
+                        print("   ⚠️  TeamViewer ID not available yet (will show after reboot)")
+                except Exception:
+                    print("   ⚠️  TeamViewer ID not available yet (will show after reboot)")
+                
+            else:
+                print("   ❌ TeamViewer installation failed")
+                return False
+            
+            # Clean up downloaded package
+            try:
+                teamviewer_deb.unlink()
+                print("   🧹 Cleaned up installation package")
+            except Exception:
+                pass
+                
+            return True
+            
+        except urllib.error.URLError as e:
+            print(f"   ❌ Failed to download TeamViewer: {e}")
+            print("   Check your internet connection and try again")
+            return False
+        except subprocess.TimeoutExpired:
+            print("   ❌ TeamViewer installation timed out")
+            return False
+        except Exception as e:
+            print(f"   ❌ TeamViewer installation error: {e}")
+            return False
+    
     def configure_sudo_permissions(self):
         """Configure passwordless sudo for reboot commands"""
         print("🔒 Configuring sudo permissions for reboot functionality...")
@@ -917,6 +1017,7 @@ WantedBy=graphical-session.target
         print("   • TBN logo set as desktop background")
         print("   • Automatic system updates disabled")
         print("   • Settings auto-restore on each login")
+        print("   • TeamViewer installed for remote management")
         print()
         print("📋 Next Steps:")
         print("1. Register this device in your web dashboard:")
@@ -978,6 +1079,9 @@ WantedBy=graphical-session.target
             
             # Configure kiosk mode for Ubuntu 22.04
             self.configure_kiosk_mode()
+            
+            # Install TeamViewer for remote management
+            self.install_teamviewer()
             
             # Always try to create systemd service regardless of connection test
             connection_ok = self.test_connection()
