@@ -373,6 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
 .video-overlay {
     pointer-events: none;
     transition: opacity 0.3s ease;
+    z-index: 2; /* Keep overlay below dropdown buttons */
 }
 
 .video-thumbnail:hover + .video-overlay {
@@ -385,6 +386,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .video-thumbnail {
     cursor: pointer;
+    z-index: 1; /* Keep video element below overlay */
+}
+
+/* Ensure dropdown buttons are above video content */
+.card-header .dropdown {
+    position: relative;
+    z-index: 10 !important; /* Higher than video content */
+}
+
+.card-header .dropdown-toggle {
+    z-index: 11 !important; /* Even higher for the button itself */
+}
+
+.card-header .dropdown-menu {
+    z-index: 12 !important; /* Highest for the dropdown menu */
+}
+
+/* Ensure video preview doesn't interfere with card header controls */
+.card-body .position-relative {
+    z-index: 1; /* Keep video container below header */
 }
 </style>
 {% endblock %}
