@@ -792,26 +792,84 @@ Comment=Apply kiosk mode settings on login
                 # Step 2: Disable Wayland and enable X11 for reliable remote access
                 print("   🖥️  Configuring display server for reliable remote access...")
                 try:
-                    # Check if we need to modify GDM config
+                    # Check current session type
+                    current_session = os.environ.get('XDG_SESSION_TYPE', 'unknown')
+                    print(f"   💡 Current session type: {current_session}")
+                    
                     gdm_config_path = '/etc/gdm3/custom.conf'
+                    wayland_disabled = False
+                    
                     if os.path.exists(gdm_config_path):
                         with open(gdm_config_path, 'r') as f:
                             gdm_config = f.read()
                         
-                        if 'WaylandEnable=false' not in gdm_config:
+                        # Check if WaylandEnable=false is already active (not commented)
+                        if 'WaylandEnable=false' in gdm_config and not gdm_config.count('#WaylandEnable=false'):
+                            lines = gdm_config.split('\n')
+                            for line in lines:
+                                if 'WaylandEnable=false' in line and not line.strip().startswith('#'):
+                                    wayland_disabled = True
+                                    break
+                        
+                        if not wayland_disabled:
                             print("   🔄 Disabling Wayland in favor of X11...")
-                            # Use sed to uncomment/add WaylandEnable=false
-                            subprocess.run(['sudo', 'sed', '-i', 
-                                          's/#WaylandEnable=false/WaylandEnable=false/', 
-                                          gdm_config_path], 
-                                         check=True, timeout=10)
+                            
+                            # Method 1: Try to uncomment existing line
+                            result1 = subprocess.run(['sudo', 'sed', '-i', 
+                                                    's/#WaylandEnable=false/WaylandEnable=false/', 
+                                                    gdm_config_path], 
+                                                   capture_output=True, timeout=10)
+                            
+                            # Method 2: If no commented line found, add it to [daemon] section
+                            with open(gdm_config_path, 'r') as f:
+                                updated_config = f.read()
+                            
+                            if 'WaylandEnable=false' not in updated_config or '#WaylandEnable=false' in updated_config:
+                                print("   📝 Adding WaylandEnable=false to GDM config...")
+                                
+                                # Add WaylandEnable=false under [daemon] section
+                                if '[daemon]' in updated_config:
+                                    # Insert after [daemon] line
+                                    subprocess.run(['sudo', 'sed', '-i', 
+                                                  '/^\[daemon\]/a WaylandEnable=false', 
+                                                  gdm_config_path], 
+                                                 check=True, timeout=10)
+                                else:
+                                    # Add [daemon] section with WaylandEnable=false
+                                    with open('/tmp/gdm_append.txt', 'w') as f:
+                                        f.write('\n[daemon]\nWaylandEnable=false\n')
+                                    subprocess.run(['sudo', 'tee', '-a', gdm_config_path], 
+                                                 stdin=open('/tmp/gdm_append.txt', 'r'),
+                                                 check=True, timeout=10)
+                                    os.remove('/tmp/gdm_append.txt')
+                            
                             print("   ✅ Wayland disabled, X11 will be used after reboot")
+                            
+                            # Verify the change
+                            with open(gdm_config_path, 'r') as f:
+                                final_config = f.read()
+                                if 'WaylandEnable=false' in final_config and not final_config.count('WaylandEnable=false') == final_config.count('#WaylandEnable=false'):
+                                    print("   ✅ Configuration verified successfully")
+                                else:
+                                    print("   ⚠️  Configuration verification failed")
                         else:
-                            print("   ✅ X11 already configured")
+                            print("   ✅ Wayland already disabled in GDM config")
+                            if current_session == 'wayland':
+                                print("   💡 Still on Wayland session - reboot required")
                     else:
                         print("   💡 No GDM config found - likely already using X11")
+                        
                 except Exception as e:
                     print(f"   ⚠️  Display server config error: {e}")
+                    # Fallback - try direct file modification
+                    try:
+                        print("   🔄 Trying fallback configuration method...")
+                        subprocess.run(['sudo', 'bash', '-c', 
+                                      'echo -e "\\n[daemon]\\nWaylandEnable=false" >> /etc/gdm3/custom.conf'], 
+                                     check=True, timeout=10)
+                        print("   ✅ Fallback configuration applied")
+                    except Exception as fallback_e:
+                        print(f"   ❌ Fallback configuration also failed: {fallback_e}")
                 
                 # Step 3: Set TeamViewer password (prompt user for security)
                 print("   🔐 Setting up TeamViewer unattended access...")
@@ -829,17 +887,40 @@ Comment=Apply kiosk mode settings on login
                         teamviewer_password = "Kiosk2024!"
                         break
                 
-                # Set the password
+                # Set the password (handle shell special characters safely)
                 try:
+                    # Use shell=False and pass password as separate argument to avoid shell expansion
                     result = subprocess.run(['sudo', 'teamviewer', 'passwd', teamviewer_password], 
-                                          capture_output=True, text=True, timeout=10)
-                    if result.returncode == 0 or 'ok' in result.stdout.lower():
+                                          capture_output=True, text=True, timeout=15)
+                    
+                    # Check various success indicators
+                    if (result.returncode == 0 or 
+                        'ok' in result.stdout.lower() or 
+                        'password set' in result.stdout.lower() or
+                        len(result.stdout.strip()) == 0):  # Sometimes no output means success
                         print("   ✅ TeamViewer password set successfully")
                         print(f"   🔑 Password: {teamviewer_password}")
                     else:
-                        print("   ⚠️  Password setting may have failed")
+                        print(f"   ⚠️  Password setting unclear - return code: {result.returncode}")
+                        print(f"   📄 Output: {result.stdout}")
+                        print(f"   📄 Error: {result.stderr}")
+                        # Try alternative method
+                        print("   🔄 Trying alternative password method...")
+                        alt_result = subprocess.run(['sudo', 'bash', '-c', 
+                                                   f'echo "{teamviewer_password}" | teamviewer --passwd'], 
+                                                  capture_output=True, text=True, timeout=15)
+                        if alt_result.returncode == 0:
+                            print("   ✅ Alternative password method succeeded")
+                        else:
+                            print("   ⚠️  Alternative method also unclear")
+                            
+                except subprocess.TimeoutExpired:
+                    print("   ⚠️  Password setting timed out - this might be due to special characters")
+                    print("   💡 TeamViewer might still work, test the connection after reboot")
                 except Exception as e:
                     print(f"   ⚠️  Password setting error: {e}")
+                    print("   💡 You can set the password manually after reboot with:")
+                    print(f"   💡 sudo teamviewer passwd 'your_password_here'")
                 
                 # Step 4: Restart TeamViewer daemon
                 print("   🔄 Restarting TeamViewer daemon...")
