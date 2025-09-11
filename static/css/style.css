@@ -136,6 +136,42 @@ body {
     box-shadow: var(--shadow-glow);
 }
 
+/* Dropdown Menu Fix - Ensure dropdown appears above all elements */
+.dropdown-menu {
+    z-index: 9999 !important;
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border-accent) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--shadow-elevated) !important;
+    backdrop-filter: blur(20px) !important;
+    margin-top: 8px !important;
+}
+
+.dropdown-item {
+    color: var(--text-secondary) !important;
+    transition: all 0.3s ease !important;
+    border-radius: 8px !important;
+    margin: 4px 8px !important;
+    padding: 8px 12px !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+    transform: translateX(4px) !important;
+}
+
+/* Ensure navbar dropdown has proper stacking */
+.navbar .dropdown {
+    position: relative;
+    z-index: 9998;
+}
+
+.navbar .dropdown-toggle::after {
+    color: var(--text-muted);
+}
+
 /* Modern Cards */
 .card {
     background: var(--gradient-card);
