@@ -487,6 +487,215 @@ LOG_FILE={self.setup_dir}/client.log
         
         return True
     
+    def configure_kiosk_mode(self):
+        """Configure kiosk mode for Ubuntu 22.04: disable notifications, power management, set background"""
+        print("🖥️  Configuring kiosk mode for Ubuntu 22.04...")
+        
+        username = self.target_user or getpass.getuser()
+        user_home = f"/home/{username}"
+        
+        # Download TBN logo background
+        print("   📄 Downloading TBN logo background...")
+        background_url = "http://msm.livestudios.tv/wp-content/uploads/2024/05/TBNLogo.png"
+        background_path = Path(user_home) / "Pictures" / "TBNLogo.png"
+        
+        try:
+            # Create Pictures directory if it doesn't exist
+            background_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Download background image
+            urllib.request.urlretrieve(background_url, background_path)
+            
+            # Set ownership if running as root
+            if os.geteuid() == 0 and self.target_uid is not None and self.target_gid is not None:
+                os.chown(background_path, self.target_uid, self.target_gid)
+                os.chown(background_path.parent, self.target_uid, self.target_gid)
+            
+            print(f"   ✅ Background downloaded: {background_path}")
+        except Exception as e:
+            print(f"   ⚠️  Failed to download background: {e}")
+            print("   Using default background")
+            background_path = None
+        
+        # Configure GNOME settings for kiosk mode
+        gsettings_commands = [
+            # Disable all notifications
+            "gsettings set org.gnome.desktop.notifications show-banners false",
+            "gsettings set org.gnome.desktop.notifications show-in-lock-screen false",
+            
+            # Power settings - never suspend, never turn off screen
+            "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing'",
+            "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 'nothing'",
+            "gsettings set org.gnome.desktop.session idle-delay 0",
+            
+            # Screen saver settings
+            "gsettings set org.gnome.desktop.screensaver lock-enabled false",
+            "gsettings set org.gnome.desktop.screensaver idle-activation-enabled false",
+            
+            # Disable automatic updates notifications
+            "gsettings set org.gnome.software download-updates false",
+            "gsettings set org.gnome.software download-updates-notify false",
+            
+            # Hide desktop icons and taskbar auto-hide for cleaner kiosk look
+            "gsettings set org.gnome.desktop.background show-desktop-icons false",
+            "gsettings set org.gnome.shell.extensions.dash-to-dock autohide true",
+            "gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false",
+            
+            # Disable screen lock
+            "gsettings set org.gnome.desktop.lockdown disable-lock-screen true",
+        ]
+        
+        # Set background if download was successful
+        if background_path and background_path.exists():
+            gsettings_commands.extend([
+                f"gsettings set org.gnome.desktop.background picture-uri 'file://{background_path}'",
+                f"gsettings set org.gnome.desktop.background picture-uri-dark 'file://{background_path}'",
+                "gsettings set org.gnome.desktop.background picture-options 'centered'",
+                "gsettings set org.gnome.desktop.background primary-color '#000000'",
+            ])
+        
+        # Execute gsettings commands
+        print("   ⚙️  Configuring GNOME settings...")
+        for cmd in gsettings_commands:
+            try:
+                if os.geteuid() == 0:  # Running as root, execute as target user
+                    import pwd
+                    user_uid = pwd.getpwnam(username).pw_uid
+                    user_env = {
+                        'XDG_RUNTIME_DIR': f'/run/user/{user_uid}',
+                        'HOME': user_home,
+                        'USER': username,
+                        'DISPLAY': ':0',  # Ensure we can access the display
+                        'DBUS_SESSION_BUS_ADDRESS': f'unix:path=/run/user/{user_uid}/bus'
+                    }
+                    
+                    subprocess.run(['sudo', '-u', username] + 
+                                 [f'{k}={v}' for k, v in user_env.items()] +
+                                 cmd.split(), 
+                                 check=True, capture_output=True, 
+                                 env={**os.environ, **user_env}, timeout=10)
+                else:
+                    # Running as regular user
+                    subprocess.run(cmd.split(), check=True, capture_output=True, timeout=10)
+                    
+            except subprocess.CalledProcessError as e:
+                print(f"   ⚠️  Warning: Failed to execute: {cmd}")
+            except subprocess.TimeoutExpired:
+                print(f"   ⚠️  Warning: Timeout executing: {cmd}")
+            except Exception as e:
+                print(f"   ⚠️  Warning: Error with {cmd}: {e}")
+        
+        # Configure additional power management settings via systemd
+        print("   🔋 Configuring power management...")
+        power_commands = [
+            # Prevent system suspend
+            "sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target",
+            
+            # Configure logind to not suspend on lid close (for laptops)
+            "sudo bash -c \"echo 'HandleLidSwitch=ignore' >> /etc/systemd/logind.conf\"",
+            "sudo bash -c \"echo 'HandleLidSwitchExternalPower=ignore' >> /etc/systemd/logind.conf\"",
+            "sudo bash -c \"echo 'IdleAction=ignore' >> /etc/systemd/logind.conf\"",
+        ]
+        
+        for cmd in power_commands:
+            try:
+                subprocess.run(cmd, shell=True, check=True, capture_output=True, timeout=15)
+            except subprocess.CalledProcessError as e:
+                print(f"   ⚠️  Warning: Power command failed: {cmd}")
+            except subprocess.TimeoutExpired:
+                print(f"   ⚠️  Warning: Power command timeout: {cmd}")
+        
+        # Disable Ubuntu's unattended upgrades to prevent reboot prompts
+        print("   📦 Disabling automatic updates...")
+        try:
+            subprocess.run(['sudo', 'systemctl', 'stop', 'unattended-upgrades'], 
+                         check=True, capture_output=True, timeout=10)
+            subprocess.run(['sudo', 'systemctl', 'disable', 'unattended-upgrades'], 
+                         check=True, capture_output=True, timeout=10)
+            print("   ✅ Automatic updates disabled")
+        except subprocess.CalledProcessError:
+            print("   ⚠️  Could not disable automatic updates")
+        except subprocess.TimeoutExpired:
+            print("   ⚠️  Timeout disabling automatic updates")
+        
+        # Create a script to re-apply kiosk settings on login (in case they get reset)
+        kiosk_script_path = Path(user_home) / ".local" / "bin" / "kiosk-setup.sh"
+        kiosk_script_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        kiosk_script_content = f"""#!/bin/bash
+# Kiosk mode settings - run on login
+# Generated by signage setup
+
+# Wait for desktop to load
+sleep 5
+
+# Re-apply critical kiosk settings
+gsettings set org.gnome.desktop.notifications show-banners false
+gsettings set org.gnome.desktop.screensaver lock-enabled false
+gsettings set org.gnome.desktop.screensaver idle-activation-enabled false
+gsettings set org.gnome.desktop.session idle-delay 0
+
+# Set background if exists
+if [ -f "{background_path}" ]; then
+    gsettings set org.gnome.desktop.background picture-uri 'file://{background_path}'
+    gsettings set org.gnome.desktop.background picture-uri-dark 'file://{background_path}'
+fi
+
+# Hide cursor after 3 seconds of inactivity (optional)
+# unclutter -idle 3 &
+"""
+        
+        try:
+            with open(kiosk_script_path, 'w') as f:
+                f.write(kiosk_script_content)
+            os.chmod(kiosk_script_path, 0o755)
+            
+            # Set ownership if running as root
+            if os.geteuid() == 0 and self.target_uid is not None and self.target_gid is not None:
+                os.chown(kiosk_script_path, self.target_uid, self.target_gid)
+            
+            print(f"   ✅ Kiosk settings script created: {kiosk_script_path}")
+        except Exception as e:
+            print(f"   ⚠️  Failed to create kiosk script: {e}")
+        
+        # Add the kiosk script to autostart
+        autostart_dir = Path(user_home) / ".config" / "autostart"
+        autostart_dir.mkdir(parents=True, exist_ok=True)
+        
+        autostart_file = autostart_dir / "kiosk-setup.desktop"
+        autostart_content = f"""[Desktop Entry]
+Type=Application
+Name=Kiosk Setup
+Exec={kiosk_script_path}
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Comment=Apply kiosk mode settings on login
+"""
+        
+        try:
+            with open(autostart_file, 'w') as f:
+                f.write(autostart_content)
+            
+            # Set ownership if running as root
+            if os.geteuid() == 0 and self.target_uid is not None and self.target_gid is not None:
+                os.chown(autostart_file, self.target_uid, self.target_gid)
+                os.chown(autostart_dir, self.target_uid, self.target_gid)
+            
+            print("   ✅ Kiosk setup added to autostart")
+        except Exception as e:
+            print(f"   ⚠️  Failed to create autostart entry: {e}")
+        
+        print("   ✅ Kiosk mode configuration completed!")
+        print("   📋 Kiosk features applied:")
+        print("      • All notifications disabled")
+        print("      • Power management disabled (never sleep/suspend)")
+        print("      • Screen saver and lock disabled") 
+        print("      • TBN logo set as background")
+        print("      • Automatic updates disabled")
+        print("      • Settings will re-apply on each login")
+        print()
+    
     def configure_sudo_permissions(self):
         """Configure passwordless sudo for reboot commands"""
         print("🔒 Configuring sudo permissions for reboot functionality...")
@@ -699,14 +908,23 @@ WantedBy=graphical-session.target
         print("🎉 Setup Complete!")
         print("=" * 60)
         print()
-        print("Your digital signage client is now configured!")
+        print("Your digital signage client is now configured in kiosk mode!")
+        print()
+        print("🖥️  Kiosk Mode Features:")
+        print("   • All notifications disabled")
+        print("   • Power management disabled (never sleep/suspend)")
+        print("   • Screen saver and lock screen disabled")
+        print("   • TBN logo set as desktop background")
+        print("   • Automatic system updates disabled")
+        print("   • Settings auto-restore on each login")
         print()
         print("📋 Next Steps:")
         print("1. Register this device in your web dashboard:")
         print(f"   - Server: {self.server_url}")  
         print(f"   - Device ID: {self.device_id}")
         print("2. Create playlists and assign them to this device")
-        print("3. Media will automatically download and play")
+        print("3. Media will automatically download and play in fullscreen")
+        print("4. Reboot to ensure all kiosk settings take effect")
         print()
         print("🔧 Useful Commands:")
         print("   sudo systemctl status signage-client    # Check status")
@@ -757,6 +975,9 @@ WantedBy=graphical-session.target
             
             # Configure sudo permissions for remote reboot
             self.configure_sudo_permissions()
+            
+            # Configure kiosk mode for Ubuntu 22.04
+            self.configure_kiosk_mode()
             
             # Always try to create systemd service regardless of connection test
             connection_ok = self.test_connection()
