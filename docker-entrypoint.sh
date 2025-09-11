@@ -108,6 +108,32 @@ with app.app_context():
     except Exception as e:
         print(f'Streaming media schema check/migration info: {e}')
         # Not a critical error - might just mean tables don't exist yet
+    
+    # Add TeamViewer ID column for remote management
+    try:
+        # Check if teamviewer_id column exists
+        check_query = text('''
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'devices' AND column_name = 'teamviewer_id'
+        ''')
+        result = db.session.execute(check_query).fetchone()
+        
+        if not result:
+            print('Adding TeamViewer ID column...')
+            alter_query = text('''
+                ALTER TABLE devices 
+                ADD COLUMN teamviewer_id VARCHAR(20)
+            ''')
+            db.session.execute(alter_query)
+            db.session.commit()
+            print('TeamViewer ID migration completed successfully')
+        else:
+            print('TeamViewer ID column already exists')
+            
+    except Exception as e:
+        print(f'TeamViewer ID schema check/migration info: {e}')
+        # Not a critical error - might just mean tables don't exist yet
 "
 
 # Check if we need to create an admin user
