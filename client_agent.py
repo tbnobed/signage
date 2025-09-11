@@ -232,10 +232,18 @@ class SignageClient:
     def download_media(self, media_item):
         """Download media file if not cached locally, or return stream URL for streaming media"""
         
-        # For streaming media, return the stream URL directly
-        if media_item.get('is_stream', False) and media_item.get('stream_url'):
-            self.logger.info(f"Using stream URL: {media_item['original_filename']} -> {media_item['stream_url']}")
-            return media_item['stream_url']
+        # Debug: Log media item structure
+        self.logger.debug(f"download_media called with: {media_item.keys()}")
+        
+        # For streaming media, return the stream URL directly (check both stream_url and url fields)
+        if media_item.get('is_stream', False):
+            stream_url = media_item.get('stream_url') or media_item.get('url')
+            if stream_url and isinstance(stream_url, str) and stream_url.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
+                self.logger.info(f"Using stream URL: {media_item['original_filename']} -> {stream_url}")
+                return stream_url
+            else:
+                self.logger.error(f"Stream media has invalid URL: {stream_url}")
+                return None
         
         # For regular media files, download and cache locally
         filename = media_item.get('filename')
@@ -485,6 +493,9 @@ class SignageClient:
     def play_single_media_optimized(self, media_item):
         """Optimized playback for single media files (more efficient than playlist approach)"""
         try:
+            # Debug: Log full media item structure
+            self.logger.debug(f"play_single_media_optimized received: {media_item}")
+            
             # Download the media file or get stream URL
             local_path = self.download_media(media_item)
             if not local_path:
