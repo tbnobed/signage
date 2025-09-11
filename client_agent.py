@@ -380,18 +380,42 @@ class SignageClient:
             # Use inherited environment (Wayland/X11) from user service
             env = os.environ.copy()
             
+            # CRITICAL: Fix X11 authorization for systemd service
+            env['DISPLAY'] = ':0'  # Force display :0
+            
+            # Get current user session's XAUTHORITY file
+            import subprocess as sp
+            try:
+                # Get XAUTHORITY from loginctl session
+                result = sp.run(['loginctl', 'show-user', 'obtv', '--property=RuntimePath'], 
+                              capture_output=True, text=True, timeout=5)
+                if result.returncode == 0:
+                    runtime_path = result.stdout.strip().split('=')[1]
+                    env['XDG_RUNTIME_DIR'] = runtime_path
+                    
+                # Try multiple XAUTHORITY locations
+                user_home = os.path.expanduser('~')
+                xauth_candidates = [
+                    f'{user_home}/.Xauthority',
+                    f'{user_home}/.Xauth',
+                    '/tmp/.X11-unix/X0'
+                ]
+                
+                for xauth_path in xauth_candidates:
+                    if os.path.exists(xauth_path):
+                        env['XAUTHORITY'] = xauth_path
+                        self.logger.debug(f"Using XAUTHORITY: {xauth_path}")
+                        break
+                        
+            except Exception as e:
+                self.logger.debug(f"X11 setup warning: {e}")
+            
             # Log current display environment for debugging
             display_env = env.get('DISPLAY', 'not set')
             wayland_display = env.get('WAYLAND_DISPLAY', 'not set')
             session_type = env.get('XDG_SESSION_TYPE', 'not set')
-            self.logger.debug(f"Display environment - DISPLAY: {display_env}, WAYLAND_DISPLAY: {wayland_display}, SESSION_TYPE: {session_type}")
-            
-            # Only add XAUTHORITY if we have an X11 display and the file exists
-            if env.get('DISPLAY') and not env.get('XAUTHORITY'):
-                user_home = os.path.expanduser('~')
-                xauth_path = f'{user_home}/.Xauthority'
-                if os.path.exists(xauth_path):
-                    env['XAUTHORITY'] = xauth_path
+            xauth = env.get('XAUTHORITY', 'not set')
+            self.logger.debug(f"Display environment - DISPLAY: {display_env}, WAYLAND_DISPLAY: {wayland_display}, SESSION_TYPE: {session_type}, XAUTHORITY: {xauth}")
             
             # Start VLC with playlist - enable logging to see errors
             log_file = os.path.join(MEDIA_DIR, 'vlc_debug.log')
