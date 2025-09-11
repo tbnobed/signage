@@ -1,0 +1,30 @@
+obtv@display1:~/signage$ wget -O client_agent.py https://raw.githubusercontent.com/tbnobed/signage/main/client_agent.py
+--2025-09-10 21:30:46--  https://raw.githubusercontent.com/tbnobed/signage/main/client_agent.py
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.109.133, 185.199.110.133, 185.199.108.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.109.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 30191 (29K) [text/plain]
+Saving to: ‘client_agent.py’
+
+client_agent.py                            100%[=======================================================================================>]  29.48K  --.-KB/s    in 0.002s
+
+2025-09-10 21:30:46 (17.9 MB/s) - ‘client_agent.py’ saved [30191/30191]
+
+obtv@display1:~/signage$ systemctl --user restart signage-client
+obtv@display1:~/signage$ journalctl --user -u signage-client -f
+Sep 10 21:31:13 display1 python3[33009]: 2025-09-10 21:31:13,357 - INFO - Running rapid playlist check (background thread)...
+Sep 10 21:31:13 display1 python3[33009]: 2025-09-10 21:31:13,358 - DEBUG - Checking content status...
+Sep 10 21:31:13 display1 python3[33009]: 2025-09-10 21:31:13,359 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 21:31:13 display1 python3[33009]: 2025-09-10 21:31:13,426 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 78
+Sep 10 21:31:13 display1 python3[33009]: 2025-09-10 21:31:13,426 - ERROR - Content status check failed: 'NoneType' object has no attribute 'get'
+Sep 10 21:31:15 display1 python3[33009]: 2025-09-10 21:31:15,428 - INFO - Running rapid playlist check (background thread)...
+Sep 10 21:31:15 display1 python3[33009]: 2025-09-10 21:31:15,428 - DEBUG - Checking content status...
+Sep 10 21:31:15 display1 python3[33009]: 2025-09-10 21:31:15,429 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 21:31:15 display1 python3[33009]: 2025-09-10 21:31:15,497 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 78
+Sep 10 21:31:15 display1 python3[33009]: 2025-09-10 21:31:15,498 - ERROR - Content status check failed: 'NoneType' object has no attribute 'get'
+Sep 10 21:31:17 display1 python3[33009]: 2025-09-10 21:31:17,499 - INFO - Running rapid playlist check (background thread)...
+Sep 10 21:31:17 display1 python3[33009]: 2025-09-10 21:31:17,500 - DEBUG - Checking content status...
+Sep 10 21:31:17 display1 python3[33009]: 2025-09-10 21:31:17,501 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 21:31:17 display1 python3[33009]: 2025-09-10 21:31:17,627 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 78
+Sep 10 21:31:17 display1 python3[33009]: 2025-09-10 21:31:17,627 - ERROR - Content status check failed: 'NoneType' object has no attribute 'get'
+Sep 10 21:31:19 display1 python3[33009]: 2025-09-10 21:31:19,629 - INFO - Running rapid playlist check (background thread)...
