@@ -454,17 +454,17 @@ class SignageClient:
             if '--loop' in command:
                 command.remove('--loop')
             
-            # Force infinite looping for images and videos
+            # Configure VLC for HDMI display output
             command.extend([
-                '--loop',             # Loop the entire playlist (NOT repeat current item)
-                '--image-duration', '10',  # Images show for 10 seconds each (backup for EXTVLCOPT)
+                '--loop',             # Loop the entire playlist
+                '--image-duration', '10',  # Images show for 10 seconds each
                 '--playlist-autostart',    # Auto start playlist
                 '--no-random',        # Play in order
                 '--no-qt-error-dialogs',  # No error popups
-                '--intf', 'dummy',    # No interface (more stable)
-                '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
-                '--avcodec-hw', 'none',  # Disable hardware decoding (compatible parameter)
-                '-vvv',               # Verbose logging to see VLC errors
+                '--intf', 'dummy',    # No interface (background mode)
+                '--fullscreen',       # Display fullscreen on HDMI
+                '--no-video-title-show',  # Don't show video title
+                '--no-osd',           # No on-screen display
             ])
             
             # Add the playlist file
@@ -477,30 +477,13 @@ class SignageClient:
             # Kill any existing player process
             self.stop_current_media()
             
-            # Start Xvfb virtual display for headless operation
+            # Use HDMI display for VLC output
             env = os.environ.copy()
             
-            # Use Xvfb virtual display :99 for headless VLC playback
-            env['DISPLAY'] = ':99'
+            # Set display for HDMI output
+            env['DISPLAY'] = ':0'
             
-            # Start Xvfb if not running
-            try:
-                # Check if Xvfb is already running on :99
-                result = subprocess.run(['pgrep', '-f', 'Xvfb :99'], 
-                                      capture_output=True, timeout=5)
-                if result.returncode != 0:  # Xvfb not running
-                    self.logger.info("Starting Xvfb virtual display on :99")
-                    subprocess.Popen(['Xvfb', ':99', '-screen', '0', '1920x1080x24'], 
-                                   stdout=subprocess.DEVNULL, 
-                                   stderr=subprocess.DEVNULL)
-                    # Give Xvfb time to start
-                    time.sleep(2)
-                else:
-                    self.logger.debug("Xvfb already running on :99")
-            except Exception as e:
-                self.logger.error(f"Failed to start Xvfb: {e}")
-            
-            self.logger.debug(f"Using virtual display :99 for VLC playback")
+            self.logger.debug("Configuring VLC for HDMI display output")
             
             # Start VLC with playlist - enable logging to see errors
             log_file = os.path.join(MEDIA_DIR, 'vlc_debug.log')
