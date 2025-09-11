@@ -436,6 +436,110 @@ class SignageClient:
             self.logger.error(f"Error creating continuous playlist: {e}")
             return False
 
+    def play_single_media_optimized(self, media_item):
+        """Optimized playback for single media files (more efficient than playlist approach)"""
+        try:
+            # Download the media file
+            local_path = self.download_media(media_item)
+            if not local_path:
+                self.send_log('error', f"Failed to download: {media_item['original_filename']}")
+                return False
+            
+            self.logger.info(f"Starting optimized single media playback: {media_item['original_filename']}")
+            
+            # Kill any existing player process
+            self.stop_current_media()
+            
+            # CRITICAL: Fix X11 authorization for systemd service
+            env = os.environ.copy()
+            env['DISPLAY'] = ':0'  # Force display :0
+            
+            # Get current user session's XAUTHORITY file
+            import subprocess as sp
+            try:
+                # Get XAUTHORITY from loginctl session
+                result = sp.run(['loginctl', 'show-user', 'obtv', '--property=RuntimePath'], 
+                              capture_output=True, text=True, timeout=5)
+                if result.returncode == 0:
+                    runtime_path = result.stdout.strip().split('=')[1]
+                    env['XDG_RUNTIME_DIR'] = runtime_path
+                    
+                # Try multiple XAUTHORITY locations
+                user_home = os.path.expanduser('~')
+                xauth_candidates = [
+                    f'{user_home}/.Xauthority',
+                    f'{user_home}/.Xauth',
+                    '/tmp/.X11-unix/X0'
+                ]
+                
+                for xauth_path in xauth_candidates:
+                    if os.path.exists(xauth_path):
+                        env['XAUTHORITY'] = xauth_path
+                        self.logger.debug(f"Using XAUTHORITY: {xauth_path}")
+                        break
+                        
+            except Exception as e:
+                self.logger.debug(f"X11 setup warning: {e}")
+            
+            # Log current display environment for debugging
+            display_env = env.get('DISPLAY', 'not set')
+            wayland_display = env.get('WAYLAND_DISPLAY', 'not set')
+            session_type = env.get('XDG_SESSION_TYPE', 'not set')
+            xauth = env.get('XAUTHORITY', 'not set')
+            self.logger.debug(f"Display environment - DISPLAY: {display_env}, WAYLAND_DISPLAY: {wayland_display}, SESSION_TYPE: {session_type}, XAUTHORITY: {xauth}")
+            
+            # Build optimized VLC command for single media
+            command = ['vlc', '--fullscreen', '--no-osd', '--no-video-title-show']
+            
+            # Add screen targeting for multi-monitor setups
+            if SCREEN_INDEX > 0:
+                command.extend(['--qt-fullscreen-screennumber', str(SCREEN_INDEX)])
+            
+            # Single media optimization - use simpler, more reliable options
+            command.extend([
+                '--loop',             # Infinite loop for single media
+                '--no-random',        # Not needed for single file, but ensures consistency
+                '--no-qt-error-dialogs',  # No error popups
+                '--intf', 'dummy',    # No interface (more stable)
+                '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
+                '--avcodec-hw', 'none',  # Disable hardware decoding (compatibility)
+                '-v',                 # Less verbose than -vvv for single media
+            ])
+            
+            # Set image duration for images
+            file_ext = os.path.splitext(local_path)[1].lower()
+            if file_ext in ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']:
+                command.extend(['--image-duration', '10'])
+            
+            # Add the media file
+            command.append(local_path)
+            
+            self.logger.info(f"Starting optimized VLC for single media: {' '.join(command)}")
+            
+            # Start VLC with debug output
+            log_file = os.path.join(MEDIA_DIR, 'vlc_single_debug.log')
+            with open(log_file, 'w') as vlc_log:
+                self.current_process = subprocess.Popen(
+                    command,
+                    stdout=vlc_log,
+                    stderr=subprocess.STDOUT,
+                    env=env
+                )
+            
+            self.logger.info(f"Optimized single media VLC started - seamless looping with X11 auth fix!")
+            
+            # Keep VLC running and monitor it
+            while self.running and self.current_process and self.current_process.poll() is None:
+                time.sleep(5)  # Check every 5 seconds if VLC is still running
+                # Rapid playlist update checks continue in background thread
+            
+            self.logger.info("Single media VLC process ended, will restart on next loop")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to start optimized single media playback: {e}")
+            return False
+
     def stop_current_media(self):
         """Stop currently playing media"""
         with self._playlist_lock:
@@ -458,8 +562,13 @@ class SignageClient:
         
         items = self.current_playlist['items']
         
-        # FIXED: Use continuous playlist for ALL playlists to prevent VLC restarts
-        self.logger.info(f"FIXED VERSION: Playlist with {len(items)} items - creating continuous VLC playlist to prevent restarts")
+        # OPTIMIZATION: Single media files get direct VLC playback (more efficient)
+        if len(items) == 1:
+            self.logger.info(f"Single media detected: {items[0]['original_filename']} - using optimized direct playback")
+            return self.play_single_media_optimized(items[0])
+        
+        # FIXED: Use continuous playlist for multi-item playlists to prevent VLC restarts
+        self.logger.info(f"Multi-item playlist with {len(items)} items - creating continuous VLC playlist to prevent restarts")
         
         # Download all media files first
         media_paths = []
