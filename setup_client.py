@@ -1169,7 +1169,7 @@ WantedBy=graphical-session.target
         print(f"   - Device ID: {self.device_id}")
         print("2. Create playlists and assign them to this device")
         print("3. Media will automatically download and play in fullscreen")
-        print("4. ⚠️  REBOOT REQUIRED for X11/TeamViewer changes to take effect")
+        print("4. System will automatically reboot to apply changes")
         print("5. TeamViewer will be fully functional after reboot")
         print()
         print("🔧 Useful Commands:")
@@ -1186,6 +1186,50 @@ WantedBy=graphical-session.target
         if os.path.exists(self.service_file):
             print(f"   {self.service_file}")
         print()
+    
+    def reboot_system(self):
+        """Prompt user and reboot system to apply all changes"""
+        print("=" * 60)
+        print("🔄 System Reboot Required")
+        print("=" * 60)
+        print()
+        print("The following changes require a reboot to take effect:")
+        print("• X11 display server configuration (for TeamViewer)")
+        print("• TeamViewer Host service initialization")
+        print("• Kiosk mode display settings")
+        print("• Auto-login configuration")
+        print()
+        
+        # Give user a countdown option
+        if self.ask_yes_no("Reboot now to complete setup?", default=True):
+            print("\n🚀 Rebooting system in 10 seconds...")
+            print("   Press Ctrl+C to cancel...")
+            
+            try:
+                # Countdown
+                for i in range(10, 0, -1):
+                    print(f"   Rebooting in {i} seconds...", end='\r')
+                    time.sleep(1)
+                
+                print("\n🔄 Rebooting now...")
+                
+                # Use the configured sudo reboot command
+                subprocess.run(['sudo', 'reboot'], check=True, timeout=5)
+                
+            except KeyboardInterrupt:
+                print("\n\n⚠️  Reboot cancelled by user")
+                print("⚠️  Remember to reboot manually to complete setup!")
+                print("   Run: sudo reboot")
+            except subprocess.CalledProcessError as e:
+                print(f"\n❌ Reboot command failed: {e}")
+                print("   Try manually: sudo reboot")
+            except Exception as e:
+                print(f"\n❌ Reboot error: {e}")
+                print("   Try manually: sudo reboot")
+        else:
+            print("\n⚠️  Reboot skipped - remember to reboot manually!")
+            print("   Run: sudo reboot")
+            print("   TeamViewer will be fully functional after reboot.")
         
     def ask_yes_no(self, question, default=True):
         """Ask yes/no question"""
@@ -1244,6 +1288,9 @@ WantedBy=graphical-session.target
                 print("   The service was created and can be started once connection is working.")
             
             self.show_completion_info()
+            
+            # Auto-reboot to apply all changes
+            self.reboot_system()
                 
         except KeyboardInterrupt:
             print("\n\n⚠️  Setup cancelled by user")
