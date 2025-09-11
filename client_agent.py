@@ -61,6 +61,10 @@ class SignageClient:
         self._rapid_check_thread = threading.Thread(target=self._rapid_check_loop, daemon=True)
         self._rapid_check_thread.start()
         self.logger.info("Background rapid playlist checking started")
+        
+        # CRITICAL FIX: Force initial playlist fetch on startup
+        self.logger.info("Forcing initial playlist fetch on startup...")
+        self.fetch_playlist()
 
     def setup_logging(self):
         logging.basicConfig(
@@ -206,14 +210,19 @@ class SignageClient:
                 data = response.json()
                 playlist = data.get('playlist')
                 
-                if playlist != self.current_playlist:
-                    self.logger.info(f"New playlist received: {playlist['name'] if playlist else 'None'}")
+                # Always update if we don't have a playlist, or if it's actually different
+                if self.current_playlist is None or playlist != self.current_playlist:
+                    self.logger.info(f"Playlist received: {playlist['name'] if playlist else 'None'}")
                     self.stop_current_media()  # Stop current media immediately
                     with self._playlist_lock:
                         self.current_playlist = playlist
                         self.current_media_index = 0
+                    if playlist:
+                        self.logger.info(f"Playlist has {len(playlist.get('items', []))} media items")
                     self.logger.info(f"Starting immediate playback of new playlist")
                     return True
+                else:
+                    self.logger.debug("Fetched playlist is same as current playlist, no update needed")
                     
         except Exception as e:
             self.logger.error(f"Failed to fetch playlist: {e}")

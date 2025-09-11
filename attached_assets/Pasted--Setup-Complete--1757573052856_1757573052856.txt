@@ -1,0 +1,66 @@
+============================================================
+🎉 Setup Complete!
+============================================================
+
+Your digital signage client is now configured!
+
+📋 Next Steps:
+1. Register this device in your web dashboard:
+   - Server: https://display.obtv.io
+   - Device ID: d-omud
+2. Create playlists and assign them to this device
+3. Media will automatically download and play
+
+🔧 Useful Commands:
+   sudo systemctl status signage-client    # Check status
+   sudo systemctl restart signage-client   # Restart service
+   sudo systemctl stop signage-client      # Stop service
+   tail -f /home/obtv/signage/client.log      # View logs
+
+📁 Files Created:
+   /home/obtv/signage/client_agent.py
+   /home/obtv/signage/.env
+   /home/obtv/.config/systemd/user/signage-client.service
+
+obtv@display1:~/signage$ systemctl --user restart signage-client
+obtv@display1:~/signage$ journalctl --user -u signage-client -f
+Sep 10 23:42:55 display1 python3[34366]: 2025-09-10 23:42:55,671 - INFO - Running rapid playlist check (background thread)...
+Sep 10 23:42:55 display1 python3[34366]: 2025-09-10 23:42:55,672 - DEBUG - Checking playlist status...
+Sep 10 23:42:55 display1 python3[34366]: 2025-09-10 23:42:55,673 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 23:42:55 display1 python3[34366]: 2025-09-10 23:42:55,738 - DEBUG - https://display.obtv.io:443 "GET /api/devices/d-omud/playlist-status HTTP/1.1" 200 63
+Sep 10 23:42:55 display1 python3[34366]: 2025-09-10 23:42:55,738 - DEBUG - Current playlist: -1, Server playlist: -1, Current timestamp: 2025-09-11T06:42:35.922759, Server timestamp: 2025-09-11T06:42:35.922759
+Sep 10 23:42:57 display1 python3[34366]: 2025-09-10 23:42:57,739 - INFO - Running rapid playlist check (background thread)...
+Sep 10 23:42:57 display1 python3[34366]: 2025-09-10 23:42:57,740 - DEBUG - Checking playlist status...
+Sep 10 23:42:57 display1 python3[34366]: 2025-09-10 23:42:57,741 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 23:42:57 display1 python3[34366]: 2025-09-10 23:42:57,806 - DEBUG - https://display.obtv.io:443 "GET /api/devices/d-omud/playlist-status HTTP/1.1" 200 63
+Sep 10 23:42:57 display1 python3[34366]: 2025-09-10 23:42:57,807 - DEBUG - Current playlist: -1, Server playlist: -1, Current timestamp: 2025-09-11T06:42:35.922759, Server timestamp: 2025-09-11T06:42:35.922759
+Sep 10 23:42:59 display1 python3[34366]: 2025-09-10 23:42:59,808 - INFO - Running rapid playlist check (background thread)...
+Sep 10 23:42:59 display1 python3[34366]: 2025-09-10 23:42:59,809 - DEBUG - Checking playlist status...
+Sep 10 23:42:59 display1 python3[34366]: 2025-09-10 23:42:59,810 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 23:42:59 display1 python3[34366]: 2025-09-10 23:42:59,877 - DEBUG - https://display.obtv.io:443 "GET /api/devices/d-omud/playlist-status HTTP/1.1" 200 63
+Sep 10 23:42:59 display1 python3[34366]: 2025-09-10 23:42:59,878 - DEBUG - Current playlist: -1, Server playlist: -1, Current timestamp: 2025-09-11T06:42:35.922759, Server timestamp: 2025-09-11T06:42:35.922759
+Sep 10 23:43:01 display1 python3[34366]: 2025-09-10 23:43:01,879 - INFO - Running rapid playlist check (background thread)...
+Sep 10 23:43:01 display1 python3[34366]: 2025-09-10 23:43:01,880 - DEBUG - Checking playlist status...
+Sep 10 23:43:01 display1 python3[34366]: 2025-09-10 23:43:01,881 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 23:43:01 display1 python3[34366]: 2025-09-10 23:43:01,947 - DEBUG - https://display.obtv.io:443 "GET /api/devices/d-omud/playlist-status HTTP/1.1" 200 63
+Sep 10 23:43:01 display1 python3[34366]: 2025-09-10 23:43:01,948 - DEBUG - Current playlist: -1, Server playlist: -1, Current timestamp: 2025-09-11T06:42:35.922759, Server timestamp: 2025-09-11T06:42:35.922759
+Sep 10 23:43:03 display1 python3[34366]: 2025-09-10 23:43:03,950 - INFO - Running rapid playlist check (background thread)...
+Sep 10 23:43:03 display1 python3[34366]: 2025-09-10 23:43:03,950 - DEBUG - Checking playlist status...
+Sep 10 23:43:03 display1 python3[34366]: 2025-09-10 23:43:03,951 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 23:43:04 display1 python3[34366]: 2025-09-10 23:43:04,017 - DEBUG - https://display.obtv.io:443 "GET /api/devices/d-omud/playlist-status HTTP/1.1" 200 63
+Sep 10 23:43:04 display1 python3[34366]: 2025-09-10 23:43:04,017 - DEBUG - Current playlist: -1, Server playlist: -1, Current timestamp: 2025-09-11T06:42:35.922759, Server timestamp: 2025-09-11T06:42:35.922759
+Sep 10 23:43:06 display1 python3[34366]: 2025-09-10 23:43:06,019 - INFO - Running rapid playlist check (background thread)...
+Sep 10 23:43:06 display1 python3[34366]: 2025-09-10 23:43:06,019 - DEBUG - Checking playlist status...
+Sep 10 23:43:06 display1 python3[34366]: 2025-09-10 23:43:06,020 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 23:43:06 display1 python3[34366]: 2025-09-10 23:43:06,085 - DEBUG - https://display.obtv.io:443 "GET /api/devices/d-omud/playlist-status HTTP/1.1" 200 63
+Sep 10 23:43:06 display1 python3[34366]: 2025-09-10 23:43:06,086 - DEBUG - Current playlist: -1, Server playlist: -1, Current timestamp: 2025-09-11T06:42:35.922759, Server timestamp: 2025-09-11T06:42:35.922759
+Sep 10 23:43:08 display1 python3[34366]: 2025-09-10 23:43:08,088 - INFO - Running rapid playlist check (background thread)...
+Sep 10 23:43:08 display1 python3[34366]: 2025-09-10 23:43:08,088 - DEBUG - Checking playlist status...
+Sep 10 23:43:08 display1 python3[34366]: 2025-09-10 23:43:08,089 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 23:43:08 display1 python3[34366]: 2025-09-10 23:43:08,155 - DEBUG - https://display.obtv.io:443 "GET /api/devices/d-omud/playlist-status HTTP/1.1" 200 63
+Sep 10 23:43:08 display1 python3[34366]: 2025-09-10 23:43:08,155 - DEBUG - Current playlist: -1, Server playlist: -1, Current timestamp: 2025-09-11T06:42:35.922759, Server timestamp: 2025-09-11T06:42:35.922759
+Sep 10 23:43:10 display1 python3[34366]: 2025-09-10 23:43:10,157 - INFO - Running rapid playlist check (background thread)...
+Sep 10 23:43:10 display1 python3[34366]: 2025-09-10 23:43:10,158 - DEBUG - Checking playlist status...
+Sep 10 23:43:10 display1 python3[34366]: 2025-09-10 23:43:10,159 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 23:43:10 display1 python3[34366]: 2025-09-10 23:43:10,225 - DEBUG - https://display.obtv.io:443 "GET /api/devices/d-omud/playlist-status HTTP/1.1" 200 63
+Sep 10 23:43:10 display1 python3[34366]: 2025-09-10 23:43:10,225 - DEBUG - Current playlist: -1, Server playlist: -1, Current timestamp: 2025-09-11T06:42:35.922759, Server timestamp: 2025-09-11T06:42:35.922759
