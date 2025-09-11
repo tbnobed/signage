@@ -188,7 +188,7 @@
                                                     {% endif %}
                                                     <div class="flex-grow-1 min-width-0">
                                                         <div class="fw-bold text-truncate">{{ media.original_filename }}</div>
-                                                        <small class="text-muted">{{ media.file_type|title }} • {{ (media.file_size / 1024 / 1024)|round(1) }} MB</small>
+                                                        <small class="text-muted">{{ media.file_type|title }} • {% if media.file_size %}{{ (media.file_size / 1024 / 1024)|round(1) }} MB{% else %}Stream{% endif %}</small>
                                                     </div>
                                                 </div>
                                                 <button type="button" class="btn btn-sm btn-outline-primary w-100" 
