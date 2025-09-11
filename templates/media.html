@@ -57,8 +57,17 @@
                              class="img-fluid rounded" style="max-height: 150px; object-fit: cover;">
                     </div>
                     {% else %}
-                    <div class="text-center mb-3 bg-dark rounded p-4">
-                        <i class="fas fa-play-circle fa-4x text-muted"></i>
+                    <div class="text-center mb-3 position-relative">
+                        <video src="{{ url_for('main.uploaded_file', filename=media.filename) }}" 
+                               class="img-fluid rounded video-thumbnail" 
+                               style="max-height: 150px; width: auto; object-fit: cover;"
+                               preload="metadata"
+                               muted
+                               onloadedmetadata="this.currentTime = Math.min(3, this.duration * 0.1)">
+                        </video>
+                        <div class="video-overlay position-absolute top-50 start-50 translate-middle">
+                            <i class="fas fa-play-circle fa-3x text-white" style="text-shadow: 0 0 10px rgba(0,0,0,0.8);"></i>
+                        </div>
                     </div>
                     {% endif %}
                     
@@ -164,5 +173,70 @@ document.getElementById('mediaFile').addEventListener('change', function(e) {
         preview.style.display = 'none';
     }
 });
+
+// Video thumbnail functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click-to-preview functionality for video thumbnails
+    document.querySelectorAll('.video-thumbnail').forEach(video => {
+        const overlay = video.nextElementSibling;
+        
+        // Click overlay to play/pause video
+        if (overlay) {
+            overlay.style.cursor = 'pointer';
+            overlay.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (video.paused) {
+                    video.play();
+                    overlay.style.opacity = '0';
+                } else {
+                    video.pause();
+                    overlay.style.opacity = '1';
+                }
+            });
+        }
+        
+        // Reset overlay when video ends
+        video.addEventListener('ended', function() {
+            if (overlay) {
+                overlay.style.opacity = '1';
+            }
+            // Reset to thumbnail frame
+            video.currentTime = Math.min(3, video.duration * 0.1);
+        });
+        
+        // Hide overlay when playing
+        video.addEventListener('play', function() {
+            if (overlay) {
+                overlay.style.opacity = '0';
+            }
+        });
+        
+        // Show overlay when paused
+        video.addEventListener('pause', function() {
+            if (overlay) {
+                overlay.style.opacity = '1';
+            }
+        });
+    });
+});
 </script>
+
+<style>
+.video-overlay {
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.video-thumbnail:hover + .video-overlay {
+    cursor: pointer;
+}
+
+.position-relative:hover .video-overlay {
+    pointer-events: all;
+}
+
+.video-thumbnail {
+    cursor: pointer;
+}
+</style>
 {% endblock %}
