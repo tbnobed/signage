@@ -79,11 +79,38 @@ def assign_playlist(device_id):
     
     if playlist_id:
         device.current_playlist_id = int(playlist_id)
+        device.assigned_media_id = None  # Clear single media assignment (exclusivity)
+        device.assignment_updated_at = datetime.utcnow()  # Update timestamp
     else:
         device.current_playlist_id = None
+        device.assignment_updated_at = datetime.utcnow()  # Update timestamp even when clearing
     
     db.session.commit()
     flash('Playlist assigned successfully', 'success')
+    return redirect(url_for('main.devices'))
+
+@main.route('/devices/<int:device_id>/assign-media', methods=['POST'])
+@login_required
+def assign_media(device_id):
+    device = Device.query.get_or_404(device_id)
+    media_id = request.form.get('media_id')
+    
+    if media_id:
+        # Validate media file exists
+        media_file = MediaFile.query.get(int(media_id))
+        if not media_file:
+            flash('Media file not found', 'error')
+            return redirect(url_for('main.devices'))
+            
+        device.assigned_media_id = int(media_id)
+        device.current_playlist_id = None  # Clear playlist assignment (exclusivity)
+        device.assignment_updated_at = datetime.utcnow()  # Update timestamp
+    else:
+        device.assigned_media_id = None
+        device.assignment_updated_at = datetime.utcnow()  # Update timestamp even when clearing
+    
+    db.session.commit()
+    flash('Single media assigned successfully', 'success')
     return redirect(url_for('main.devices'))
 
 @main.route('/devices/<int:device_id>/delete', methods=['POST'])
@@ -294,9 +321,20 @@ def device_checkin(device_id):
     
     db.session.commit()
     
+    # Consistent with playlist-status: check single media assignment first
+    playlist_id = None
+    if device.assigned_media_id:
+        media_file = MediaFile.query.get(device.assigned_media_id)
+        if media_file:
+            playlist_id = f'media:{media_file.id}'
+    
+    # Fallback to regular playlist if no valid single media assignment
+    if playlist_id is None and device.current_playlist_id:
+        playlist_id = device.current_playlist_id
+    
     response = {
         'status': 'ok',
-        'playlist_id': device.current_playlist_id
+        'playlist_id': playlist_id
     }
     
     # Check for pending commands
@@ -331,6 +369,19 @@ def get_device_playlist_status(device_id):
         device.command_timestamp = None
         db.session.commit()
     
+    # Check for single media assignment first (takes precedence)
+    if device.assigned_media_id:
+        media_file = MediaFile.query.get(device.assigned_media_id)
+        if media_file:
+            # Synthetic playlist ID and timestamp for single media
+            last_updated = device.assignment_updated_at or media_file.created_at
+            response.update({
+                'playlist_id': f'media:{media_file.id}',
+                'last_updated': last_updated.isoformat()
+            })
+            return jsonify(response)
+    
+    # Fall back to regular playlist assignment
     if not device.current_playlist_id:
         response.update({'playlist_id': None, 'last_updated': None})
         return jsonify(response)
@@ -354,6 +405,30 @@ def get_device_playlist(device_id):
     if not device:
         return jsonify({'error': 'Device not found'}), 404
     
+    # Check for single media assignment first (takes precedence)
+    if device.assigned_media_id:
+        media_file = MediaFile.query.get(device.assigned_media_id)
+        if media_file:
+            # Create synthetic playlist for single media file
+            last_updated = device.assignment_updated_at or media_file.created_at
+            playlist_data = {
+                'id': f'media:{media_file.id}',
+                'name': media_file.original_filename,
+                'loop': True,  # Always loop single media
+                'default_duration': 10,  # Default image duration
+                'last_updated': last_updated.isoformat(),
+                'items': [{
+                    'id': media_file.id,
+                    'filename': media_file.filename,
+                    'original_filename': media_file.original_filename,
+                    'file_type': media_file.file_type,
+                    'duration': 10 if media_file.file_type == 'image' else None,  # Only set duration for images
+                    'url': url_for('main.uploaded_file', filename=media_file.filename, _external=True)
+                }]
+            }
+            return jsonify({'playlist': playlist_data})
+    
+    # Fall back to regular playlist assignment
     if not device.current_playlist_id:
         return jsonify({'playlist': None})
     
