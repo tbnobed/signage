@@ -1,0 +1,75 @@
+Sep 11 15:02:57 Display2 systemd[655]: Stopping Digital Signage Client...
+Sep 11 15:02:57 Display2 python3[3410]: 2025-09-11 15:02:57,842 - INFO - Shutdown signal received
+Sep 11 15:03:01 Display2 python3[3410]: 2025-09-11 15:03:01,734 - INFO - Single media VLC process ended, will restart on next loop
+Sep 11 15:03:01 Display2 python3[3410]: 2025-09-11 15:03:01,735 - INFO - Signage client stopped
+Sep 11 15:03:01 Display2 python3[3410]: 2025-09-11 15:03:01,736 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 11 15:03:01 Display2 python3[3410]: 2025-09-11 15:03:01,940 - DEBUG - https://display.obtv.io:443 "POST /api/devices/e-2yp8/logs HTTP/1.1" 200 16
+Sep 11 15:03:01 Display2 systemd[655]: Stopped Digital Signage Client.
+Sep 11 15:03:01 Display2 systemd[655]: signage-client.service: Consumed 56.119s CPU time.
+Sep 11 15:03:20 Display2 systemd[655]: Started Digital Signage Client.
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,262 - INFO - Found VLC media player
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,262 - INFO - Signage client started for device: e-2yp8
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,262 - INFO - Server URL: https://display.obtv.io
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,262 - INFO - Media player: vlc
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,262 - INFO - Rapid playlist checks every 2 seconds for instant updates
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,263 - INFO - Background rapid playlist checking started
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,263 - INFO - Background heartbeat checking started
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,263 - INFO - Sending initial check-in with TeamViewer ID...
+Sep 11 15:03:20 Display2 sudo[3782]:     obtv : PWD=/home/obtv/signage ; USER=root ; COMMAND=/usr/bin/teamviewer --info
+Sep 11 15:03:20 Display2 sudo[3782]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Sep 11 15:03:20 Display2 sudo[3782]: pam_unix(sudo:session): session closed for user root
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,296 - DEBUG - No TeamViewer ID found in output:
+Sep 11 15:03:20 Display2 python3[3777]:  TeamViewer                           15.69.4  (DEB)
+Sep 11 15:03:20 Display2 python3[3777]:  TeamViewer ID:                        717963752
+Sep 11 15:03:20 Display2 python3[3777]:  717963752
+Sep 11 15:03:20 Display2 python3[3777]:  teamviewerd status                   ● teamviewerd.service - TeamViewer remote control daemon
+Sep 11 15:03:20 Display2 python3[3777]:      Loaded: loaded (/etc/systemd/system/teamviewerd.service; enabled; vendor preset: enabled)
+Sep 11 15:03:20 Display2 python3[3777]:      Active: active (running) since Thu 2025-09-11 13:54:58 CDT; 1h 8min ago
+Sep 11 15:03:20 Display2 python3[3777]:     Process: 1666 ExecStart=/opt/teamviewer/tv_bin/teamviewerd -d (code=exited, status=0/SUCCESS)
+Sep 11 15:03:20 Display2 python3[3777]:    Main PID: 1684 (teamviewerd)
+Sep 11 15:03:20 Display2 python3[3777]:       Tasks: 24 (limit: 9172)
+Sep 11 15:03:20 Display2 python3[3777]:      Memory: 40.1M
+Sep 11 15:03:20 Display2 python3[3777]:         CPU: 5min 30.438s
+Sep 11 15:03:20 Display2 python3[3777]:      CGroup: /system.slice/teamviewerd.service
+Sep 11 15:03:20 Display2 python3[3777]:              └─1684 /opt/teamviewer/tv_bin/teamviewerd -d
+Sep 11 15:03:20 Display2 python3[3777]: Sep 11 13:54:58 Display2 systemd[1]: Starting TeamViewer remote control daemon...
+Sep 11 15:03:20 Display2 python3[3777]: Sep 11 13:54:58 Display2 systemd[1]: teamviewerd.service: Can't open PID file /run/teamviewerd.pid (yet?) after start: Operation not permitted
+Sep 11 15:03:20 Display2 python3[3777]: Sep 11 13:54:58 Display2 systemd[1]: Started TeamViewer remote control daemon.
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,298 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,500 - DEBUG - https://display.obtv.io:443 "POST /api/devices/e-2yp8/checkin HTTP/1.1" 200 35
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,502 - DEBUG - Checkin successful: {'playlist_id': None, 'status': 'ok'}
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,502 - INFO - Forcing initial playlist fetch on startup...
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,503 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,700 - DEBUG - https://display.obtv.io:443 "GET /api/devices/e-2yp8/playlist HTTP/1.1" 200 405
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,701 - INFO - Playlist received: sample_display.png
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,702 - INFO - Playlist has 1 media items
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,702 - INFO - Starting immediate playback of new playlist
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,703 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,902 - DEBUG - https://display.obtv.io:443 "POST /api/devices/e-2yp8/logs HTTP/1.1" 200 16
+Sep 11 15:03:20 Display2 sudo[3801]:     obtv : PWD=/home/obtv/signage ; USER=root ; COMMAND=/usr/bin/teamviewer --info
+Sep 11 15:03:20 Display2 sudo[3801]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Sep 11 15:03:20 Display2 sudo[3801]: pam_unix(sudo:session): session closed for user root
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,937 - DEBUG - No TeamViewer ID found in output:
+Sep 11 15:03:20 Display2 python3[3777]:  TeamViewer                           15.69.4  (DEB)
+Sep 11 15:03:20 Display2 python3[3777]:  TeamViewer ID:                        717963752
+Sep 11 15:03:20 Display2 python3[3777]:  717963752
+Sep 11 15:03:20 Display2 python3[3777]:  teamviewerd status                   ● teamviewerd.service - TeamViewer remote control daemon
+Sep 11 15:03:20 Display2 python3[3777]:      Loaded: loaded (/etc/systemd/system/teamviewerd.service; enabled; vendor preset: enabled)
+Sep 11 15:03:20 Display2 python3[3777]:      Active: active (running) since Thu 2025-09-11 13:54:58 CDT; 1h 8min ago
+Sep 11 15:03:20 Display2 python3[3777]:     Process: 1666 ExecStart=/opt/teamviewer/tv_bin/teamviewerd -d (code=exited, status=0/SUCCESS)
+Sep 11 15:03:20 Display2 python3[3777]:    Main PID: 1684 (teamviewerd)
+Sep 11 15:03:20 Display2 python3[3777]:       Tasks: 24 (limit: 9172)
+Sep 11 15:03:20 Display2 python3[3777]:      Memory: 40.1M
+Sep 11 15:03:20 Display2 python3[3777]:         CPU: 5min 30.453s
+Sep 11 15:03:20 Display2 python3[3777]:      CGroup: /system.slice/teamviewerd.service
+Sep 11 15:03:20 Display2 python3[3777]:              └─1684 /opt/teamviewer/tv_bin/teamviewerd -d
+Sep 11 15:03:20 Display2 python3[3777]: Sep 11 13:54:58 Display2 systemd[1]: Starting TeamViewer remote control daemon...
+Sep 11 15:03:20 Display2 python3[3777]: Sep 11 13:54:58 Display2 systemd[1]: teamviewerd.service: Can't open PID file /run/teamviewerd.pid (yet?) after start: Operation not permitted
+Sep 11 15:03:20 Display2 python3[3777]: Sep 11 13:54:58 Display2 systemd[1]: Started TeamViewer remote control daemon.
+Sep 11 15:03:20 Display2 python3[3777]: 2025-09-11 15:03:20,938 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 11 15:03:21 Display2 python3[3777]: 2025-09-11 15:03:21,139 - DEBUG - https://display.obtv.io:443 "POST /api/devices/e-2yp8/checkin HTTP/1.1" 200 35
+Sep 11 15:03:21 Display2 python3[3777]: 2025-09-11 15:03:21,141 - DEBUG - Checkin successful: {'playlist_id': None, 'status': 'ok'}
+Sep 11 15:03:21 Display2 python3[3777]: 2025-09-11 15:03:21,142 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 11 15:03:21 Display2 python3[3777]: 2025-09-11 15:03:21,354 - DEBUG - https://display.obtv.io:443 "GET /api/devices/e-2yp8/playlist HTTP/1.1" 200 405
+Sep 11 15:03:21 Display2 python3[3777]: 2025-09-11 15:03:21,356 - DEBUG - Fetched playlist is same as current playlist, no update needed
+Sep 11 15:03:21 Display2 python3[3777]: 2025-09-11 15:03:21,356 - INFO - Single media detected: sample_display.png - using optimized direct playback

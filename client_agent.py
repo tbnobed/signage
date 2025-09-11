@@ -98,28 +98,47 @@ class SignageClient:
 
     def get_teamviewer_id(self):
         """Get TeamViewer ID from the local system"""
+        import re
         try:
+            # Set fixed locale for consistent output format
+            env = os.environ.copy()
+            env['LANG'] = 'C'
+            env['LC_ALL'] = 'C'
+            
             # Try to get TeamViewer ID using sudo teamviewer --info command
             result = subprocess.run(['sudo', '-n', '/usr/bin/teamviewer', '--info'], 
-                                  capture_output=True, text=True, timeout=10)
+                                  capture_output=True, text=True, timeout=10, env=env)
             
             # Log failures to debug service context issues
             if result.returncode != 0:
                 self.logger.info(f"TeamViewer sudo failed (returncode {result.returncode}): {result.stderr.strip()}")
                 return None
             
-            # Parse output to find TeamViewer ID line
-            for line in result.stdout.split('\n'):
-                self.logger.debug(f"Parsing line: '{line}'")
-                if 'TeamViewer ID:' in line:
-                    # Split on colon and get everything after it, then strip whitespace
-                    teamviewer_id = line.split(':')[-1].strip()
-                    self.logger.debug(f"Extracted ID: '{teamviewer_id}', isdigit: {teamviewer_id.isdigit()}")
-                    if teamviewer_id and teamviewer_id.isdigit():
-                        self.logger.info(f"Successfully parsed TeamViewer ID: {teamviewer_id}")
-                        return teamviewer_id
+            # Combine stdout and stderr for parsing
+            output = (result.stdout or '') + '\n' + (result.stderr or '')
             
-            self.logger.debug(f"No TeamViewer ID found in output: {result.stdout}")
+            # Method 1: Look for labeled TeamViewer ID line with regex (handles whitespace)
+            match = re.search(r'TeamViewer\s*ID\s*:\s*([0-9]{7,12})', output, re.IGNORECASE)
+            if match:
+                teamviewer_id = match.group(1)
+                self.logger.info(f"Successfully parsed TeamViewer ID from labeled line: {teamviewer_id}")
+                return teamviewer_id
+            
+            # Method 2: Look for standalone numeric lines (fallback)
+            for line in output.splitlines():
+                line = line.strip()
+                if re.fullmatch(r'[0-9]{7,12}', line):
+                    self.logger.info(f"Successfully parsed TeamViewer ID from numeric line: {line}")
+                    return line
+            
+            # Method 3: Final fallback - any 7-12 digit sequence
+            match = re.search(r'\b([0-9]{7,12})\b', output)
+            if match:
+                teamviewer_id = match.group(1)
+                self.logger.info(f"Successfully parsed TeamViewer ID from fallback: {teamviewer_id}")
+                return teamviewer_id
+            
+            self.logger.debug(f"No TeamViewer ID found in output: {output[:200]}...")
             
         except subprocess.TimeoutExpired:
             self.logger.info("TeamViewer command timed out")
