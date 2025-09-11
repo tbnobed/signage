@@ -212,6 +212,20 @@ body {
     z-index: 2 !important;
 }
 
+/* CRITICAL FIX: Disable pointer events on all overlays to allow clicks through */
+.card .video-overlay,
+.card .preview-overlay, 
+.card [class*="preview"], 
+.card [id*="preview"] {
+    pointer-events: none !important;
+}
+
+/* Allow dropdown menu to extend beyond card boundaries */
+.card-header {
+    overflow: visible !important;
+    position: relative;
+}
+
 /* Modern Cards */
 .card {
     background: var(--gradient-card);
