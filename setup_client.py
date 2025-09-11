@@ -165,6 +165,7 @@ class SignageSetup:
             'vlc',               # VLC media player
             'python3-pip',       # Python package manager
             'python3-requests',  # Python HTTP library
+            'openssh-server',    # SSH server for remote access
         ]
         
         for package in packages:
@@ -1021,6 +1022,72 @@ Run 'teamviewer --info' to get your TeamViewer ID after reboot.
             print(f"   ❌ TeamViewer installation error: {e}")
             return False
     
+    def configure_ssh_server(self):
+        """Configure SSH server for remote access"""
+        print("🔐 Configuring SSH server for remote access...")
+        
+        try:
+            # Enable SSH service to start on boot
+            print("   ⚙️  Enabling SSH service...")
+            subprocess.run(['sudo', 'systemctl', 'enable', 'ssh'], 
+                         check=True, capture_output=True, timeout=10)
+            print("   ✅ SSH service enabled for auto-start")
+            
+            # Start SSH service now
+            print("   🚀 Starting SSH service...")
+            subprocess.run(['sudo', 'systemctl', 'start', 'ssh'], 
+                         check=True, capture_output=True, timeout=15)
+            print("   ✅ SSH service started")
+            
+            # Configure SSH for better security (optional hardening)
+            ssh_config_path = "/etc/ssh/sshd_config"
+            print("   🔒 Configuring SSH security settings...")
+            
+            # Allow password authentication but recommend key-based auth
+            ssh_config_changes = [
+                "# Digital Signage SSH Configuration",
+                "PasswordAuthentication yes",
+                "PubkeyAuthentication yes",
+                "PermitRootLogin no",
+                "MaxAuthTries 3",
+                "ClientAliveInterval 300",
+                "ClientAliveCountMax 2"
+            ]
+            
+            # Append our config to sshd_config
+            config_text = "\n".join(ssh_config_changes)
+            subprocess.run(['sudo', 'sh', '-c', f'echo "\n{config_text}" >> {ssh_config_path}'], 
+                         check=True, capture_output=True, timeout=10)
+            
+            # Restart SSH to apply changes
+            subprocess.run(['sudo', 'systemctl', 'restart', 'ssh'], 
+                         check=True, capture_output=True, timeout=10)
+            print("   ✅ SSH security settings configured")
+            
+            # Get the IP address for user information
+            try:
+                ip_result = subprocess.run(['hostname', '-I'], capture_output=True, text=True, timeout=5)
+                if ip_result.returncode == 0:
+                    ip_address = ip_result.stdout.strip().split()[0]
+                    username = self.target_user or os.getenv('USER', 'user')
+                    print(f"   📍 SSH access: ssh {username}@{ip_address}")
+                else:
+                    print("   📍 SSH is now accessible via this device's IP address")
+            except:
+                print("   📍 SSH is now accessible via this device's IP address")
+            
+            return True
+            
+        except subprocess.CalledProcessError as e:
+            print(f"   ❌ Failed to configure SSH server: {e}")
+            return False
+        except subprocess.TimeoutExpired:
+            print("   ❌ SSH server configuration timed out")
+            return False
+        except Exception as e:
+            print(f"   ❌ SSH server configuration error: {e}")
+            return False
+    
     def configure_teamviewer_sudo(self):
         """Configure passwordless sudo for TeamViewer --info command"""
         print("🔒 Configuring sudo permissions for TeamViewer ID detection...")
@@ -1285,6 +1352,7 @@ WantedBy=graphical-session.target
         print("   • TBN logo set as desktop background")
         print("   • Automatic system updates disabled")
         print("   • Settings auto-restore on each login")
+        print("   • SSH server configured for remote access")
         print("   • TeamViewer Host installed for remote management")
         print()
         print("📋 Next Steps:")
@@ -1301,6 +1369,7 @@ WantedBy=graphical-session.target
         print("   sudo systemctl restart signage-client   # Restart service")
         print("   sudo systemctl stop signage-client      # Stop service")
         print(f"   tail -f {self.setup_dir}/client.log      # View logs")
+        print("   sudo systemctl status ssh               # Check SSH status")
         print("   sudo teamviewer info                    # Get TeamViewer ID")
         print("   echo $XDG_SESSION_TYPE                  # Verify X11 (after reboot)")
         print()
@@ -1394,6 +1463,9 @@ WantedBy=graphical-session.target
             
             # Configure kiosk mode for Ubuntu 22.04
             self.configure_kiosk_mode()
+            
+            # Configure SSH server for remote access
+            self.configure_ssh_server()
             
             # Install TeamViewer for remote management
             self.install_teamviewer()

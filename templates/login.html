@@ -33,14 +33,93 @@
             </form>
             
             <div class="text-center mt-4">
-                <a href="{{ url_for('auth.client_setup') }}" class="btn btn-outline-secondary w-100 py-2 mb-3">
+                <button class="btn btn-outline-secondary w-100 py-2 mb-3" data-bs-toggle="modal" data-bs-target="#clientSetupModal">
                     <i class="fas fa-download me-2"></i>Client Setup Script
-                </a>
+                </button>
                 <small class="text-muted">
-                    Need to set up a new display device? Download the setup script above.
+                    Need to set up a new display device? Get setup instructions above.
                 </small>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Client Setup Modal -->
+<div class="modal fade" id="clientSetupModal" tabindex="-1" aria-labelledby="clientSetupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="clientSetupModalLabel">
+                    <i class="fas fa-download me-2"></i>Client Setup Instructions
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Run this command on your Ubuntu device to automatically set up digital signage:</strong>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Setup Command:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control font-monospace" id="setupCommand" readonly 
+                               value="curl -L {{ request.url_root }}auth/client-setup | sudo python3">
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('setupCommand')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <small class="text-muted">This will download and run the setup script with administrator privileges.</small>
+                </div>
+
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Requirements:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Ubuntu 22.04 or newer</li>
+                        <li>Internet connection</li>
+                        <li>Administrator/sudo access</li>
+                        <li>Device registered in dashboard first</li>
+                    </ul>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Alternative - Download Only:</label>
+                    <div class="d-grid">
+                        <a href="{{ url_for('auth.client_setup') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-download me-2"></i>Download setup_client.py
+                        </a>
+                    </div>
+                    <small class="text-muted">Download the script file to run manually: <code>sudo python3 setup_client.py</code></small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    element.select();
+    element.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    
+    // Show feedback
+    const btn = element.nextElementSibling;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    btn.classList.remove('btn-outline-secondary');
+    btn.classList.add('btn-success');
+    
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-secondary');
+    }, 2000);
+}
+</script>
+
 {% endblock %}
