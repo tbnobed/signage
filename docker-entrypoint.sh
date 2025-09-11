@@ -45,12 +45,39 @@ with app.app_context():
             ''')
             db.session.execute(alter_query)
             db.session.commit()
-            print('Schema migration completed successfully')
+            print('Reboot functionality migration completed successfully')
         else:
-            print('Schema is up to date')
+            print('Reboot functionality columns already exist')
             
     except Exception as e:
-        print(f'Schema check/migration info: {e}')
+        print(f'Reboot schema check/migration info: {e}')
+        # Not a critical error - might just mean tables don't exist yet
+    
+    # Add new columns for single media assignment functionality
+    try:
+        # Check if assigned_media_id column exists
+        check_query = text('''
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'devices' AND column_name = 'assigned_media_id'
+        ''')
+        result = db.session.execute(check_query).fetchone()
+        
+        if not result:
+            print('Adding single media assignment columns...')
+            alter_query = text('''
+                ALTER TABLE devices 
+                ADD COLUMN assigned_media_id INTEGER REFERENCES media_files(id),
+                ADD COLUMN assignment_updated_at TIMESTAMP
+            ''')
+            db.session.execute(alter_query)
+            db.session.commit()
+            print('Single media assignment migration completed successfully')
+        else:
+            print('Single media assignment columns already exist')
+            
+    except Exception as e:
+        print(f'Single media assignment schema check/migration info: {e}')
         # Not a critical error - might just mean tables don't exist yet
 "
 

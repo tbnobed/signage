@@ -322,20 +322,10 @@ def device_checkin(device_id):
     
     db.session.commit()
     
-    # Consistent with playlist-status: check single media assignment first
-    playlist_id = None
-    if device.assigned_media_id:
-        media_file = MediaFile.query.get(device.assigned_media_id)
-        if media_file:
-            playlist_id = f'media:{media_file.id}'
-    
-    # Fallback to regular playlist if no valid single media assignment
-    if playlist_id is None and device.current_playlist_id:
-        playlist_id = device.current_playlist_id
-    
+    # Keep device_checkin backward compatible - only return actual playlist IDs as integers
     response = {
         'status': 'ok',
-        'playlist_id': playlist_id
+        'playlist_id': device.current_playlist_id  # Always integer or None for backward compatibility
     }
     
     # Check for pending commands
@@ -374,10 +364,11 @@ def get_device_playlist_status(device_id):
     if device.assigned_media_id:
         media_file = MediaFile.query.get(device.assigned_media_id)
         if media_file:
-            # Synthetic playlist ID and timestamp for single media
+            # Use negative ID for synthetic playlist to avoid conflicts (backward compatible)
+            synthetic_playlist_id = -device.assigned_media_id  # Negative integer, stays numeric
             last_updated = device.assignment_updated_at or media_file.created_at
             response.update({
-                'playlist_id': f'media:{media_file.id}',
+                'playlist_id': synthetic_playlist_id,  # Numeric for backward compatibility
                 'last_updated': last_updated.isoformat()
             })
             return jsonify(response)
@@ -410,10 +401,11 @@ def get_device_playlist(device_id):
     if device.assigned_media_id:
         media_file = MediaFile.query.get(device.assigned_media_id)
         if media_file:
-            # Create synthetic playlist for single media file
+            # Create synthetic playlist for single media file (backward compatible numeric ID)
+            synthetic_playlist_id = -device.assigned_media_id  # Negative integer to avoid conflicts
             last_updated = device.assignment_updated_at or media_file.created_at
             playlist_data = {
-                'id': f'media:{media_file.id}',
+                'id': synthetic_playlist_id,  # Numeric for backward compatibility
                 'name': media_file.original_filename,
                 'loop': True,  # Always loop single media
                 'default_duration': 10,  # Default image duration
