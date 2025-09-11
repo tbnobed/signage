@@ -358,7 +358,7 @@ class SignageClient:
             
             # Force infinite looping for images and videos
             command.extend([
-                '--repeat',           # Repeat the playlist infinitely
+                '--loop',             # Loop the entire playlist (NOT repeat current item)
                 '--image-duration', '10',  # Images show for 10 seconds each
                 '--playlist-autostart',    # Auto start playlist
                 '--no-random',        # Play in order
