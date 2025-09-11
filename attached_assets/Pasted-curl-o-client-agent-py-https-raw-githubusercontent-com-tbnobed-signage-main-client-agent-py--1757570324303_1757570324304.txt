@@ -1,0 +1,18 @@
+curl -o client_agent.py https://raw.githubusercontent.com/tbnobed/signage/main/client_agent.py
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 32403  100 32403    0     0   172k      0 --:--:-- --:--:-- --:--:--  172k
+obtv@display1:~/signage$ sudo systemctl --user start signage-client
+Failed to connect to bus: No medium found
+obtv@display1:~/signage$ systemctl --user restart signage-client
+obtv@display1:~/signage$ journalctl --user -u signage-client -f
+Sep 10 22:57:59 display1 python3[30052]: 2025-09-10 22:57:59,550 - DEBUG - Killing all VLC processes to prevent accumulation
+Sep 10 22:58:00 display1 python3[30052]: 2025-09-10 22:58:00,082 - INFO - Starting immediate playback of new content
+Sep 10 22:58:00 display1 python3[30052]: 2025-09-10 22:58:00,084 - INFO - Playing individual media: bookstuio3.mp4
+Sep 10 22:58:00 display1 python3[30052]: 2025-09-10 22:58:00,084 - INFO - Created VLC playlist with 1 items: /home/obtv/signage/media/current_playlist.m3u
+Sep 10 22:58:00 display1 python3[30052]: 2025-09-10 22:58:00,084 - INFO - Starting continuous VLC playlist: 1 videos
+Sep 10 22:58:00 display1 python3[30052]: 2025-09-10 22:58:00,084 - DEBUG - Killing all VLC processes to prevent accumulation
+Sep 10 22:58:00 display1 python3[30052]: 2025-09-10 22:58:00,617 - DEBUG - Display environment - DISPLAY: :0, WAYLAND_DISPLAY: wayland-0, SESSION_TYPE: wayland
+Sep 10 22:58:00 display1 python3[30052]: 2025-09-10 22:58:00,617 - INFO - VLC command: vlc --fullscreen --no-osd --no-video-title-show --qt-minimal-view --no-qt-privacy-ask --loop --image-duration 10 --playlist-autostart --no-random --fullscreen --no-video-title-show --no-osd -vvv /home/obtv/signage/media/current_playlist.m3u
+Sep 10 22:58:01 display1 python3[30052]: 2025-09-10 22:58:01,619 - INFO - VLC debug output being written to: /home/obtv/signage/media/vlc_debug.log
+Sep 10 22:58:01 display1 python3[30052]: 2025-09-10 22:58:01,620 - INFO - VLC continuous playlist started successfully!
