@@ -337,15 +337,15 @@ body {
 .stats-card {
     background: var(--gradient-card);
     border: 1px solid var(--border-primary);
-    border-radius: 12px;
-    padding: 0.75rem;
+    border-radius: 16px;
+    padding: 1.5rem;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
-    min-height: 60px;
+    min-height: 90px;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
 }
 
 .stats-card::before {
@@ -365,13 +365,13 @@ body {
 }
 
 .stat-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
+    font-size: 1.5rem;
     margin-bottom: 0;
     background: var(--gradient-primary);
     color: white;
@@ -621,24 +621,24 @@ body {
     }
     
     .stats-card {
-        padding: 0.5rem;
-        min-height: 50px;
-        gap: 0.5rem;
+        padding: 1rem;
+        min-height: 70px;
+        gap: 0.75rem;
     }
     
     .stat-icon {
-        width: 24px;
-        height: 24px;
-        font-size: 0.8rem;
+        width: 36px;
+        height: 36px;
+        font-size: 1.1rem;
         margin-bottom: 0;
     }
     
     .stats-card h3 {
-        font-size: 1rem;
+        font-size: 1.35rem;
     }
     
     .stats-card p {
-        font-size: 0.65rem;
+        font-size: 0.75rem;
     }
     
     .btn {
@@ -701,15 +701,15 @@ body {
 }
 
 .stats-card h3 {
-    font-size: 1.25rem;
-    line-height: 1.1;
-    margin-bottom: 0.1rem;
+    font-size: 1.75rem;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
     font-weight: 700;
 }
 
 .stats-card p {
-    font-size: 0.7rem;
-    line-height: 1;
+    font-size: 0.85rem;
+    line-height: 1.2;
     margin-bottom: 0;
     opacity: 0.8;
     white-space: nowrap;
