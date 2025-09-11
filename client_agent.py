@@ -350,9 +350,11 @@ class SignageClient:
             command.extend([
                 '--repeat',           # Repeat the playlist infinitely
                 '--image-duration', '10',  # Images show for 10 seconds each
+                '--playlist-autostart',    # Auto start playlist
                 '--no-random',        # Play in order
                 '--no-qt-error-dialogs',  # No error popups
                 '--intf', 'dummy',    # No interface (more stable)
+                '--rate', '1',        # Normal playback speed
             ])
             
             # Add the playlist file
