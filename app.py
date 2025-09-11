@@ -31,6 +31,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 upload_folder = os.environ.get('UPLOAD_FOLDER', 'uploads')
 app.config['UPLOAD_FOLDER'] = upload_folder
 app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_CONTENT_LENGTH', 500 * 1024 * 1024))
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 300  # 5 minutes for large files
 
 # Ensure upload directory exists and is writable
 os.makedirs(upload_folder, exist_ok=True)
