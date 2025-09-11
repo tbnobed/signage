@@ -99,8 +99,8 @@ class SignageClient:
     def get_teamviewer_id(self):
         """Get TeamViewer ID from the local system"""
         try:
-            # Try to get TeamViewer ID using teamviewer --info command
-            result = subprocess.run(['teamviewer', '--info'], 
+            # Try to get TeamViewer ID using sudo teamviewer --info command
+            result = subprocess.run(['sudo', 'teamviewer', '--info'], 
                                   capture_output=True, text=True, timeout=10)
             if result.returncode == 0:
                 # Parse output to find TeamViewer ID line
