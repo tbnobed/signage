@@ -26,9 +26,9 @@ RAPID_CHECK_INTERVAL = int(os.environ.get('RAPID_CHECK_INTERVAL', '2'))  # secon
 MEDIA_DIR = os.environ.get('MEDIA_DIR', os.path.expanduser('~/signage/media'))
 LOG_FILE = os.environ.get('LOG_FILE', os.path.expanduser('~/signage/client.log'))
 
-# Media player commands for desktop Ubuntu (Wayland via X11)
+# Media player commands for desktop Ubuntu
 PLAYER_COMMANDS = {
-    'vlc': ['cvlc', '--fullscreen', '--no-osd', '--loop', '--no-video-title-show', '--vout=xcb', '--file-logging', '--logfile=/home/obtv/signage/media/vlc.log', '--log-verbose=2']
+    'vlc': ['vlc', '--fullscreen', '--no-osd', '--loop', '--no-video-title-show', '--qt-minimal-view', '--no-qt-privacy-ask']
 }
 
 # Screen targeting support for multi-monitor setups
