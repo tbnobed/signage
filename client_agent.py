@@ -331,15 +331,13 @@ class SignageClient:
                 for i, media_path in enumerate(media_paths):
                     abs_path = os.path.abspath(media_path)
                     
-                    # CRITICAL FIX: Use finite duration for images, infinite for videos
-                    # VLC ignores --image-duration when EXTINF:-1 (infinite) is set
+                    # ARCHITECT FIX: Use EXTVLCOPT for image timing, no EXTINF
+                    # This avoids conflicts and gives VLC more reliable per-item control
                     file_ext = os.path.splitext(media_path)[1].lower()
                     if file_ext in ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']:
-                        # Images: Set 10 second duration so VLC will advance
-                        f.write(f'#EXTINF:10,Media {i+1}\n')
-                    else:
-                        # Videos: Use infinite duration (VLC will use actual video length)
-                        f.write(f'#EXTINF:-1,Media {i+1}\n')
+                        # Images: Use VLC-specific option for 10 second duration
+                        f.write(f'#EXTVLCOPT:image-duration=10\n')
+                    # Videos: No special options, VLC uses intrinsic duration
                     
                     f.write(f'{abs_path}\n')
             
@@ -359,12 +357,14 @@ class SignageClient:
             # Force infinite looping for images and videos
             command.extend([
                 '--loop',             # Loop the entire playlist (NOT repeat current item)
-                '--image-duration', '10',  # Images show for 10 seconds each
+                '--image-duration', '10',  # Images show for 10 seconds each (backup for EXTVLCOPT)
                 '--playlist-autostart',    # Auto start playlist
                 '--no-random',        # Play in order
                 '--no-qt-error-dialogs',  # No error popups
                 '--intf', 'dummy',    # No interface (more stable)
-                '--rate', '1',        # Normal playback speed
+                '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
+                '--no-hw-decoding',   # Disable hardware decoding (stability)
+                '-vvv',               # Verbose logging to see VLC errors
             ])
             
             # Add the playlist file
@@ -393,13 +393,17 @@ class SignageClient:
                 if os.path.exists(xauth_path):
                     env['XAUTHORITY'] = xauth_path
             
-            # Start VLC with playlist - no more stopping between videos!
-            self.current_process = subprocess.Popen(
-                command,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                env=env
-            )
+            # Start VLC with playlist - enable logging to see errors
+            log_file = os.path.join(MEDIA_DIR, 'vlc_debug.log')
+            with open(log_file, 'w') as vlc_log:
+                self.current_process = subprocess.Popen(
+                    command,
+                    stdout=vlc_log,
+                    stderr=subprocess.STDOUT,  # Redirect stderr to stdout to capture all VLC messages
+                    env=env
+                )
+            
+            self.logger.info(f"VLC debug output will be written to: {log_file}")
             
             self.logger.info("VLC continuous playlist started - no more visual interruptions between videos!")
             return True
