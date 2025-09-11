@@ -28,7 +28,7 @@ LOG_FILE = os.environ.get('LOG_FILE', os.path.expanduser('~/signage/client.log')
 
 # Media player commands for desktop Ubuntu (Wayland compatible)
 PLAYER_COMMANDS = {
-    'vlc': ['vlc', '--fullscreen', '--no-osd', '--loop', '--no-video-title-show']
+    'vlc': ['cvlc', '--fullscreen', '--no-osd', '--loop', '--no-video-title-show', '--vout=wayland', '--file-logging', '--logfile=/home/obtv/signage/media/vlc.log', '--log-verbose=2']
 }
 
 # Screen targeting support for multi-monitor setups
