@@ -327,7 +327,8 @@ def device_checkin(device_id):
     
     response = {
         'status': 'ok',
-        'playlist_id': device.current_playlist_id
+        'playlist_id': device.current_playlist_id,
+        'media_id': device.current_media_id
     }
     
     # Check for pending commands
@@ -362,56 +363,88 @@ def get_device_playlist_status(device_id):
         device.command_timestamp = None
         db.session.commit()
     
-    if not device.current_playlist_id:
-        response.update({'playlist_id': None, 'last_updated': None})
-        return jsonify(response)
-    
-    playlist = Playlist.query.get(device.current_playlist_id)
-    if not playlist or not playlist.is_active:
-        response.update({'playlist_id': None, 'last_updated': None})
-        return jsonify(response)
-    
-    response.update({
-        'playlist_id': playlist.id,
-        'last_updated': playlist.updated_at.isoformat()
-    })
+    # Handle playlist assignment
+    if device.current_playlist_id:
+        playlist = Playlist.query.get(device.current_playlist_id)
+        if playlist and playlist.is_active:
+            response.update({
+                'playlist_id': playlist.id,
+                'media_id': None,
+                'last_updated': playlist.updated_at.isoformat()
+            })
+        else:
+            response.update({'playlist_id': None, 'media_id': None, 'last_updated': None})
+    # Handle individual media assignment  
+    elif device.current_media_id:
+        media_file = MediaFile.query.get(device.current_media_id)
+        if media_file:
+            response.update({
+                'playlist_id': None,
+                'media_id': media_file.id,
+                'last_updated': media_file.created_at.isoformat()
+            })
+        else:
+            response.update({'playlist_id': None, 'media_id': None, 'last_updated': None})
+    # No assignment
+    else:
+        response.update({'playlist_id': None, 'media_id': None, 'last_updated': None})
     
     return jsonify(response)
 
 @api.route('/devices/<device_id>/playlist')
-def get_device_playlist(device_id):
+def get_device_content(device_id):
     device = Device.query.filter_by(device_id=device_id).first()
     
     if not device:
         return jsonify({'error': 'Device not found'}), 404
     
-    if not device.current_playlist_id:
-        return jsonify({'playlist': None})
+    # Handle playlist assignment
+    if device.current_playlist_id:
+        playlist = Playlist.query.get(device.current_playlist_id)
+        if not playlist or not playlist.is_active:
+            return jsonify({'playlist': None, 'media': None})
+        
+        playlist_data = {
+            'id': playlist.id,
+            'name': playlist.name,
+            'loop': playlist.loop_playlist,
+            'default_duration': playlist.default_duration,
+            'last_updated': playlist.updated_at.isoformat(),
+            'items': []
+        }
+        
+        for item in playlist.items:
+            playlist_data['items'].append({
+                'id': item.media_file_id,
+                'filename': item.media_file.filename,
+                'original_filename': item.media_file.original_filename,
+                'file_type': item.media_file.file_type,
+                'duration': item.duration or playlist.default_duration,
+                'url': url_for('main.uploaded_file', filename=item.media_file.filename, _external=True)
+            })
+        
+        return jsonify({'playlist': playlist_data, 'media': None})
     
-    playlist = Playlist.query.get(device.current_playlist_id)
-    if not playlist or not playlist.is_active:
-        return jsonify({'playlist': None})
+    # Handle individual media assignment
+    elif device.current_media_id:
+        media_file = MediaFile.query.get(device.current_media_id)
+        if not media_file:
+            return jsonify({'playlist': None, 'media': None})
+        
+        media_data = {
+            'id': media_file.id,
+            'filename': media_file.filename,
+            'original_filename': media_file.original_filename,
+            'file_type': media_file.file_type,
+            'duration': 10 if media_file.file_type == 'image' else None,  # Default 10s for images
+            'url': url_for('main.uploaded_file', filename=media_file.filename, _external=True),
+            'last_updated': media_file.created_at.isoformat()
+        }
+        
+        return jsonify({'playlist': None, 'media': media_data})
     
-    playlist_data = {
-        'id': playlist.id,
-        'name': playlist.name,
-        'loop': playlist.loop_playlist,
-        'default_duration': playlist.default_duration,
-        'last_updated': playlist.updated_at.isoformat(),
-        'items': []
-    }
-    
-    for item in playlist.items:
-        playlist_data['items'].append({
-            'id': item.media_file_id,
-            'filename': item.media_file.filename,
-            'original_filename': item.media_file.original_filename,
-            'file_type': item.media_file.file_type,
-            'duration': item.duration or playlist.default_duration,
-            'url': url_for('main.uploaded_file', filename=item.media_file.filename, _external=True)
-        })
-    
-    return jsonify({'playlist': playlist_data})
+    # No assignment
+    return jsonify({'playlist': None, 'media': None})
 
 @api.route('/devices/<device_id>/logs', methods=['POST'])
 def device_log(device_id):
