@@ -392,32 +392,52 @@ class SignageClient:
             # CRITICAL: Fix X11 authorization for systemd service
             env['DISPLAY'] = ':0'  # Force display :0
             
-            # Get current user session's XAUTHORITY file
+            # FIXED: Get proper X11 authorization from logged-in user session
             import subprocess as sp
             try:
-                # Get XAUTHORITY from loginctl session
-                result = sp.run(['loginctl', 'show-user', 'obtv', '--property=RuntimePath'], 
-                              capture_output=True, text=True, timeout=5)
-                if result.returncode == 0:
-                    runtime_path = result.stdout.strip().split('=')[1]
-                    env['XDG_RUNTIME_DIR'] = runtime_path
-                    
-                # Try multiple XAUTHORITY locations
+                # Method 1: Get from current user's environment (most reliable)
                 user_home = os.path.expanduser('~')
                 xauth_candidates = [
                     f'{user_home}/.Xauthority',
-                    f'{user_home}/.Xauth',
-                    '/tmp/.X11-unix/X0'
+                    f'{user_home}/.Xauth'
                 ]
                 
                 for xauth_path in xauth_candidates:
                     if os.path.exists(xauth_path):
                         env['XAUTHORITY'] = xauth_path
-                        self.logger.debug(f"Using XAUTHORITY: {xauth_path}")
+                        self.logger.info(f"Found XAUTHORITY file: {xauth_path}")
                         break
+                
+                # Method 2: If systemd service, get from active session
+                if not env.get('XAUTHORITY'):
+                    try:
+                        # Get the active session for user obtv
+                        result = sp.run(['loginctl', 'list-sessions', '--no-legend'], 
+                                      capture_output=True, text=True, timeout=5)
+                        if result.returncode == 0:
+                            for line in result.stdout.strip().split('\n'):
+                                if line and 'obtv' in line:
+                                    session_id = line.strip().split()[0]
+                                    self.logger.info(f"Found obtv session: {session_id}")
+                                    break
+                    except Exception as session_e:
+                        self.logger.debug(f"Session detection error: {session_e}")
+                
+                # Method 3: Last resort - try common locations 
+                if not env.get('XAUTHORITY'):
+                    common_xauth_paths = [
+                        f'/home/obtv/.Xauthority',
+                        f'/tmp/.X11-auth-obtv',
+                        f'/var/run/user/1000/gdm/Xauthority'
+                    ]
+                    for xauth_path in common_xauth_paths:
+                        if os.path.exists(xauth_path):
+                            env['XAUTHORITY'] = xauth_path
+                            self.logger.info(f"Using fallback XAUTHORITY: {xauth_path}")
+                            break
                         
             except Exception as e:
-                self.logger.debug(f"X11 setup warning: {e}")
+                self.logger.error(f"X11 setup error: {e}")
             
             # Log current display environment for debugging
             display_env = env.get('DISPLAY', 'not set')
@@ -463,32 +483,52 @@ class SignageClient:
             env = os.environ.copy()
             env['DISPLAY'] = ':0'  # Force display :0
             
-            # Get current user session's XAUTHORITY file
+            # FIXED: Get proper X11 authorization from logged-in user session
             import subprocess as sp
             try:
-                # Get XAUTHORITY from loginctl session
-                result = sp.run(['loginctl', 'show-user', 'obtv', '--property=RuntimePath'], 
-                              capture_output=True, text=True, timeout=5)
-                if result.returncode == 0:
-                    runtime_path = result.stdout.strip().split('=')[1]
-                    env['XDG_RUNTIME_DIR'] = runtime_path
-                    
-                # Try multiple XAUTHORITY locations
+                # Method 1: Get from current user's environment (most reliable)
                 user_home = os.path.expanduser('~')
                 xauth_candidates = [
                     f'{user_home}/.Xauthority',
-                    f'{user_home}/.Xauth',
-                    '/tmp/.X11-unix/X0'
+                    f'{user_home}/.Xauth'
                 ]
                 
                 for xauth_path in xauth_candidates:
                     if os.path.exists(xauth_path):
                         env['XAUTHORITY'] = xauth_path
-                        self.logger.debug(f"Using XAUTHORITY: {xauth_path}")
+                        self.logger.info(f"Found XAUTHORITY file: {xauth_path}")
                         break
+                
+                # Method 2: If systemd service, get from active session
+                if not env.get('XAUTHORITY'):
+                    try:
+                        # Get the active session for user obtv
+                        result = sp.run(['loginctl', 'list-sessions', '--no-legend'], 
+                                      capture_output=True, text=True, timeout=5)
+                        if result.returncode == 0:
+                            for line in result.stdout.strip().split('\n'):
+                                if line and 'obtv' in line:
+                                    session_id = line.strip().split()[0]
+                                    self.logger.info(f"Found obtv session: {session_id}")
+                                    break
+                    except Exception as session_e:
+                        self.logger.debug(f"Session detection error: {session_e}")
+                
+                # Method 3: Last resort - try common locations 
+                if not env.get('XAUTHORITY'):
+                    common_xauth_paths = [
+                        f'/home/obtv/.Xauthority',
+                        f'/tmp/.X11-auth-obtv',
+                        f'/var/run/user/1000/gdm/Xauthority'
+                    ]
+                    for xauth_path in common_xauth_paths:
+                        if os.path.exists(xauth_path):
+                            env['XAUTHORITY'] = xauth_path
+                            self.logger.info(f"Using fallback XAUTHORITY: {xauth_path}")
+                            break
                         
             except Exception as e:
-                self.logger.debug(f"X11 setup warning: {e}")
+                self.logger.error(f"X11 setup error: {e}")
             
             # Log current display environment for debugging
             display_env = env.get('DISPLAY', 'not set')

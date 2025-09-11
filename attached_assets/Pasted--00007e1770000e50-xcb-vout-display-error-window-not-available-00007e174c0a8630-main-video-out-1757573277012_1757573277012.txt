@@ -1,0 +1,45 @@
+
+[00007e1770000e50] xcb vout display error: window not available
+[00007e174c0a8630] main video output error: video output creation failed
+[00007e175cc18880] main decoder error: failed to create video output
+[h264 @ 0x7e175ce00c40] get_buffer() failed
+[h264 @ 0x7e175ce00c40] thread_get_buffer() failed
+[h264 @ 0x7e175ce00c40] decode_slice_header error
+[h264 @ 0x7e175ce00c40] no frame!
+Authorization required, but no authorization protocol specified
+
+[00007e1770000e50] xcb vout display error: window not available
+[00007e174807a2d0] main video output error: video output creation failed
+[00007e175cc18880] main decoder error: failed to create video output
+[h264 @ 0x7e175cecf740] get_buffer() failed
+[h264 @ 0x7e175cecf740] thread_get_buffer() failed
+[h264 @ 0x7e175cecf740] decode_slice_header error
+[h264 @ 0x7e175cecf740] no frame!
+Authorization required, but no authorization protocol specified
+
+[00007e1770000e50] xcb vout display error: window not available
+[00007e17400669f0] main video output error: video output creation failed
+[00007e175cc18880] main decoder error: failed to create video output
+[h264 @ 0x7e175cf9e240] get_buffer() failed
+[h264 @ 0x7e175cf9e240] thread_get_buffer() failed
+[h264 @ 0x7e175cf9e240] decode_slice_header error
+[h264 @ 0x7e175cf9e240] no frame!
+Authorization required, but no authorization protocol specified
+
+[00007e1770000e50] xcb vout display error: window not available
+[00007e173c0b2520] main video output error: video output creation failed
+[00007e175cc18880] main decoder error: failed to create video output
+[h264 @ 0x7e175d06cd40] get_buffer() failed
+[h264 @ 0x7e175d06cd40] thread_get_buffer() failed
+[h264 @ 0x7e175d06cd40] decode_slice_header error
+[h264 @ 0x7e175d06cd40] no frame!
+Authorization required, but no authorization protocol specified
+
+[00007e1770000e50] xcb vout display error: window not available
+[00007e1758068670] main video output error: video output creation failed
+[00007e175cc18880] main decoder error: failed to create video output
+[h264 @ 0x7e175cc19180] get_buffer() failed
+[h264 @ 0x7e175cc19180] thread_get_buffer() failed
+[h264 @ 0x7e175cc19180] decode_slice_header error
+[h264 @ 0x7e175cc19180] no frame!
+obtv@display1:~/signage$
