@@ -79,6 +79,35 @@ with app.app_context():
     except Exception as e:
         print(f'Single media assignment schema check/migration info: {e}')
         # Not a critical error - might just mean tables don't exist yet
+    
+    # Add new columns for streaming media functionality
+    try:
+        # Check if is_stream column exists
+        check_query = text('''
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'media_files' AND column_name = 'is_stream'
+        ''')
+        result = db.session.execute(check_query).fetchone()
+        
+        if not result:
+            print('Adding streaming media columns...')
+            alter_query = text('''
+                ALTER TABLE media_files 
+                ADD COLUMN is_stream BOOLEAN DEFAULT FALSE,
+                ADD COLUMN stream_url VARCHAR(500),
+                ADD COLUMN stream_type VARCHAR(20),
+                ALTER COLUMN filename DROP NOT NULL
+            ''')
+            db.session.execute(alter_query)
+            db.session.commit()
+            print('Streaming media migration completed successfully')
+        else:
+            print('Streaming media columns already exist')
+            
+    except Exception as e:
+        print(f'Streaming media schema check/migration info: {e}')
+        # Not a critical error - might just mean tables don't exist yet
 "
 
 # Check if we need to create an admin user
