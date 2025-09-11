@@ -62,6 +62,15 @@ class SignageClient:
         self._rapid_check_thread.start()
         self.logger.info("Background rapid playlist checking started")
         
+        # Start background thread for regular check-ins (TeamViewer ID)
+        self._heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
+        self._heartbeat_thread.start()
+        self.logger.info("Background heartbeat checking started")
+        
+        # Send immediate check-in to publish TeamViewer ID right away
+        self.logger.info("Sending initial check-in with TeamViewer ID...")
+        self.send_checkin()
+        
         # CRITICAL FIX: Force initial playlist fetch on startup
         self.logger.info("Forcing initial playlist fetch on startup...")
         self.fetch_playlist()
@@ -183,6 +192,15 @@ class SignageClient:
                 self.check_playlist_status()
             except Exception as e:
                 self.logger.error(f"Error in rapid check loop: {e}")
+
+    def _heartbeat_loop(self):
+        """Background thread that sends regular check-ins with TeamViewer ID"""
+        while not self._stop_event.wait(CHECK_INTERVAL):
+            try:
+                self.logger.info("Performing regular check-in...")
+                self.send_checkin()
+            except Exception as e:
+                self.logger.error(f"Error in heartbeat loop: {e}")
 
     def check_playlist_status(self):
         """Quick check if playlist has been updated AND check for urgent commands"""
