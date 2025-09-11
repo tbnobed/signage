@@ -234,7 +234,10 @@ class SignageClient:
                 if assignment_changed:
                     self.logger.info(f"Content update detected - stopping current media and fetching new content")
                     self.stop_current_media()  # Stop immediately to start new content
-                    return self.fetch_content()
+                    updated = self.fetch_content()
+                    if updated:
+                        self.play_content()  # Actually start playback!
+                    return True
             else:
                 self.logger.debug(f"Content status check got {response.status_code}")
                     
