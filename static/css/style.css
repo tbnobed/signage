@@ -187,6 +187,31 @@ body {
     z-index: 1 !important;
 }
 
+/* CRITICAL FIX: Force dropdown buttons above all overlays and previews */
+.card .dropdown {
+    position: relative !important;
+    z-index: 9999 !important;
+}
+
+.card .dropdown-toggle {
+    position: relative !important;
+    z-index: 10000 !important;
+    background-color: rgba(108, 117, 125, 0.8) !important; /* More visible background */
+    backdrop-filter: blur(4px) !important;
+}
+
+.card .dropdown-menu {
+    z-index: 10001 !important;
+}
+
+/* Ensure any preview overlay stays below dropdown */
+.video-overlay,
+.preview-overlay,
+*[class*="preview"],
+*[data-*="preview"] {
+    z-index: 2 !important;
+}
+
 /* Modern Cards */
 .card {
     background: var(--gradient-card);
