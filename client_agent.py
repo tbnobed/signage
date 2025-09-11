@@ -345,17 +345,23 @@ class SignageClient:
             with open(playlist_file, 'w', encoding='utf-8') as f:
                 f.write('#EXTM3U\n')
                 for i, media_path in enumerate(media_paths):
-                    abs_path = os.path.abspath(media_path)
-                    
-                    # ARCHITECT FIX: Use EXTVLCOPT for image timing, no EXTINF
-                    # This avoids conflicts and gives VLC more reliable per-item control
-                    file_ext = os.path.splitext(media_path)[1].lower()
-                    if file_ext in ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']:
-                        # Images: Use VLC-specific option for 10 second duration
-                        f.write(f'#EXTVLCOPT:image-duration=10\n')
-                    # Videos: No special options, VLC uses intrinsic duration
-                    
-                    f.write(f'{abs_path}\n')
+                    # Check if this is a stream URL or local file
+                    if media_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
+                        # Stream URLs: Use as-is, no file processing
+                        f.write(f'{media_path}\n')
+                    else:
+                        # Local files: Apply absolute path and image duration settings
+                        abs_path = os.path.abspath(media_path)
+                        
+                        # ARCHITECT FIX: Use EXTVLCOPT for image timing, no EXTINF
+                        # This avoids conflicts and gives VLC more reliable per-item control
+                        file_ext = os.path.splitext(media_path)[1].lower()
+                        if file_ext in ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']:
+                            # Images: Use VLC-specific option for 10 second duration
+                            f.write(f'#EXTVLCOPT:image-duration=10\n')
+                        # Videos: No special options, VLC uses intrinsic duration
+                        
+                        f.write(f'{abs_path}\n')
             
             self.logger.info(f"Created VLC playlist with {len(media_paths)} items: {playlist_file}")
             
@@ -475,11 +481,17 @@ class SignageClient:
     def play_single_media_optimized(self, media_item):
         """Optimized playback for single media files (more efficient than playlist approach)"""
         try:
-            # Download the media file
+            # Download the media file or get stream URL
             local_path = self.download_media(media_item)
             if not local_path:
-                self.send_log('error', f"Failed to download: {media_item['original_filename']}")
+                self.send_log('error', f"Failed to get media path for: {media_item['original_filename']}")
                 return False
+            
+            # Log what we're about to play (helps with debugging)
+            if local_path.startswith(('http://', 'https://', 'rtmp://')):
+                self.logger.info(f"Playing stream URL: {local_path}")
+            else:
+                self.logger.info(f"Playing local file: {os.path.basename(local_path)}")
             
             self.logger.info(f"Starting optimized single media playback: {media_item['original_filename']}")
             
@@ -562,10 +574,11 @@ class SignageClient:
                 '-v',                 # Less verbose than -vvv for single media
             ])
             
-            # Set image duration for images
-            file_ext = os.path.splitext(local_path)[1].lower()
-            if file_ext in ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']:
-                command.extend(['--image-duration', '10'])
+            # Set image duration for images (only for local files, not streams)
+            if not local_path.startswith(('http://', 'https://', 'rtmp://')):
+                file_ext = os.path.splitext(local_path)[1].lower()
+                if file_ext in ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']:
+                    command.extend(['--image-duration', '10'])
             
             # Add the media file
             command.append(local_path)
