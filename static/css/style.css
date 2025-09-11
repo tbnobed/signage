@@ -138,13 +138,14 @@ body {
 
 /* Dropdown Menu Fix - Ensure dropdown appears above all elements */
 .dropdown-menu {
-    z-index: 9999 !important;
+    z-index: 99999 !important;
     background: var(--bg-secondary) !important;
     border: 1px solid var(--border-accent) !important;
     border-radius: 12px !important;
     box-shadow: var(--shadow-elevated) !important;
     backdrop-filter: blur(20px) !important;
     margin-top: 8px !important;
+    position: absolute !important;
 }
 
 .dropdown-item {
@@ -162,14 +163,28 @@ body {
     transform: translateX(4px) !important;
 }
 
-/* Ensure navbar dropdown has proper stacking */
+/* Force navbar and dropdown stacking - VERY HIGH Z-INDEX */
+.navbar {
+    z-index: 99998 !important;
+    position: relative !important;
+}
+
 .navbar .dropdown {
-    position: relative;
-    z-index: 9998;
+    position: relative !important;
+    z-index: 99997 !important;
 }
 
 .navbar .dropdown-toggle::after {
     color: var(--text-muted);
+}
+
+/* Force buttons and cards to have lower z-index */
+.btn {
+    z-index: 1 !important;
+}
+
+.card {
+    z-index: 1 !important;
 }
 
 /* Modern Cards */
