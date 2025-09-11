@@ -1,0 +1,77 @@
+obtv@display1:~$ wget -O client_agent.py https://raw.githubusercontent.com/tbnobed/signage/main/client_agent.py
+--2025-09-10 16:48:26--  https://raw.githubusercontent.com/tbnobed/signage/main/client_agent.py
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.111.133, 185.199.110.133, 185.199.108.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.111.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 23421 (23K) [text/plain]
+Saving to: ‘client_agent.py’
+
+client_agent.py               100%[=================================================>]  22.87K  --.-KB/s    in 0.001s
+
+2025-09-10 16:48:26 (40.8 MB/s) - ‘client_agent.py’ saved [23421/23421]
+
+obtv@display1:~$ systemctl --user stop signage-client
+obtv@display1:~$ systemctl --user restart signage-client
+obtv@display1:~$ journalctl --user -u signage-client -f
+Sep 10 17:20:15 display1 python3[8697]: 2025-09-10 17:20:15,345 - INFO - Running rapid playlist check (background thread)...
+Sep 10 17:20:15 display1 python3[8697]: 2025-09-10 17:20:15,346 - DEBUG - Checking playlist status...
+Sep 10 17:20:15 display1 python3[8697]: 2025-09-10 17:20:15,346 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 17:20:15 display1 python3[8697]: 2025-09-10 17:20:15,414 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 62
+Sep 10 17:20:15 display1 python3[8697]: 2025-09-10 17:20:15,415 - DEBUG - Current playlist: 2, Server playlist: 2, Current timestamp: 2025-09-10T23:15:33.109407, Server timestamp: 2025-09-10T23:15:33.109407
+Sep 10 17:20:17 display1 python3[8697]: 2025-09-10 17:20:17,417 - INFO - Running rapid playlist check (background thread)...
+Sep 10 17:20:17 display1 python3[8697]: 2025-09-10 17:20:17,417 - DEBUG - Checking playlist status...
+Sep 10 17:20:17 display1 python3[8697]: 2025-09-10 17:20:17,418 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 17:20:17 display1 python3[8697]: 2025-09-10 17:20:17,485 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 62
+Sep 10 17:20:17 display1 python3[8697]: 2025-09-10 17:20:17,486 - DEBUG - Current playlist: 2, Server playlist: 2, Current timestamp: 2025-09-10T23:15:33.109407, Server timestamp: 2025-09-10T23:15:33.109407
+Sep 10 17:20:19 display1 python3[8697]: 2025-09-10 17:20:19,487 - INFO - Running rapid playlist check (background thread)...
+Sep 10 17:20:19 display1 python3[8697]: 2025-09-10 17:20:19,488 - DEBUG - Checking playlist status...
+Sep 10 17:20:19 display1 python3[8697]: 2025-09-10 17:20:19,488 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 17:20:19 display1 python3[8697]: 2025-09-10 17:20:19,553 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 62
+Sep 10 17:20:19 display1 python3[8697]: 2025-09-10 17:20:19,553 - DEBUG - Current playlist: 2, Server playlist: 2, Current timestamp: 2025-09-10T23:15:33.109407, Server timestamp: 2025-09-10T23:15:33.109407
+Sep 10 17:20:21 display1 python3[8697]: 2025-09-10 17:20:21,555 - INFO - Running rapid playlist check (background thread)...
+Sep 10 17:20:21 display1 python3[8697]: 2025-09-10 17:20:21,556 - DEBUG - Checking playlist status...
+Sep 10 17:20:21 display1 python3[8697]: 2025-09-10 17:20:21,557 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 17:20:21 display1 python3[8697]: 2025-09-10 17:20:21,623 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 62
+Sep 10 17:20:21 display1 python3[8697]: 2025-09-10 17:20:21,624 - DEBUG - Current playlist: 2, Server playlist: 2, Current timestamp: 2025-09-10T23:15:33.109407, Server timestamp: 2025-09-10T23:15:33.109407
+Sep 10 17:20:23 display1 python3[8697]: 2025-09-10 17:20:23,433 - INFO - Playing: 71e20b7c60474b239ce7122659564ae0.png
+Sep 10 17:20:23 display1 python3[8697]: 2025-09-10 17:20:23,434 - DEBUG - Display environment - DISPLAY: :0, WAYLAND_DISPLAY: wayland-0, SESSION_TYPE: wayland
+Sep 10 17:20:23 display1 python3[8697]: 2025-09-10 17:20:23,625 - INFO - Running rapid playlist check (background thread)...
+Sep 10 17:20:23 display1 python3[8697]: 2025-09-10 17:20:23,626 - DEBUG - Checking playlist status...
+Sep 10 17:20:23 display1 python3[8697]: 2025-09-10 17:20:23,627 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 17:20:23 display1 python3[8697]: 2025-09-10 17:20:23,693 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 62
+Sep 10 17:20:23 display1 python3[8697]: 2025-09-10 17:20:23,694 - DEBUG - Current playlist: 2, Server playlist: 2, Current timestamp: 2025-09-10T23:15:33.109407, Server timestamp: 2025-09-10T23:15:33.109407
+Sep 10 17:20:25 display1 python3[8697]: 2025-09-10 17:20:25,696 - INFO - Running rapid playlist check (background thread)...
+Sep 10 17:20:25 display1 python3[8697]: 2025-09-10 17:20:25,697 - DEBUG - Checking playlist status...
+Sep 10 17:20:25 display1 python3[8697]: 2025-09-10 17:20:25,698 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 17:20:25 display1 python3[8697]: 2025-09-10 17:20:25,798 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 62
+Sep 10 17:20:25 display1 python3[8697]: 2025-09-10 17:20:25,799 - DEBUG - Current playlist: 2, Server playlist: 2, Current timestamp: 2025-09-10T23:15:33.109407, Server timestamp: 2025-09-10T23:15:33.109407
+Sep 10 17:20:27 display1 python3[8697]: 2025-09-10 17:20:27,800 - INFO - Running rapid playlist check (background thread)...
+Sep 10 17:20:27 display1 python3[8697]: 2025-09-10 17:20:27,801 - DEBUG - Checking playlist status...
+Sep 10 17:20:27 display1 python3[8697]: 2025-09-10 17:20:27,802 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 17:20:27 display1 python3[8697]: 2025-09-10 17:20:27,871 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 62
+Sep 10 17:20:27 display1 python3[8697]: 2025-09-10 17:20:27,872 - DEBUG - Current playlist: 2, Server playlist: 2, Current timestamp: 2025-09-10T23:15:33.109407, Server timestamp: 2025-09-10T23:15:33.109407
+Sep 10 17:20:29 display1 python3[8697]: 2025-09-10 17:20:29,873 - INFO - Running rapid playlist check (background thread)...
+Sep 10 17:20:29 display1 python3[8697]: 2025-09-10 17:20:29,874 - DEBUG - Checking playlist status...
+Sep 10 17:20:29 display1 python3[8697]: 2025-09-10 17:20:29,875 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 17:20:29 display1 python3[8697]: 2025-09-10 17:20:29,939 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 62
+Sep 10 17:20:29 display1 python3[8697]: 2025-09-10 17:20:29,940 - DEBUG - Current playlist: 2, Server playlist: 2, Current timestamp: 2025-09-10T23:15:33.109407, Server timestamp: 2025-09-10T23:15:33.109407
+Sep 10 17:20:31 display1 python3[8697]: 2025-09-10 17:20:31,941 - INFO - Running rapid playlist check (background thread)...
+Sep 10 17:20:31 display1 python3[8697]: 2025-09-10 17:20:31,942 - DEBUG - Checking playlist status...
+Sep 10 17:20:31 display1 python3[8697]: 2025-09-10 17:20:31,943 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 17:20:32 display1 python3[8697]: 2025-09-10 17:20:32,008 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 62
+Sep 10 17:20:32 display1 python3[8697]: 2025-09-10 17:20:32,009 - DEBUG - Current playlist: 2, Server playlist: 2, Current timestamp: 2025-09-10T23:15:33.109407, Server timestamp: 2025-09-10T23:15:33.109407
+Sep 10 17:20:33 display1 python3[8697]: 2025-09-10 17:20:33,641 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 17:20:33 display1 python3[8697]: 2025-09-10 17:20:33,724 - DEBUG - https://display.obtv.io:443 "POST /api/devices/t-jblj/checkin HTTP/1.1" 200 32
+Sep 10 17:20:33 display1 python3[8697]: 2025-09-10 17:20:33,725 - DEBUG - Checkin successful: {'playlist_id': 2, 'status': 'ok'}
+Sep 10 17:20:33 display1 python3[8697]: 2025-09-10 17:20:33,729 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 17:20:33 display1 python3[8697]: 2025-09-10 17:20:33,801 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist HTTP/1.1" 200 567
+Sep 10 17:20:33 display1 python3[8697]: 2025-09-10 17:20:33,803 - INFO - Playing: 37ef00334ab740fdbe8c16d2cd2cbf70.png
+Sep 10 17:20:33 display1 python3[8697]: 2025-09-10 17:20:33,804 - DEBUG - Display environment - DISPLAY: :0, WAYLAND_DISPLAY: wayland-0, SESSION_TYPE: wayland
+Sep 10 17:20:34 display1 python3[8697]: 2025-09-10 17:20:34,010 - INFO - Running rapid playlist check (background thread)...
+Sep 10 17:20:34 display1 python3[8697]: 2025-09-10 17:20:34,011 - DEBUG - Checking playlist status...
+Sep 10 17:20:34 display1 python3[8697]: 2025-09-10 17:20:34,012 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 17:20:34 display1 python3[8697]: 2025-09-10 17:20:34,075 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 62
+Sep 10 17:20:34 display1 python3[8697]: 2025-09-10 17:20:34,075 - DEBUG - Current playlist: 2, Server playlist: 2, Current timestamp: 2025-09-10T23:15:33.109407, Server timestamp: 2025-09-10T23:15:33.109407
+Sep 10 17:20:36 display1 python3[8697]: 2025-09-10 17:20:36,077 - INFO - Running rapid playlist check (background thread)...
+Sep 10 17:20:36 display1 python3[8697]: 2025-09-10 17:20:36,078 - DEBUG - Checking playlist status...
+Sep 10 17:20:36 display1 python3[8697]: 2025-09-10 17:20:36,079 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
