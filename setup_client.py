@@ -698,15 +698,15 @@ Comment=Apply kiosk mode settings on login
         print()
     
     def install_teamviewer(self):
-        """Download and install TeamViewer for remote management"""
-        print("📱 Installing TeamViewer for remote management...")
+        """Download and install TeamViewer Host for remote management"""
+        print("📱 Installing TeamViewer Host for remote management...")
         
-        # TeamViewer download URL (direct, no tracking parameters)
-        teamviewer_url = "https://download.teamviewer.com/download/linux/teamviewer_amd64.deb"
+        # TeamViewer Host download URL (for unattended kiosk access)
+        teamviewer_url = "https://download.teamviewer.com/download/linux/teamviewer-host_amd64.deb"
         
         # Download path
         download_dir = Path("/tmp")
-        teamviewer_deb = download_dir / "teamviewer_amd64.deb"
+        teamviewer_deb = download_dir / "teamviewer-host_amd64.deb"
         
         try:
             print("   ⬇️  Downloading TeamViewer package...")
@@ -806,10 +806,10 @@ Comment=Apply kiosk mode settings on login
                 
                 # Create unattended access setup instructions
                 instructions_file = Path(user_home) / "teamviewer-setup.txt"
-                instructions_content = f"""TeamViewer Unattended Access Setup for Digital Signage
+                instructions_content = f"""TeamViewer Host Setup for Digital Signage
 
-IMPORTANT: The Linux version of TeamViewer includes both client and unattended access.
-There is no separate 'Host' version for Linux.
+IMPORTANT: TeamViewer Host is specifically designed for unattended remote access.
+This is the lightweight version perfect for digital signage kiosks.
 
 TO SET UP UNATTENDED ACCESS:
 
@@ -1095,7 +1095,7 @@ WantedBy=graphical-session.target
         print("   • TBN logo set as desktop background")
         print("   • Automatic system updates disabled")
         print("   • Settings auto-restore on each login")
-        print("   • TeamViewer installed for remote management")
+        print("   • TeamViewer Host installed for remote management")
         print()
         print("📋 Next Steps:")
         print("1. Register this device in your web dashboard:")
