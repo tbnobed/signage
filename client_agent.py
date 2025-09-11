@@ -474,45 +474,30 @@ class SignageClient:
             # Kill any existing player process
             self.stop_current_media()
             
-            # Use inherited environment (Wayland/X11) from user service
+            # Start Xvfb virtual display for headless operation
             env = os.environ.copy()
             
-            # CRITICAL: Fix X11 authorization for systemd service
-            env['DISPLAY'] = ':0'  # Force display :0
+            # Use Xvfb virtual display :99 for headless VLC playback
+            env['DISPLAY'] = ':99'
             
-            # Get current user session's XAUTHORITY file
-            import subprocess as sp
+            # Start Xvfb if not running
             try:
-                # Get XAUTHORITY from loginctl session
-                result = sp.run(['loginctl', 'show-user', 'obtv', '--property=RuntimePath'], 
-                              capture_output=True, text=True, timeout=5)
-                if result.returncode == 0:
-                    runtime_path = result.stdout.strip().split('=')[1]
-                    env['XDG_RUNTIME_DIR'] = runtime_path
-                    
-                # Try multiple XAUTHORITY locations
-                user_home = os.path.expanduser('~')
-                xauth_candidates = [
-                    f'{user_home}/.Xauthority',
-                    f'{user_home}/.Xauth',
-                    '/tmp/.X11-unix/X0'
-                ]
-                
-                for xauth_path in xauth_candidates:
-                    if os.path.exists(xauth_path):
-                        env['XAUTHORITY'] = xauth_path
-                        self.logger.debug(f"Using XAUTHORITY: {xauth_path}")
-                        break
-                        
+                # Check if Xvfb is already running on :99
+                result = subprocess.run(['pgrep', '-f', 'Xvfb :99'], 
+                                      capture_output=True, timeout=5)
+                if result.returncode != 0:  # Xvfb not running
+                    self.logger.info("Starting Xvfb virtual display on :99")
+                    subprocess.Popen(['Xvfb', ':99', '-screen', '0', '1920x1080x24'], 
+                                   stdout=subprocess.DEVNULL, 
+                                   stderr=subprocess.DEVNULL)
+                    # Give Xvfb time to start
+                    time.sleep(2)
+                else:
+                    self.logger.debug("Xvfb already running on :99")
             except Exception as e:
-                self.logger.debug(f"X11 setup warning: {e}")
+                self.logger.error(f"Failed to start Xvfb: {e}")
             
-            # Log current display environment for debugging
-            display_env = env.get('DISPLAY', 'not set')
-            wayland_display = env.get('WAYLAND_DISPLAY', 'not set')
-            session_type = env.get('XDG_SESSION_TYPE', 'not set')
-            xauth = env.get('XAUTHORITY', 'not set')
-            self.logger.debug(f"Display environment - DISPLAY: {display_env}, WAYLAND_DISPLAY: {wayland_display}, SESSION_TYPE: {session_type}, XAUTHORITY: {xauth}")
+            self.logger.debug(f"Using virtual display :99 for VLC playback")
             
             # Start VLC with playlist - enable logging to see errors
             log_file = os.path.join(MEDIA_DIR, 'vlc_debug.log')
