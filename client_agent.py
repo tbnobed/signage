@@ -149,9 +149,9 @@ class SignageClient:
                 self.logger.error(f"Error in rapid check loop: {e}")
 
     def check_playlist_status(self):
-        """Quick check if content (playlist or media) has been updated AND check for urgent commands"""
+        """Quick check if playlist has been updated AND check for urgent commands"""
         try:
-            self.logger.debug(f"Checking content status...")
+            self.logger.debug(f"Checking playlist status...")
             response = requests.get(
                 f"{SERVER_URL}/api/devices/{DEVICE_ID}/playlist-status",
                 timeout=5
@@ -160,7 +160,6 @@ class SignageClient:
             if response.status_code == 200:
                 data = response.json()
                 playlist_id = data.get('playlist_id')
-                media_id = data.get('media_id')
                 last_updated = data.get('last_updated')
                 
                 # Check for urgent commands (like reboot) during rapid checks
@@ -168,48 +167,35 @@ class SignageClient:
                     command = data.get('command')
                     self.logger.info(f"Received urgent command from server: {command}")
                     self.execute_command(command)
-                    return True  # Command executed, content check not needed
+                    return True  # Command executed, playlist check not needed
                 
                 with self._playlist_lock:
-                    # Check current assignment type and ID
-                    current_playlist_id = self.current_playlist.get('id') if self.current_playlist else None
-                    current_media_id = getattr(self, 'current_media', {}).get('id') if hasattr(self, 'current_media') else None
+                    current_id = self.current_playlist.get('id') if self.current_playlist else None
                     current_timestamp = self.current_playlist.get('last_updated') if self.current_playlist else None
-                    current_media_timestamp = getattr(self, 'current_media', {}).get('last_updated') if hasattr(self, 'current_media') else None
                 
-                self.logger.debug(f"Current - playlist: {current_playlist_id}, media: {current_media_id}, "
-                                f"Server - playlist: {playlist_id}, media: {media_id}, "
-                                f"Timestamps - current_playlist: {current_timestamp}, current_media: {current_media_timestamp}, server: {last_updated}")
+                self.logger.debug(f"Current playlist: {current_id}, "
+                                f"Server playlist: {playlist_id}, "
+                                f"Current timestamp: {current_timestamp}, "
+                                f"Server timestamp: {last_updated}")
                 
-                # Check if we need to fetch new content
-                assignment_changed = False
-                if playlist_id and (current_playlist_id != playlist_id or current_timestamp != last_updated):
-                    assignment_changed = True
-                    self.logger.info(f"Playlist assignment change detected")
-                elif media_id and (current_media_id != media_id or current_media_timestamp != last_updated):
-                    assignment_changed = True
-                    self.logger.info(f"Media assignment change detected")
-                elif not playlist_id and not media_id and (current_playlist_id or current_media_id):
-                    assignment_changed = True
-                    self.logger.info(f"Assignment cleared")
-                elif not self.current_playlist and not hasattr(self, 'current_media'):
-                    assignment_changed = True
-                    self.logger.info(f"Initial content fetch needed")
-                
-                if assignment_changed:
-                    self.logger.info(f"Content update detected - stopping current media and fetching new content")
+                # Check if we need to fetch full playlist
+                if (not self.current_playlist or 
+                    current_id != playlist_id or
+                    current_timestamp != last_updated):
+                    
+                    self.logger.info(f"Playlist update detected - stopping current media and fetching new playlist")
                     self.stop_current_media()  # Stop immediately to start new content
-                    return self.fetch_content()
+                    return self.fetch_playlist()
             else:
-                self.logger.debug(f"Content status check got {response.status_code}")
+                self.logger.debug(f"Playlist status check got {response.status_code}")
                     
         except Exception as e:
-            self.logger.error(f"Content status check failed: {e}")
+            self.logger.error(f"Playlist status check failed: {e}")
             
         return False
 
-    def fetch_content(self):
-        """Fetch current content (playlist or media) from server"""
+    def fetch_playlist(self):
+        """Fetch current playlist from server"""
         try:
             response = requests.get(
                 f"{SERVER_URL}/api/devices/{DEVICE_ID}/playlist",
@@ -219,49 +205,18 @@ class SignageClient:
             if response.status_code == 200:
                 data = response.json()
                 playlist = data.get('playlist')
-                media = data.get('media')
                 
-                content_updated = False
-                
-                # Handle playlist assignment
-                if playlist:
-                    if playlist != self.current_playlist:
-                        self.logger.info(f"New playlist received: {playlist['name']}")
-                        self.stop_current_media()  # Stop current media immediately
-                        with self._playlist_lock:
-                            self.current_playlist = playlist
-                            self.current_media = None  # Clear single media
-                            self.current_media_index = 0
-                        content_updated = True
-                
-                # Handle individual media assignment
-                elif media:
-                    if not hasattr(self, 'current_media') or media != getattr(self, 'current_media', None):
-                        self.logger.info(f"New media assignment received: {media['original_filename']}")
-                        self.stop_current_media()  # Stop current media immediately
-                        with self._playlist_lock:
-                            self.current_playlist = None  # Clear playlist
-                            self.current_media = media
-                            self.current_media_index = 0
-                        content_updated = True
-                
-                # Handle no assignment
-                else:
-                    if self.current_playlist or hasattr(self, 'current_media'):
-                        self.logger.info(f"No content assigned - clearing current assignment")
-                        self.stop_current_media()
-                        with self._playlist_lock:
-                            self.current_playlist = None
-                            self.current_media = None
-                            self.current_media_index = 0
-                        content_updated = True
-                
-                if content_updated:
-                    self.logger.info(f"Starting immediate playback of new content")
+                if playlist != self.current_playlist:
+                    self.logger.info(f"New playlist received: {playlist['name'] if playlist else 'None'}")
+                    self.stop_current_media()  # Stop current media immediately
+                    with self._playlist_lock:
+                        self.current_playlist = playlist
+                        self.current_media_index = 0
+                    self.logger.info(f"Starting immediate playback of new playlist")
                     return True
                     
         except Exception as e:
-            self.logger.error(f"Failed to fetch content: {e}")
+            self.logger.error(f"Failed to fetch playlist: {e}")
             
         return False
 
@@ -494,79 +449,56 @@ class SignageClient:
                 except Exception as e:
                     self.logger.error(f"Error stopping media: {e}")
 
-    def play_content(self):
-        """Play current content (playlist or individual media)"""
-        # Handle playlist assignment
-        if self.current_playlist and self.current_playlist.get('items'):
-            items = self.current_playlist['items']
-            
-            self.logger.info(f"Playing playlist with {len(items)} items - creating continuous VLC playlist")
-            
-            # Download all media files first
-            media_paths = []
-            for item in items:
-                local_path = self.download_media(item)
-                if local_path:
-                    media_paths.append(local_path)
-                else:
-                    self.send_log('error', f"Failed to download: {item['original_filename']}")
-            
-            if not media_paths:
-                self.logger.error("No media files available to play")
-                time.sleep(10)
-                return
-                
-            # Create VLC playlist to avoid stopping/starting between videos
-            success = self.play_continuous_playlist(media_paths, loop=self.current_playlist.get('loop', True))
-        
-        # Handle individual media assignment
-        elif hasattr(self, 'current_media') and self.current_media:
-            media = self.current_media
-            
-            self.logger.info(f"Playing individual media: {media['original_filename']}")
-            
-            # Download the media file
-            local_path = self.download_media(media)
-            if not local_path:
-                self.send_log('error', f"Failed to download: {media['original_filename']}")
-                time.sleep(10)
-                return
-            
-            # Play single media in a loop (reuse continuous playlist with one item)
-            success = self.play_continuous_playlist([local_path], loop=True)
-        
-        # No content assigned
-        else:
-            self.logger.debug("No content assigned")
+    def play_playlist(self):
+        """Play current playlist"""
+        if not self.current_playlist or not self.current_playlist.get('items'):
+            self.logger.debug("No playlist or empty playlist")
             time.sleep(10)
             return
         
+        items = self.current_playlist['items']
+        
+        # FIXED: Use continuous playlist for ALL playlists to prevent VLC restarts
+        self.logger.info(f"FIXED VERSION: Playlist with {len(items)} items - creating continuous VLC playlist to prevent restarts")
+        
+        # Download all media files first
+        media_paths = []
+        for item in items:
+            local_path = self.download_media(item)
+            if local_path:
+                media_paths.append(local_path)
+            else:
+                self.send_log('error', f"Failed to download: {item['original_filename']}")
+        
+        if not media_paths:
+            self.logger.error("No media files available to play")
+            time.sleep(10)
+            return
+            
+        # Create VLC playlist to avoid stopping/starting between videos
+        success = self.play_continuous_playlist(media_paths, loop=self.current_playlist.get('loop', True))
+        
         if success:
-            # Keep VLC running continuously
+            # Keep VLC running continuously - no more stopping between videos!
+            # VLC will handle all transitions internally without visual interruptions
             while self.running and self.current_process and self.current_process.poll() is None:
                 time.sleep(5)  # Check every 5 seconds if VLC is still running
-                # Content update checks will happen via background thread
+                # Playlist update checks will happen via background thread
             
-            self.logger.info("VLC process ended, restarting playback")
+            self.logger.info("VLC playlist process ended, restarting playback")
         else:
-            self.send_log('error', "Failed to start content playback")
+            self.send_log('error', "Failed to start continuous playlist playback")
             time.sleep(10)
 
     def cleanup_old_media(self):
         """Remove old media files to save space"""
         try:
             current_files = set()
-            
-            # Include files from current playlist
             if self.current_playlist and self.current_playlist.get('items'):
-                current_files.update(item['filename'] for item in self.current_playlist['items'])
-            
-            # Include current individual media file
-            if hasattr(self, 'current_media') and self.current_media:
-                current_files.add(self.current_media['filename'])
+                current_files = {item['filename'] for item in self.current_playlist['items']}
             
             for filename in os.listdir(MEDIA_DIR):
-                if filename not in current_files and not filename.startswith('.'):
+                if filename not in current_files:
                     file_path = os.path.join(MEDIA_DIR, filename)
                     # Keep files modified in last 24 hours
                     if os.path.getmtime(file_path) < time.time() - 86400:
@@ -599,13 +531,13 @@ class SignageClient:
                 # Send periodic checkin and full sync
                 if datetime.now() - last_checkin >= timedelta(seconds=CHECK_INTERVAL):
                     self.send_checkin()
-                    self.fetch_content()
+                    self.fetch_playlist()
                     last_checkin = datetime.now()
                 
                 # Rapid checks now run in background thread, no longer needed here
                 
-                # Play current content (playlist or media)
-                self.play_content()
+                # Play current playlist
+                self.play_playlist()
                 
                 # Cleanup old media files periodically
                 if datetime.now() - last_cleanup >= timedelta(hours=6):

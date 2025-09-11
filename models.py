@@ -33,7 +33,6 @@ class Device(db.Model):
     status = db.Column(db.String(20), default='offline')  # online, offline, error
     last_checkin = db.Column(db.DateTime)
     current_playlist_id = db.Column(db.Integer, db.ForeignKey('playlists.id'))
-    current_media_id = db.Column(db.Integer, db.ForeignKey('media_files.id', ondelete='SET NULL'))
     current_media = db.Column(db.String(200))
     ip_address = db.Column(db.String(15))
     pending_command = db.Column(db.String(50))  # reboot, restart_service, etc.
@@ -42,7 +41,6 @@ class Device(db.Model):
     
     # Relationships
     current_playlist = db.relationship('Playlist', backref='assigned_devices')
-    current_media_file = db.relationship('MediaFile', foreign_keys=[current_media_id], passive_deletes=True)
     
     def is_online(self):
         if not self.last_checkin:
