@@ -81,16 +81,63 @@
                     
                     <form method="POST" action="{{ url_for('main.assign_playlist', device_id=device.id) }}">
                         <div class="mb-3">
-                            <label class="form-label">Assigned Playlist:</label>
-                            <select name="playlist_id" class="form-select">
-                                <option value="">No playlist assigned</option>
-                                {% for playlist in playlists %}
-                                <option value="{{ playlist.id }}" 
-                                        {% if device.current_playlist_id == playlist.id %}selected{% endif %}>
-                                    {{ playlist.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
+                            <label class="form-label">Content Assignment:</label>
+                            
+                            <!-- Assignment Type Selection -->
+                            <div class="mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="assignment_type" value="none" id="none_{{ device.id }}"
+                                           {% if not device.current_playlist_id and not device.current_media_id %}checked{% endif %}
+                                           onchange="toggleAssignmentOptions('{{ device.id }}')">
+                                    <label class="form-check-label" for="none_{{ device.id }}">
+                                        No Assignment
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="assignment_type" value="playlist" id="playlist_{{ device.id }}"
+                                           {% if device.current_playlist_id %}checked{% endif %}
+                                           onchange="toggleAssignmentOptions('{{ device.id }}')">
+                                    <label class="form-check-label" for="playlist_{{ device.id }}">
+                                        <i class="fas fa-list me-1"></i>Playlist
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="assignment_type" value="media" id="media_{{ device.id }}"
+                                           {% if device.current_media_id %}checked{% endif %}
+                                           onchange="toggleAssignmentOptions('{{ device.id }}')">
+                                    <label class="form-check-label" for="media_{{ device.id }}">
+                                        <i class="fas fa-file-video me-1"></i>Single Media
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Playlist Selection -->
+                            <div id="playlist_select_{{ device.id }}" class="mb-2" style="{% if not device.current_playlist_id %}display: none;{% endif %}">
+                                <label class="form-label small text-muted">Select Playlist:</label>
+                                <select name="playlist_id" class="form-select form-select-sm">
+                                    <option value="">Choose a playlist...</option>
+                                    {% for playlist in playlists %}
+                                    <option value="{{ playlist.id }}" 
+                                            {% if device.current_playlist_id == playlist.id %}selected{% endif %}>
+                                        {{ playlist.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Media Selection -->
+                            <div id="media_select_{{ device.id }}" class="mb-2" style="{% if not device.current_media_id %}display: none;{% endif %}">
+                                <label class="form-label small text-muted">Select Media File:</label>
+                                <select name="media_id" class="form-select form-select-sm">
+                                    <option value="">Choose a media file...</option>
+                                    {% for media in media_files %}
+                                    <option value="{{ media.id }}" 
+                                            {% if device.current_media_id == media.id %}selected{% endif %}>
+                                        [{% if media.file_type == 'video' %}Video{% else %}Image{% endif %}] {{ media.original_filename or media.filename }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                         </div>
                         <div class="d-flex justify-content-between">
                             <button type="submit" class="btn btn-sm btn-outline-primary">
@@ -374,6 +421,25 @@ function confirmDelete(deviceName, deviceId) {
     document.getElementById('deviceNameToDelete').textContent = deviceName;
     document.getElementById('deleteDeviceForm').action = "{{ url_for('main.delete_device', device_id=0) }}".replace('0', deviceId);
     new bootstrap.Modal(document.getElementById('deleteDeviceModal')).show();
+}
+
+// Toggle assignment options based on radio selection
+function toggleAssignmentOptions(deviceId) {
+    const playlistRadio = document.getElementById('playlist_' + deviceId);
+    const mediaRadio = document.getElementById('media_' + deviceId);
+    const playlistSelect = document.getElementById('playlist_select_' + deviceId);
+    const mediaSelect = document.getElementById('media_select_' + deviceId);
+    
+    if (playlistRadio.checked) {
+        playlistSelect.style.display = 'block';
+        mediaSelect.style.display = 'none';
+    } else if (mediaRadio.checked) {
+        playlistSelect.style.display = 'none';
+        mediaSelect.style.display = 'block';
+    } else {
+        playlistSelect.style.display = 'none';
+        mediaSelect.style.display = 'none';
+    }
 }
 </script>
 {% endblock %}

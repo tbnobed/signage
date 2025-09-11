@@ -46,7 +46,8 @@ def dashboard():
 def devices():
     devices_list = Device.query.order_by(Device.created_at.desc()).all()
     playlists = Playlist.query.filter_by(is_active=True).all()
-    return render_template('devices.html', devices=devices_list, playlists=playlists)
+    media_files = MediaFile.query.order_by(MediaFile.filename.asc()).all()
+    return render_template('devices.html', devices=devices_list, playlists=playlists, media_files=media_files)
 
 @main.route('/devices/add', methods=['POST'])
 @login_required
@@ -75,15 +76,45 @@ def add_device():
 @login_required
 def assign_playlist(device_id):
     device = Device.query.get_or_404(device_id)
-    playlist_id = request.form.get('playlist_id')
+    assignment_type = request.form.get('assignment_type')
     
-    if playlist_id:
-        device.current_playlist_id = int(playlist_id)
+    if assignment_type == 'playlist':
+        playlist_id = request.form.get('playlist_id')
+        if playlist_id:
+            # Validate playlist exists and is active
+            playlist = Playlist.query.filter_by(id=int(playlist_id), is_active=True).first()
+            if playlist:
+                device.current_playlist_id = int(playlist_id)
+                device.current_media_id = None  # Clear media assignment
+                flash('Playlist assigned successfully', 'success')
+            else:
+                flash('Selected playlist not found or inactive', 'error')
+                return redirect(url_for('main.devices'))
+        else:
+            device.current_playlist_id = None
+            flash('Playlist assignment cleared', 'success')
+    elif assignment_type == 'media':
+        media_id = request.form.get('media_id')
+        if media_id:
+            # Validate media file exists
+            media_file = MediaFile.query.get(int(media_id))
+            if media_file:
+                device.current_media_id = int(media_id)
+                device.current_playlist_id = None  # Clear playlist assignment
+                flash('Media file assigned successfully', 'success')
+            else:
+                flash('Selected media file not found', 'error')
+                return redirect(url_for('main.devices'))
+        else:
+            device.current_media_id = None
+            flash('Media assignment cleared', 'success')
     else:
+        # Clear both assignments
         device.current_playlist_id = None
+        device.current_media_id = None
+        flash('All assignments cleared', 'success')
     
     db.session.commit()
-    flash('Playlist assigned successfully', 'success')
     return redirect(url_for('main.devices'))
 
 @main.route('/devices/<int:device_id>/delete', methods=['POST'])
