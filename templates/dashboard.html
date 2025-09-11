@@ -124,13 +124,21 @@
                                 <div class="media-icon {{ media.file_type }}">
                                     {% if media.file_type == 'image' %}
                                     <i class="fas fa-image"></i>
+                                    {% elif media.file_type == 'stream' %}
+                                    <i class="fas fa-broadcast-tower"></i>
                                     {% else %}
                                     <i class="fas fa-video"></i>
                                     {% endif %}
                                 </div>
                                 <div class="item-content">
                                     <h6>{{ media.original_filename }}</h6>
-                                    <div class="item-meta">{{ media.file_type|title }} • {{ (media.file_size / 1024 / 1024)|round(1) }} MB</div>
+                                    <div class="item-meta">
+                                        {% if media.file_type == 'stream' %}
+                                        {{ media.stream_type|upper }} Stream
+                                        {% else %}
+                                        {{ media.file_type|title }} • {{ (media.file_size / 1024 / 1024)|round(1) }} MB
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 <div class="item-status">
                                     <span class="item-time">{{ media.created_at.strftime('%m/%d') }}</span>
