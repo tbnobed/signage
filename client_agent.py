@@ -485,20 +485,43 @@ class SignageClient:
             
             self.logger.debug("Configuring VLC for HDMI display output")
             
-            # Start VLC with playlist - enable logging to see errors
+            # Start VLC with playlist - capture errors for debugging
             log_file = os.path.join(MEDIA_DIR, 'vlc_debug.log')
-            with open(log_file, 'w') as vlc_log:
-                self.current_process = subprocess.Popen(
-                    command,
-                    stdout=vlc_log,
-                    stderr=subprocess.STDOUT,  # Redirect stderr to stdout to capture all VLC messages
-                    env=env
-                )
             
-            self.logger.info(f"VLC debug output will be written to: {log_file}")
+            self.logger.info(f"VLC command: {' '.join(command)}")
             
-            self.logger.info("VLC continuous playlist started - no more visual interruptions between videos!")
-            return True
+            try:
+                with open(log_file, 'w') as vlc_log:
+                    self.current_process = subprocess.Popen(
+                        command,
+                        stdout=vlc_log,
+                        stderr=subprocess.STDOUT,
+                        env=env
+                    )
+                
+                # Give VLC a moment to start
+                time.sleep(1)
+                
+                # Check if VLC actually started
+                if self.current_process.poll() is not None:
+                    # VLC exited immediately - read the log to see why
+                    try:
+                        with open(log_file, 'r') as f:
+                            vlc_output = f.read()
+                        self.logger.error(f"VLC failed to start. Exit code: {self.current_process.returncode}")
+                        self.logger.error(f"VLC output: {vlc_output}")
+                        return False
+                    except Exception as e:
+                        self.logger.error(f"VLC failed and couldn't read log: {e}")
+                        return False
+                
+                self.logger.info(f"VLC debug output being written to: {log_file}")
+                self.logger.info("VLC continuous playlist started successfully!")
+                return True
+                
+            except Exception as e:
+                self.logger.error(f"Failed to start VLC process: {e}")
+                return False
             
         except Exception as e:
             self.logger.error(f"Error creating continuous playlist: {e}")
