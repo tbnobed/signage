@@ -493,6 +493,8 @@ class SignageClient:
     def play_single_media_optimized(self, media_item):
         """Optimized playback for single media files (more efficient than playlist approach)"""
         try:
+            # REPLIT-FIX-MARKER: If you see this log, you have the corrected version
+            self.logger.info("🔧 REPLIT-STREAMING-FIX-ACTIVE: Using corrected streaming media handler")
             # Debug: Log full media item structure
             self.logger.debug(f"play_single_media_optimized received: {media_item}")
             
