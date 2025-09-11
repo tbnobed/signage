@@ -710,7 +710,18 @@ Comment=Apply kiosk mode settings on login
         
         try:
             print("   ⬇️  Downloading TeamViewer package...")
-            urllib.request.urlretrieve(teamviewer_url, teamviewer_deb)
+            
+            # Create a request with browser-like headers to bypass 403 blocking
+            request = urllib.request.Request(teamviewer_url)
+            request.add_header('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36')
+            request.add_header('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+            request.add_header('Accept-Language', 'en-US,en;q=0.5')
+            request.add_header('Referer', 'https://www.teamviewer.com/')
+            
+            # Download with proper headers
+            with urllib.request.urlopen(request) as response, open(teamviewer_deb, 'wb') as out_file:
+                out_file.write(response.read())
+            
             print(f"   ✅ Downloaded: {teamviewer_deb}")
             
             # Verify file was downloaded and has reasonable size
