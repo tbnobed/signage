@@ -105,6 +105,12 @@ class SignageClient:
             
             if response.status_code == 200:
                 result = response.json()
+                
+                # Ensure we have valid JSON data
+                if result is None:
+                    self.logger.error("Received empty JSON response from server")
+                    return None
+                    
                 self.logger.debug(f"Checkin successful: {result}")
                 
                 # Check for pending commands from server
@@ -159,6 +165,12 @@ class SignageClient:
             
             if response.status_code == 200:
                 data = response.json()
+                
+                # Ensure we have valid JSON data
+                if data is None:
+                    self.logger.error("Received empty JSON response from server")
+                    return False
+                
                 playlist_id = data.get('playlist_id')
                 media_id = data.get('media_id')
                 last_updated = data.get('last_updated')
@@ -218,6 +230,12 @@ class SignageClient:
             
             if response.status_code == 200:
                 data = response.json()
+                
+                # Ensure we have valid JSON data
+                if data is None:
+                    self.logger.error("Received empty JSON response from server")
+                    return False
+                
                 playlist = data.get('playlist')
                 media = data.get('media')
                 
