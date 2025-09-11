@@ -1,0 +1,69 @@
+obtv@display1:~/signage$ wget -O client_agent.py https://raw.githubusercontent.com/tbnobed/signage/main/client_agent.py
+--2025-09-10 21:39:02--  https://raw.githubusercontent.com/tbnobed/signage/main/client_agent.py
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.109.133, 185.199.111.133, 185.199.108.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.109.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 31922 (31K) [text/plain]
+Saving to: ‘client_agent.py’
+
+client_agent.py               100%[=================================================>]  31.17K  --.-KB/s    in 0.005s
+
+2025-09-10 21:39:03 (5.79 MB/s) - ‘client_agent.py’ saved [31922/31922]
+
+obtv@display1:~/signage$ wget -O client_agent.py https://raw.githubusercontent.com/tbnobed/signage/main/client_agent.py
+--2025-09-10 21:39:06--  https://raw.githubusercontent.com/tbnobed/signage/main/client_agent.py
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.111.133, 185.199.110.133, 185.199.109.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.111.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 31922 (31K) [text/plain]
+Saving to: ‘client_agent.py’
+
+client_agent.py               100%[=================================================>]  31.17K  --.-KB/s    in 0.004s
+
+2025-09-10 21:39:06 (8.06 MB/s) - ‘client_agent.py’ saved [31922/31922]
+
+obtv@display1:~/signage$ wget -O client_agent.py https://raw.githubusercontent.com/tbnobed/signage/main/client_agent.py
+--2025-09-10 21:39:07--  https://raw.githubusercontent.com/tbnobed/signage/main/client_agent.py
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.108.133, 185.199.111.133, 185.199.109.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.108.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 31922 (31K) [text/plain]
+Saving to: ‘client_agent.py’
+
+client_agent.py               100%[=================================================>]  31.17K  --.-KB/s    in 0.004s
+
+2025-09-10 21:39:07 (6.78 MB/s) - ‘client_agent.py’ saved [31922/31922]
+
+obtv@display1:~/signage$ wget -O client_agent.py https://raw.githubusercontent.com/tbnobed/signage/main/client_agent.py
+--2025-09-10 21:39:08--  https://raw.githubusercontent.com/tbnobed/signage/main/client_agent.py
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.111.133, 185.199.108.133, 185.199.110.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.111.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 31922 (31K) [text/plain]
+Saving to: ‘client_agent.py’
+
+client_agent.py               100%[=================================================>]  31.17K  --.-KB/s    in 0.004s
+
+2025-09-10 21:39:08 (6.92 MB/s) - ‘client_agent.py’ saved [31922/31922]
+
+obtv@display1:~/signage$ systemctl --user restart signage-client
+obtv@display1:~/signage$ journalctl --user -u signage-client -f
+Sep 10 21:39:27 display1 python3[48740]: 2025-09-10 21:39:27,464 - INFO - Running rapid playlist check (background thread)...
+Sep 10 21:39:27 display1 python3[48740]: 2025-09-10 21:39:27,464 - DEBUG - Checking content status...
+Sep 10 21:39:27 display1 python3[48740]: 2025-09-10 21:39:27,465 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 21:39:27 display1 python3[48740]: 2025-09-10 21:39:27,532 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 78
+Sep 10 21:39:27 display1 python3[48740]: 2025-09-10 21:39:27,532 - ERROR - Content status check failed: 'NoneType' object has no attribute 'get'
+Sep 10 21:39:29 display1 python3[48740]: 2025-09-10 21:39:29,534 - INFO - Running rapid playlist check (background thread)...
+Sep 10 21:39:29 display1 python3[48740]: 2025-09-10 21:39:29,535 - DEBUG - Checking content status...
+Sep 10 21:39:29 display1 python3[48740]: 2025-09-10 21:39:29,536 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 21:39:29 display1 python3[48740]: 2025-09-10 21:39:29,601 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 78
+Sep 10 21:39:29 display1 python3[48740]: 2025-09-10 21:39:29,601 - ERROR - Content status check failed: 'NoneType' object has no attribute 'get'
+
+Sep 10 21:39:31 display1 python3[48740]: 2025-09-10 21:39:31,603 - INFO - Running rapid playlist check (background thread)...
+Sep 10 21:39:31 display1 python3[48740]: 2025-09-10 21:39:31,604 - DEBUG - Checking content status...
+Sep 10 21:39:31 display1 python3[48740]: 2025-09-10 21:39:31,605 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 21:39:31 display1 python3[48740]: 2025-09-10 21:39:31,670 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 78
+Sep 10 21:39:31 display1 python3[48740]: 2025-09-10 21:39:31,670 - ERROR - Content status check failed: 'NoneType' object has no attribute 'get'
+Sep 10 21:39:33 display1 python3[48740]: 2025-09-10 21:39:33,672 - INFO - Running rapid playlist check (background thread)...
+Sep 10 21:39:33 display1 python3[48740]: 2025-09-10 21:39:33,672 - DEBUG - Checking content status...
+Sep 10 21:39:33 display1 python3[48740]: 2025-09-10 21:39:33,673 - DEBUG - Starting new HTTPS connection (1): display.ob
