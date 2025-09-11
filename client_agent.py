@@ -454,17 +454,16 @@ class SignageClient:
             if '--loop' in command:
                 command.remove('--loop')
             
-            # Configure VLC for HDMI display output
+            # Configure VLC for HDMI display output (removed conflicting flags)
             command.extend([
                 '--loop',             # Loop the entire playlist
                 '--image-duration', '10',  # Images show for 10 seconds each
                 '--playlist-autostart',    # Auto start playlist
                 '--no-random',        # Play in order
-                '--no-qt-error-dialogs',  # No error popups
-                '--intf', 'dummy',    # No interface (background mode)
                 '--fullscreen',       # Display fullscreen on HDMI
                 '--no-video-title-show',  # Don't show video title
                 '--no-osd',           # No on-screen display
+                '-vvv',               # Verbose logging for debugging
             ])
             
             # Add the playlist file
@@ -477,13 +476,21 @@ class SignageClient:
             # Kill any existing player process
             self.stop_current_media()
             
-            # Use HDMI display for VLC output
+            # Use inherited environment (same as play_media method)
             env = os.environ.copy()
             
-            # Set display for HDMI output
-            env['DISPLAY'] = ':0'
+            # Log current display environment for debugging
+            display_env = env.get('DISPLAY', 'not set')
+            wayland_display = env.get('WAYLAND_DISPLAY', 'not set') 
+            session_type = env.get('XDG_SESSION_TYPE', 'not set')
+            self.logger.debug(f"Display environment - DISPLAY: {display_env}, WAYLAND_DISPLAY: {wayland_display}, SESSION_TYPE: {session_type}")
             
-            self.logger.debug("Configuring VLC for HDMI display output")
+            # Only add XAUTHORITY if we have an X11 display and the file exists
+            if env.get('DISPLAY') and not env.get('XAUTHORITY'):
+                user_home = os.path.expanduser('~')
+                xauth_path = f'{user_home}/.Xauthority'
+                if os.path.exists(xauth_path):
+                    env['XAUTHORITY'] = xauth_path
             
             # Start VLC with playlist - capture errors for debugging
             log_file = os.path.join(MEDIA_DIR, 'vlc_debug.log')
