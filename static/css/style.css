@@ -3,45 +3,45 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    /* Primary Cyan/Blue Gradient Colors */
-    --primary-color: #00f5ff;
-    --primary-dark: #00d4aa;
-    --primary-light: #4dd4f0;
-    --secondary-color: #8b9dc3;
+    /* Muted Professional Colors */
+    --primary-color: #6b7280;
+    --primary-dark: #4b5563;
+    --primary-light: #9ca3af;
+    --secondary-color: #64748b;
     
-    /* Status Colors */
-    --success-color: #00ff88;
-    --warning-color: #ffb037;
-    --danger-color: #ff4757;
-    --info-color: #3742fa;
+    /* Subtle Status Colors */
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #6366f1;
     
     /* Dark Background Layers */
-    --bg-primary: #0a0e1a;
-    --bg-secondary: #141b2d;
-    --bg-tertiary: #1e2a3f;
-    --bg-glass: rgba(30, 42, 63, 0.7);
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --bg-glass: rgba(51, 65, 85, 0.6);
     
     /* Text Colors */
-    --text-primary: #ffffff;
-    --text-secondary: #b4c6d7;
-    --text-muted: #7c8fa3;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
     
     /* Border & Effects */
-    --border-primary: #2d3a52;
-    --border-accent: #00f5ff44;
-    --glow-primary: 0 0 20px rgba(0, 245, 255, 0.3);
-    --glow-success: 0 0 20px rgba(0, 255, 136, 0.3);
-    --glow-danger: 0 0 20px rgba(255, 71, 87, 0.3);
+    --border-primary: #475569;
+    --border-accent: #6b728088;
+    --glow-primary: 0 0 15px rgba(107, 114, 128, 0.2);
+    --glow-success: 0 0 15px rgba(16, 185, 129, 0.2);
+    --glow-danger: 0 0 15px rgba(239, 68, 68, 0.2);
     
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, #00f5ff 0%, #00d4aa 50%, #3742fa 100%);
-    --gradient-card: linear-gradient(145deg, #1e2a3f 0%, #141b2d 100%);
-    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    /* Muted Gradients */
+    --gradient-primary: linear-gradient(135deg, #6b7280 0%, #4b5563 50%, #374151 100%);
+    --gradient-card: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
     
-    /* Shadows */
-    --shadow-glow: 0 8px 32px rgba(0, 245, 255, 0.15);
-    --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.3);
-    --shadow-elevated: 0 20px 40px rgba(0, 0, 0, 0.4);
+    /* Softer Shadows */
+    --shadow-glow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.2);
+    --shadow-elevated: 0 20px 35px rgba(0, 0, 0, 0.3);
 }
 
 /* Global Styles */
@@ -62,9 +62,9 @@ body {
     line-height: 1.6;
     overflow-x: hidden;
     background-image: 
-        radial-gradient(circle at 20% 80%, rgba(0, 245, 255, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(55, 66, 250, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(0, 212, 170, 0.05) 0%, transparent 50%);
+        radial-gradient(circle at 20% 80%, rgba(107, 114, 128, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(71, 85, 105, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(100, 116, 139, 0.03) 0%, transparent 50%);
     background-attachment: fixed;
 }
 
@@ -288,18 +288,18 @@ body {
     font-size: 0.9rem;
 }
 
-/* Animated Status Indicators */
+/* Subtle Status Indicators */
 .status-online {
-    background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 212, 170, 0.2));
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(34, 197, 94, 0.15));
     color: var(--success-color);
-    border: 1px solid rgba(0, 255, 136, 0.3);
+    border: 1px solid rgba(16, 185, 129, 0.2);
     padding: 8px 16px;
     border-radius: 25px;
     font-weight: 600;
     font-size: 0.875rem;
     position: relative;
     overflow: hidden;
-    animation: pulse-green 2s infinite;
+    animation: subtle-pulse-green 3s infinite;
 }
 
 .status-offline {
@@ -313,24 +313,24 @@ body {
 }
 
 .status-error {
-    background: linear-gradient(135deg, rgba(255, 71, 87, 0.2), rgba(255, 55, 56, 0.2));
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.15));
     color: var(--danger-color);
-    border: 1px solid rgba(255, 71, 87, 0.3);
+    border: 1px solid rgba(239, 68, 68, 0.2);
     padding: 8px 16px;
     border-radius: 25px;
     font-weight: 600;
     font-size: 0.875rem;
-    animation: pulse-red 2s infinite;
+    animation: subtle-pulse-red 3s infinite;
 }
 
-@keyframes pulse-green {
-    0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 136, 0.3); }
-    50% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.6); }
+@keyframes subtle-pulse-green {
+    0%, 100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.2); }
+    50% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
 }
 
-@keyframes pulse-red {
-    0%, 100% { box-shadow: 0 0 5px rgba(255, 71, 87, 0.3); }
-    50% { box-shadow: 0 0 20px rgba(255, 71, 87, 0.6); }
+@keyframes subtle-pulse-red {
+    0%, 100% { box-shadow: 0 0 5px rgba(239, 68, 68, 0.2); }
+    50% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
 }
 
 /* Dashboard Stats Cards */
@@ -451,8 +451,8 @@ body {
     min-height: 100vh;
     background: var(--bg-primary);
     background-image: 
-        radial-gradient(circle at 25% 25%, rgba(0, 245, 255, 0.2) 0%, transparent 50%),
-        radial-gradient(circle at 75% 75%, rgba(55, 66, 250, 0.2) 0%, transparent 50%);
+        radial-gradient(circle at 25% 25%, rgba(107, 114, 128, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(71, 85, 105, 0.08) 0%, transparent 50%);
     display: flex;
     align-items: center;
     justify-content: center;
