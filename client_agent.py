@@ -330,7 +330,17 @@ class SignageClient:
                 f.write('#EXTM3U\n')
                 for i, media_path in enumerate(media_paths):
                     abs_path = os.path.abspath(media_path)
-                    f.write(f'#EXTINF:-1,Media {i+1}\n')
+                    
+                    # CRITICAL FIX: Use finite duration for images, infinite for videos
+                    # VLC ignores --image-duration when EXTINF:-1 (infinite) is set
+                    file_ext = os.path.splitext(media_path)[1].lower()
+                    if file_ext in ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']:
+                        # Images: Set 10 second duration so VLC will advance
+                        f.write(f'#EXTINF:10,Media {i+1}\n')
+                    else:
+                        # Videos: Use infinite duration (VLC will use actual video length)
+                        f.write(f'#EXTINF:-1,Media {i+1}\n')
+                    
                     f.write(f'{abs_path}\n')
             
             self.logger.info(f"Created VLC playlist with {len(media_paths)} items: {playlist_file}")
