@@ -505,17 +505,28 @@ class SignageClient:
             return False
 
     def stop_current_media(self):
-        """Stop currently playing media"""
+        """Stop currently playing media and kill ALL VLC processes"""
         with self._playlist_lock:
+            # First, try to stop the tracked process
             if self.current_process and self.current_process.poll() is None:
                 try:
                     self.current_process.terminate()
-                    self.current_process.wait(timeout=5)
+                    self.current_process.wait(timeout=3)
                 except subprocess.TimeoutExpired:
                     self.current_process.kill()
                     self.current_process.wait()
                 except Exception as e:
-                    self.logger.error(f"Error stopping media: {e}")
+                    self.logger.error(f"Error stopping tracked process: {e}")
+            
+            # Kill ALL VLC processes to prevent accumulation
+            try:
+                self.logger.debug("Killing all VLC processes to prevent accumulation")
+                subprocess.run(['pkill', '-f', 'vlc'], timeout=5)
+                time.sleep(0.5)  # Give processes time to die
+            except Exception as e:
+                self.logger.debug(f"pkill vlc failed (may be normal): {e}")
+                
+            self.current_process = None
 
     def play_content(self):
         """Play current content (playlist or individual media)"""
