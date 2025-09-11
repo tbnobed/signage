@@ -1021,6 +1021,49 @@ Run 'teamviewer --info' to get your TeamViewer ID after reboot.
             print(f"   ❌ TeamViewer installation error: {e}")
             return False
     
+    def configure_teamviewer_sudo(self):
+        """Configure passwordless sudo for TeamViewer --info command"""
+        print("🔒 Configuring sudo permissions for TeamViewer ID detection...")
+        
+        # Get the target username
+        username = self.target_user or getpass.getuser()
+        
+        # Create sudoers rule for TeamViewer --info command
+        sudoers_rule = f"{username} ALL=(ALL) NOPASSWD: /usr/bin/teamviewer --info"
+        sudoers_file = "/etc/sudoers.d/teamviewer-info"
+        
+        try:
+            # Create the sudoers file
+            subprocess.run(['sudo', 'sh', '-c', f'echo "{sudoers_rule}" > {sudoers_file}'], 
+                         check=True, capture_output=True, timeout=10)
+            
+            # Set correct permissions (440 is read-only for root and group)
+            subprocess.run(['sudo', 'chmod', '440', sudoers_file], 
+                         check=True, capture_output=True, timeout=5)
+            
+            # Test the sudo rule works
+            test_result = subprocess.run(['sudo', '-n', '/usr/bin/teamviewer', '--info'], 
+                                       capture_output=True, timeout=10)
+            
+            if test_result.returncode == 0:
+                print("   ✅ TeamViewer sudo permissions configured successfully")
+                print(f"   📋 Rule: {sudoers_rule}")
+                return True
+            else:
+                print("   ⚠️  TeamViewer sudo rule created but test failed")
+                print(f"   📋 Rule: {sudoers_rule}")
+                return False
+                
+        except subprocess.CalledProcessError as e:
+            print(f"   ❌ Failed to configure TeamViewer sudo permissions: {e}")
+            return False
+        except subprocess.TimeoutExpired:
+            print("   ❌ TeamViewer sudo configuration timed out")
+            return False
+        except Exception as e:
+            print(f"   ❌ TeamViewer sudo configuration error: {e}")
+            return False
+    
     def configure_sudo_permissions(self):
         """Configure passwordless sudo for reboot commands"""
         print("🔒 Configuring sudo permissions for reboot functionality...")
@@ -1354,6 +1397,9 @@ WantedBy=graphical-session.target
             
             # Install TeamViewer for remote management
             self.install_teamviewer()
+            
+            # Configure TeamViewer sudo permissions for ID detection
+            self.configure_teamviewer_sudo()
             
             # Always try to create systemd service regardless of connection test
             connection_ok = self.test_connection()
