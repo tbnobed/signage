@@ -64,7 +64,7 @@
                     <label class="form-label fw-bold">Setup Command:</label>
                     <div class="input-group">
                         <input type="text" class="form-control font-monospace" id="setupCommand" readonly 
-                               value="curl -L {{ request.url_root }}auth/client-setup | sudo python3">
+                               value="curl -L {{ request.url_root }}auth/client-setup-sh | sudo bash">
                         <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('setupCommand')">
                             <i class="fas fa-copy"></i> Copy
                         </button>

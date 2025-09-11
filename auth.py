@@ -227,7 +227,7 @@ def delete_user(user_id):
 
 @auth.route('/client-setup')
 def client_setup():
-    """Serve the client setup script for download"""
+    """Serve the Python client setup script for download"""
     try:
         # Read the setup_client.py file
         with open('setup_client.py', 'r') as f:
@@ -244,4 +244,24 @@ def client_setup():
         )
     except FileNotFoundError:
         flash('Setup script not found. Please contact your administrator.', 'error')
+        return redirect(url_for('auth.login'))
+
+@auth.route('/client-setup-sh')
+def client_setup_sh():
+    """Serve the shell wrapper script for curl installation"""
+    try:
+        # Read the setup_client.sh file
+        with open('setup_client.sh', 'r') as f:
+            script_content = f.read()
+        
+        # Return as text for curl piping
+        return Response(
+            script_content,
+            mimetype='text/plain',
+            headers={
+                'Content-Type': 'text/plain; charset=utf-8'
+            }
+        )
+    except FileNotFoundError:
+        flash('Shell setup script not found. Please contact your administrator.', 'error')
         return redirect(url_for('auth.login'))
