@@ -79,23 +79,65 @@
                     </div>
                     {% endif %}
                     
-                    <form method="POST" action="{{ url_for('main.assign_playlist', device_id=device.id) }}">
-                        <div class="mb-3">
-                            <label class="form-label">Assigned Playlist:</label>
-                            <select name="playlist_id" class="form-select">
-                                <option value="">No playlist assigned</option>
-                                {% for playlist in playlists %}
-                                <option value="{{ playlist.id }}" 
-                                        {% if device.current_playlist_id == playlist.id %}selected{% endif %}>
-                                    {{ playlist.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <button type="submit" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-save me-1"></i>Update
+                    <!-- Assignment Options Tabs -->
+                    <ul class="nav nav-tabs nav-sm mb-3" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link {% if not device.assigned_media_id %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#playlist-tab-{{ device.id }}" type="button" role="tab">
+                                <i class="fas fa-list me-1"></i>Playlist
                             </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link {% if device.assigned_media_id %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#media-tab-{{ device.id }}" type="button" role="tab">
+                                <i class="fas fa-file-image me-1"></i>Single Media
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        <!-- Playlist Assignment Tab -->
+                        <div class="tab-pane fade {% if not device.assigned_media_id %}show active{% endif %}" id="playlist-tab-{{ device.id }}" role="tabpanel">
+                            <form method="POST" action="{{ url_for('main.assign_playlist', device_id=device.id) }}">
+                                <div class="mb-3">
+                                    <label class="form-label">Assigned Playlist:</label>
+                                    <select name="playlist_id" class="form-select form-select-sm">
+                                        <option value="">No playlist assigned</option>
+                                        {% for playlist in playlists %}
+                                        <option value="{{ playlist.id }}" 
+                                                {% if device.current_playlist_id == playlist.id and not device.assigned_media_id %}selected{% endif %}>
+                                            {{ playlist.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-save me-1"></i>Assign Playlist
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <!-- Single Media Assignment Tab -->
+                        <div class="tab-pane fade {% if device.assigned_media_id %}show active{% endif %}" id="media-tab-{{ device.id }}" role="tabpanel">
+                            <form method="POST" action="{{ url_for('main.assign_media', device_id=device.id) }}">
+                                <div class="mb-3">
+                                    <label class="form-label">Assigned Media File:</label>
+                                    <select name="media_id" class="form-select form-select-sm">
+                                        <option value="">No media assigned</option>
+                                        {% for media in media_files %}
+                                        <option value="{{ media.id }}" 
+                                                {% if device.assigned_media_id == media.id %}selected{% endif %}>
+                                            {{ media.original_filename }} ({{ media.file_type }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-save me-1"></i>Assign Media
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end mt-3">
                             <div>
                                 <button type="button" class="btn btn-sm btn-outline-warning me-1" 
                                         onclick="confirmReboot('{{ device.name }}', '{{ device.id }}')"
@@ -108,7 +150,6 @@
                                 </button>
                             </div>
                         </div>
-                    </form>
                 </div>
             </div>
         </div>

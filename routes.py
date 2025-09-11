@@ -46,7 +46,8 @@ def dashboard():
 def devices():
     devices_list = Device.query.order_by(Device.created_at.desc()).all()
     playlists = Playlist.query.filter_by(is_active=True).all()
-    return render_template('devices.html', devices=devices_list, playlists=playlists)
+    media_files = MediaFile.query.order_by(MediaFile.created_at.desc()).all()
+    return render_template('devices.html', devices=devices_list, playlists=playlists, media_files=media_files)
 
 @main.route('/devices/add', methods=['POST'])
 @login_required
