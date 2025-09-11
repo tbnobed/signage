@@ -100,20 +100,30 @@ class SignageClient:
         """Get TeamViewer ID from the local system"""
         try:
             # Try to get TeamViewer ID using sudo teamviewer --info command
-            result = subprocess.run(['sudo', 'teamviewer', '--info'], 
+            result = subprocess.run(['sudo', '-n', '/usr/bin/teamviewer', '--info'], 
                                   capture_output=True, text=True, timeout=10)
-            if result.returncode == 0:
-                # Parse output to find TeamViewer ID line
-                for line in result.stdout.split('\n'):
-                    if 'TeamViewer ID:' in line:
-                        teamviewer_id = line.split(':')[-1].strip()
-                        if teamviewer_id and teamviewer_id.isdigit():
-                            return teamviewer_id
-        except (subprocess.TimeoutExpired, FileNotFoundError, subprocess.CalledProcessError):
-            # TeamViewer not installed or not accessible
-            pass
+            
+            # Log failures to debug service context issues
+            if result.returncode != 0:
+                self.logger.info(f"TeamViewer sudo failed (returncode {result.returncode}): {result.stderr.strip()}")
+                return None
+            
+            # Parse output to find TeamViewer ID line
+            for line in result.stdout.split('\n'):
+                if 'TeamViewer ID:' in line:
+                    teamviewer_id = line.split(':')[-1].strip()
+                    if teamviewer_id and teamviewer_id.isdigit():
+                        self.logger.debug(f"Successfully parsed TeamViewer ID from output: {teamviewer_id}")
+                        return teamviewer_id
+            
+            self.logger.debug(f"No TeamViewer ID found in output: {result.stdout}")
+            
+        except subprocess.TimeoutExpired:
+            self.logger.info("TeamViewer command timed out")
+        except FileNotFoundError:
+            self.logger.info("TeamViewer binary not found at /usr/bin/teamviewer")
         except Exception as e:
-            self.logger.debug(f"TeamViewer ID detection error: {e}")
+            self.logger.info(f"TeamViewer ID detection error: {e}")
         
         return None
     
@@ -126,12 +136,12 @@ class SignageClient:
                 if items and self.current_media_index < len(items):
                     current_media = items[self.current_media_index]['original_filename']
             
-            # Get TeamViewer ID (cached to avoid frequent subprocess calls)
-            if not hasattr(self, '_teamviewer_id_checked'):
-                self._cached_teamviewer_id = self.get_teamviewer_id()
-                self._teamviewer_id_checked = True
-                if self._cached_teamviewer_id:
-                    self.logger.info(f"Detected TeamViewer ID: {self._cached_teamviewer_id}")
+            # Get TeamViewer ID - retry until success, then cache
+            if not hasattr(self, '_cached_teamviewer_id') or not self._cached_teamviewer_id:
+                teamviewer_id = self.get_teamviewer_id()
+                if teamviewer_id:
+                    self._cached_teamviewer_id = teamviewer_id
+                    self.logger.info(f"Detected TeamViewer ID: {teamviewer_id}")
             
             data = {
                 'current_media': current_media,
