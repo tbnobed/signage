@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeFileUploads();
     initializeFormValidation();
     setupAutoRefresh();
+    initializeAlertAutoClose();
 });
 
 // Initialize Bootstrap tooltips
@@ -142,6 +143,63 @@ function initializeFormValidation() {
     });
 }
 
+// Initialize auto-closing alerts
+function initializeAlertAutoClose() {
+    const alerts = document.querySelectorAll('.alert-dismissible');
+    
+    alerts.forEach(function(alert) {
+        // Success messages auto-close after 4 seconds
+        if (alert.classList.contains('alert-success')) {
+            setTimeout(function() {
+                dismissAlert(alert);
+            }, 4000);
+        }
+        // Info messages auto-close after 5 seconds
+        else if (alert.classList.contains('alert-info')) {
+            setTimeout(function() {
+                dismissAlert(alert);
+            }, 5000);
+        }
+        // Warning messages auto-close after 7 seconds (a bit longer)
+        else if (alert.classList.contains('alert-warning')) {
+            setTimeout(function() {
+                dismissAlert(alert);
+            }, 7000);
+        }
+        // Error messages stay longer (10 seconds) since they're more important
+        else if (alert.classList.contains('alert-danger')) {
+            setTimeout(function() {
+                dismissAlert(alert);
+            }, 10000);
+        }
+        // Default: auto-close after 5 seconds
+        else {
+            setTimeout(function() {
+                dismissAlert(alert);
+            }, 5000);
+        }
+    });
+}
+
+// Helper function to dismiss an alert
+function dismissAlert(alert) {
+    if (alert && alert.parentNode) {
+        // Use Bootstrap's built-in alert dismissal
+        const closeButton = alert.querySelector('.btn-close');
+        if (closeButton) {
+            closeButton.click();
+        } else {
+            // Fallback: remove manually with fade effect
+            alert.classList.remove('show');
+            setTimeout(function() {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 150);
+        }
+    }
+}
+
 // Setup auto-refresh for dashboard
 function setupAutoRefresh() {
     if (window.location.pathname === '/' || window.location.pathname.includes('dashboard')) {
@@ -210,12 +268,19 @@ function showAlert(message, type = 'info') {
     
     alertsContainer.insertBefore(alert, alertsContainer.firstChild);
     
-    // Auto-dismiss after 5 seconds
+    // Smart auto-dismiss timing based on message type
+    let dismissTime;
+    switch(type) {
+        case 'success': dismissTime = 4000; break;
+        case 'info': dismissTime = 5000; break;
+        case 'warning': dismissTime = 7000; break;
+        case 'danger': dismissTime = 10000; break;
+        default: dismissTime = 5000; break;
+    }
+    
     setTimeout(function() {
-        if (alert.parentNode) {
-            alert.remove();
-        }
-    }, 5000);
+        dismissAlert(alert);
+    }, dismissTime);
 }
 
 function clearFormErrors(form) {
