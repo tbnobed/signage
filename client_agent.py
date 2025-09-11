@@ -230,7 +230,14 @@ class SignageClient:
         return False
 
     def download_media(self, media_item):
-        """Download media file if not cached locally"""
+        """Download media file if not cached locally, or return stream URL for streaming media"""
+        
+        # For streaming media, return the stream URL directly
+        if media_item.get('is_stream', False) and media_item.get('stream_url'):
+            self.logger.info(f"Using stream URL: {media_item['original_filename']} -> {media_item['stream_url']}")
+            return media_item['stream_url']
+        
+        # For regular media files, download and cache locally
         filename = media_item['filename']
         local_path = os.path.join(MEDIA_DIR, filename)
         

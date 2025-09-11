@@ -245,10 +245,11 @@ def delete_media(media_id):
         flash('Cannot delete media file that is used in playlists', 'error')
         return redirect(url_for('main.media'))
     
-    # Delete file from filesystem
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], media_file.filename)
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    # Delete file from filesystem (only for uploaded files, not streams)
+    if media_file.filename:  # Streams have filename=None
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], media_file.filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
     
     db.session.delete(media_file)
     db.session.commit()
@@ -461,8 +462,11 @@ def get_device_playlist(device_id):
                     'filename': media_file.filename,
                     'original_filename': media_file.original_filename,
                     'file_type': media_file.file_type,
-                    'duration': 10 if media_file.file_type == 'image' else None,  # Only set duration for images
-                    'url': url_for('main.uploaded_file', filename=media_file.filename, _external=True)
+                    'duration': 10 if media_file.file_type == 'image' else None,  # Only set duration for images, None for videos and streams
+                    'url': url_for('main.uploaded_file', filename=media_file.filename, _external=True) if not media_file.is_stream else media_file.stream_url,
+                    'is_stream': media_file.is_stream or False,
+                    'stream_url': media_file.stream_url,
+                    'stream_type': media_file.stream_type
                 }]
             }
             return jsonify({'playlist': playlist_data})
@@ -490,8 +494,11 @@ def get_device_playlist(device_id):
             'filename': item.media_file.filename,
             'original_filename': item.media_file.original_filename,
             'file_type': item.media_file.file_type,
-            'duration': item.duration or playlist.default_duration,
-            'url': url_for('main.uploaded_file', filename=item.media_file.filename, _external=True)
+            'duration': item.duration or (playlist.default_duration if item.media_file.file_type == 'image' else None),
+            'url': url_for('main.uploaded_file', filename=item.media_file.filename, _external=True) if not item.media_file.is_stream else item.media_file.stream_url,
+            'is_stream': item.media_file.is_stream or False,
+            'stream_url': item.media_file.stream_url,
+            'stream_type': item.media_file.stream_type
         })
     
     return jsonify({'playlist': playlist_data})
