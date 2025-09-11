@@ -226,6 +226,16 @@ body {
     position: relative;
 }
 
+/* Nuclear option: Disable all external preview overlays/tooltips */
+[role="tooltip"], 
+.tooltip, 
+.bs-tooltip-auto, 
+.tippy-box, 
+[class*="preview"], 
+[id*="preview"] {
+    pointer-events: none !important;
+}
+
 /* Modern Cards */
 .card {
     background: var(--gradient-card);
