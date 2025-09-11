@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, Response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
 from app import app, db, login_manager
@@ -224,3 +224,24 @@ def delete_user(user_id):
         flash(f'Error deleting user: {str(e)}', 'error')
     
     return redirect(url_for('auth.users'))
+
+@auth.route('/client-setup')
+def client_setup():
+    """Serve the client setup script for download"""
+    try:
+        # Read the setup_client.py file
+        with open('setup_client.py', 'r') as f:
+            script_content = f.read()
+        
+        # Return as downloadable file
+        return Response(
+            script_content,
+            mimetype='text/plain',
+            headers={
+                'Content-Disposition': 'attachment; filename=setup_client.py',
+                'Content-Type': 'text/plain; charset=utf-8'
+            }
+        )
+    except FileNotFoundError:
+        flash('Setup script not found. Please contact your administrator.', 'error')
+        return redirect(url_for('auth.login'))
