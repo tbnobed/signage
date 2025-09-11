@@ -189,6 +189,52 @@ def upload_media():
     
     return redirect(url_for('main.media'))
 
+@main.route('/media/add-stream', methods=['POST'])
+@login_required
+def add_stream():
+    stream_name = request.form.get('stream_name', '').strip()
+    stream_url = request.form.get('stream_url', '').strip()
+    stream_type = request.form.get('stream_type', '').strip()
+    
+    if not all([stream_name, stream_url, stream_type]):
+        flash('All fields are required for streaming media', 'error')
+        return redirect(url_for('main.media'))
+    
+    # Validate URL format based on stream type
+    url_valid = False
+    if stream_type == 'rtmp' and stream_url.startswith('rtmp://'):
+        url_valid = True
+    elif stream_type == 'hls' and ('.m3u8' in stream_url or 'm3u8' in stream_url):
+        url_valid = True
+    elif stream_type == 'http' and (stream_url.startswith('http://') or stream_url.startswith('https://')):
+        url_valid = True
+    
+    if not url_valid:
+        flash(f'Invalid URL format for {stream_type.upper()} stream', 'error')
+        return redirect(url_for('main.media'))
+    
+    # Check if stream URL already exists
+    existing_stream = MediaFile.query.filter_by(stream_url=stream_url).first()
+    if existing_stream:
+        flash('This stream URL is already added to your library', 'warning')
+        return redirect(url_for('main.media'))
+    
+    # Create streaming media file record
+    media_file = MediaFile(
+        original_filename=stream_name,
+        file_type='stream',
+        is_stream=True,
+        stream_url=stream_url,
+        stream_type=stream_type,
+        uploaded_by=current_user.id
+    )
+    
+    db.session.add(media_file)
+    db.session.commit()
+    
+    flash(f'{stream_type.upper()} stream "{stream_name}" added successfully', 'success')
+    return redirect(url_for('main.media'))
+
 @main.route('/media/<int:media_id>/delete', methods=['POST'])
 @login_required
 def delete_media(media_id):
