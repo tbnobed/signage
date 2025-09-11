@@ -363,7 +363,7 @@ class SignageClient:
                 '--no-qt-error-dialogs',  # No error popups
                 '--intf', 'dummy',    # No interface (more stable)
                 '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
-                '--no-hw-decoding',   # Disable hardware decoding (stability)
+                '--avcodec-hw', 'none',  # Disable hardware decoding (compatible parameter)
                 '-vvv',               # Verbose logging to see VLC errors
             ])
             
