@@ -488,7 +488,7 @@ class SignageClient:
                 return False
             
             # Log what we're about to play (helps with debugging)
-            if local_path.startswith(('http://', 'https://', 'rtmp://')):
+            if local_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
                 self.logger.info(f"Playing stream URL: {local_path}")
             else:
                 self.logger.info(f"Playing local file: {os.path.basename(local_path)}")
@@ -575,7 +575,7 @@ class SignageClient:
             ])
             
             # Set image duration for images (only for local files, not streams)
-            if not local_path.startswith(('http://', 'https://', 'rtmp://')):
+            if not local_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
                 file_ext = os.path.splitext(local_path)[1].lower()
                 if file_ext in ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']:
                     command.extend(['--image-duration', '10'])
