@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Edit User - Digital Signage Manager{% endblock %}
+
+{% block content %}
+<div class="container my-4 fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-gradient"><i class="fas fa-user-edit me-2"></i>Edit User: {{ user.username }}</h2>
+        <a href="{{ url_for('auth.users') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Users
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card glass">
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Username *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input type="text" class="form-control" id="username" name="username" 
+                                               value="{{ user.username }}" required minlength="3" maxlength="80"
+                                               placeholder="Enter username">
+                                        <div class="invalid-feedback">
+                                            Username is required (3-80 characters).
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                        <input type="email" class="form-control" id="email" name="email" 
+                                               value="{{ user.email }}" required maxlength="120"
+                                               placeholder="user@example.com">
+                                        <div class="invalid-feedback">
+                                            Please enter a valid email address.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="is_admin" name="is_admin"
+                                       {% if user.is_admin %}checked{% endif %}>
+                                <label class="form-check-label" for="is_admin">
+                                    <i class="fas fa-crown me-1"></i>Administrator Access
+                                </label>
+                                <small class="form-text text-muted d-block">
+                                    Admin users can manage devices, media, playlists, and other users.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            To change the password for this user, use the "Change Password" button in the user list.
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Update User
+                            </button>
+                            <a href="{{ url_for('auth.users') }}" class="btn btn-secondary">
+                                Cancel
+                            </a>
+                            <a href="{{ url_for('auth.change_password', user_id=user.id) }}" 
+                               class="btn btn-outline-warning">
+                                <i class="fas fa-key me-2"></i>Change Password
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- User Info Card -->
+            <div class="card glass mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>User Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <small class="text-muted">User ID:</small><br>
+                                <code>{{ user.id }}</code>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Account Type:</small><br>
+                                {% if user.is_admin %}
+                                <span class="badge bg-warning text-dark"><i class="fas fa-crown me-1"></i>Administrator</span>
+                                {% else %}
+                                <span class="badge bg-info"><i class="fas fa-user me-1"></i>Standard User</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <small class="text-muted">Created:</small><br>
+                                <span>{{ user.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Uploaded Media:</small><br>
+                                <span>{{ user.uploaded_media|length }} files</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
