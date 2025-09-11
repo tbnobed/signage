@@ -701,8 +701,8 @@ Comment=Apply kiosk mode settings on login
         """Download and install TeamViewer for remote management"""
         print("📱 Installing TeamViewer for remote management...")
         
-        # TeamViewer download URL
-        teamviewer_url = "https://download.teamviewer.com/download/linux/teamviewer_amd64.deb?utm_source=google&utm_medium=cpc&utm_campaign=us%7Cb%7Cpr%7C22%7Caug%7Ctv-core-download-sn%7Cnew%7Ct0%7C0&utm_content=Download&utm_term=teamviewer+download"
+        # TeamViewer download URL (direct, no tracking parameters)
+        teamviewer_url = "https://download.teamviewer.com/download/linux/teamviewer_amd64.deb"
         
         # Download path
         download_dir = Path("/tmp")
