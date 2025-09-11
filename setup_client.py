@@ -770,6 +770,24 @@ Comment=Apply kiosk mode settings on login
                 except subprocess.CalledProcessError:
                     print("   ⚠️  Could not start TeamViewer daemon (will start on reboot)")
                 
+                # Configure TeamViewer for unattended kiosk access
+                print("   ⚙️  Configuring TeamViewer for kiosk mode...")
+                
+                # Get username and home directory
+                username = self.target_user or getpass.getuser()
+                user_home = f"/home/{username}"
+                
+                # Ensure X11 is being used (required for reliable unattended access)
+                try:
+                    # Check if Wayland is enabled and warn user
+                    with open('/etc/gdm3/custom.conf', 'r') as f:
+                        gdm_config = f.read()
+                        if 'WaylandEnable=false' not in gdm_config:
+                            print("   ⚠️  Wayland detected - TeamViewer works better with X11")
+                            print("   💡 Consider switching to X11 for better unattended access")
+                except FileNotFoundError:
+                    pass  # No GDM3, likely already using X11
+                
                 # Show TeamViewer ID information
                 try:
                     result = subprocess.run(['teamviewer', '--info'], 
@@ -778,10 +796,59 @@ Comment=Apply kiosk mode settings on login
                         for line in result.stdout.split('\n'):
                             if 'TeamViewer ID:' in line:
                                 print(f"   🆔 {line.strip()}")
+                                print("   💡 Use this ID to set up unattended access in TeamViewer account")
                     else:
                         print("   ⚠️  TeamViewer ID not available yet (will show after reboot)")
+                        print("   💡 Run 'teamviewer --info' after reboot to get ID")
                 except Exception:
                     print("   ⚠️  TeamViewer ID not available yet (will show after reboot)")
+                    print("   💡 Run 'teamviewer --info' after reboot to get ID")
+                
+                # Create unattended access setup instructions
+                instructions_file = Path(user_home) / "teamviewer-setup.txt"
+                instructions_content = f"""TeamViewer Unattended Access Setup for Digital Signage
+
+IMPORTANT: The Linux version of TeamViewer includes both client and unattended access.
+There is no separate 'Host' version for Linux.
+
+TO SET UP UNATTENDED ACCESS:
+
+1. Get your TeamViewer ID:
+   teamviewer --info
+
+2. In TeamViewer GUI (first run):
+   - Go to Extras → Options → Security
+   - Set "Unattended Access" password
+   - Enable "Enable remote control"
+   - Set "Random password" to "Disabled"
+
+3. In your TeamViewer Management Console:
+   - Add this computer using the TeamViewer ID
+   - Configure for unattended access
+   - Set up Easy Access for password-free connections
+
+4. For better reliability (optional):
+   - Switch from Wayland to X11 session type
+   - Log out and select "Ubuntu on Xorg" at login
+
+CURRENT SETUP:
+- Device: {self.device_id}
+- Server: {self.server_url}
+- User: {username}
+
+Run 'teamviewer --info' to get your TeamViewer ID after reboot.
+"""
+                
+                try:
+                    with open(instructions_file, 'w') as f:
+                        f.write(instructions_content)
+                    
+                    if os.geteuid() == 0 and self.target_uid is not None and self.target_gid is not None:
+                        os.chown(instructions_file, self.target_uid, self.target_gid)
+                    
+                    print(f"   📄 Setup instructions saved: {instructions_file}")
+                except Exception as e:
+                    print(f"   ⚠️  Could not save instructions: {e}")
                 
             else:
                 print("   ❌ TeamViewer installation failed")
