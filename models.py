@@ -57,18 +57,38 @@ class MediaFile(db.Model):
     __tablename__ = 'media_files'
     
     id = db.Column(db.Integer, primary_key=True)
-    filename = db.Column(db.String(200), nullable=False)
+    filename = db.Column(db.String(200), nullable=True)  # Optional for streams
     original_filename = db.Column(db.String(200), nullable=False)
-    file_type = db.Column(db.String(20), nullable=False)  # image, video
-    file_size = db.Column(db.Integer)
-    duration = db.Column(db.Integer)  # in seconds, for videos
+    file_type = db.Column(db.String(20), nullable=False)  # image, video, stream
+    file_size = db.Column(db.Integer)  # Optional for streams
+    duration = db.Column(db.Integer)  # in seconds, for videos and streams
     uploaded_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Streaming media fields
+    is_stream = db.Column(db.Boolean, default=False)
+    stream_url = db.Column(db.String(500))  # RTMP, M3U8, HTTP stream URLs
+    stream_type = db.Column(db.String(20))  # rtmp, hls, http
     
     # Relationships
     uploader = db.relationship('User', backref='uploaded_media')
     
+    @property
+    def media_source(self):
+        """Return the media source - either filename for uploaded files or stream_url for streams"""
+        return self.stream_url if self.is_stream else self.filename
+    
+    @property 
+    def display_name(self):
+        """Return appropriate display name for the media"""
+        if self.is_stream:
+            # For streams, show a friendly name or the URL
+            return self.original_filename
+        return self.original_filename
+    
     def __repr__(self):
+        if self.is_stream:
+            return f'<MediaFile Stream: {self.original_filename}>'
         return f'<MediaFile {self.original_filename}>'
 
 class Playlist(db.Model):
