@@ -238,7 +238,11 @@ class SignageClient:
             return media_item['stream_url']
         
         # For regular media files, download and cache locally
-        filename = media_item['filename']
+        filename = media_item.get('filename')
+        if not filename:
+            self.logger.error(f"No filename provided for media item: {media_item}")
+            return None
+            
         local_path = os.path.join(MEDIA_DIR, filename)
         
         if os.path.exists(local_path):
