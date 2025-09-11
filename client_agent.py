@@ -104,11 +104,22 @@ class SignageClient:
             )
             
             if response.status_code == 200:
-                result = response.json()
-                
-                # Ensure we have valid JSON data
-                if result is None:
-                    self.logger.error("Received empty JSON response from server")
+                try:
+                    result = response.json()
+                    
+                    # Ensure we have valid JSON data
+                    if result is None:
+                        self.logger.error("Received null JSON response from server")
+                        return None
+                    
+                    # Ensure result is actually a dictionary
+                    if not isinstance(result, dict):
+                        self.logger.error(f"Expected JSON object, got {type(result)}: {result}")
+                        return None
+                        
+                except (ValueError, TypeError) as e:
+                    self.logger.error(f"Failed to parse JSON response: {e}")
+                    self.logger.debug(f"Response content: {response.text[:200]}")
                     return None
                     
                 self.logger.debug(f"Checkin successful: {result}")
@@ -164,11 +175,22 @@ class SignageClient:
             )
             
             if response.status_code == 200:
-                data = response.json()
-                
-                # Ensure we have valid JSON data
-                if data is None:
-                    self.logger.error("Received empty JSON response from server")
+                try:
+                    data = response.json()
+                    
+                    # Ensure we have valid JSON data
+                    if data is None:
+                        self.logger.error("Received null JSON response from server")
+                        return False
+                    
+                    # Ensure data is actually a dictionary
+                    if not isinstance(data, dict):
+                        self.logger.error(f"Expected JSON object, got {type(data)}: {data}")
+                        return False
+                        
+                except (ValueError, TypeError) as e:
+                    self.logger.error(f"Failed to parse JSON response: {e}")
+                    self.logger.debug(f"Response content: {response.text[:200]}")
                     return False
                 
                 playlist_id = data.get('playlist_id')
@@ -229,11 +251,22 @@ class SignageClient:
             )
             
             if response.status_code == 200:
-                data = response.json()
-                
-                # Ensure we have valid JSON data
-                if data is None:
-                    self.logger.error("Received empty JSON response from server")
+                try:
+                    data = response.json()
+                    
+                    # Ensure we have valid JSON data
+                    if data is None:
+                        self.logger.error("Received null JSON response from server")
+                        return False
+                    
+                    # Ensure data is actually a dictionary
+                    if not isinstance(data, dict):
+                        self.logger.error(f"Expected JSON object, got {type(data)}: {data}")
+                        return False
+                        
+                except (ValueError, TypeError) as e:
+                    self.logger.error(f"Failed to parse JSON response: {e}")
+                    self.logger.debug(f"Response content: {response.text[:200]}")
                     return False
                 
                 playlist = data.get('playlist')
