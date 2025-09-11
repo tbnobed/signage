@@ -777,32 +777,98 @@ Comment=Apply kiosk mode settings on login
                 username = self.target_user or getpass.getuser()
                 user_home = f"/home/{username}"
                 
-                # Ensure X11 is being used (required for reliable unattended access)
+                # Step 1: Accept TeamViewer license automatically
+                print("   📝 Accepting TeamViewer license...")
                 try:
-                    # Check if Wayland is enabled and warn user
-                    with open('/etc/gdm3/custom.conf', 'r') as f:
-                        gdm_config = f.read()
-                        if 'WaylandEnable=false' not in gdm_config:
-                            print("   ⚠️  Wayland detected - TeamViewer works better with X11")
-                            print("   💡 Consider switching to X11 for better unattended access")
-                except FileNotFoundError:
-                    pass  # No GDM3, likely already using X11
+                    result = subprocess.run(['sudo', 'teamviewer', 'license', 'accept'], 
+                                          capture_output=True, text=True, timeout=15)
+                    if result.returncode == 0:
+                        print("   ✅ TeamViewer license accepted")
+                    else:
+                        print("   ⚠️  License may already be accepted or command unavailable")
+                except Exception as e:
+                    print(f"   ⚠️  License acceptance error: {e}")
                 
-                # Show TeamViewer ID information
+                # Step 2: Disable Wayland and enable X11 for reliable remote access
+                print("   🖥️  Configuring display server for reliable remote access...")
                 try:
-                    result = subprocess.run(['teamviewer', '--info'], 
+                    # Check if we need to modify GDM config
+                    gdm_config_path = '/etc/gdm3/custom.conf'
+                    if os.path.exists(gdm_config_path):
+                        with open(gdm_config_path, 'r') as f:
+                            gdm_config = f.read()
+                        
+                        if 'WaylandEnable=false' not in gdm_config:
+                            print("   🔄 Disabling Wayland in favor of X11...")
+                            # Use sed to uncomment/add WaylandEnable=false
+                            subprocess.run(['sudo', 'sed', '-i', 
+                                          's/#WaylandEnable=false/WaylandEnable=false/', 
+                                          gdm_config_path], 
+                                         check=True, timeout=10)
+                            print("   ✅ Wayland disabled, X11 will be used after reboot")
+                        else:
+                            print("   ✅ X11 already configured")
+                    else:
+                        print("   💡 No GDM config found - likely already using X11")
+                except Exception as e:
+                    print(f"   ⚠️  Display server config error: {e}")
+                
+                # Step 3: Set TeamViewer password (prompt user for security)
+                print("   🔐 Setting up TeamViewer unattended access...")
+                teamviewer_password = None
+                
+                # Ask user for TeamViewer password
+                while not teamviewer_password:
+                    try:
+                        teamviewer_password = input("   Enter TeamViewer password for unattended access (8+ chars): ").strip()
+                        if len(teamviewer_password) < 8:
+                            print("   ❌ Password must be at least 8 characters")
+                            teamviewer_password = None
+                    except KeyboardInterrupt:
+                        print("\n   Using default password for kiosk setup...")
+                        teamviewer_password = "Kiosk2024!"
+                        break
+                
+                # Set the password
+                try:
+                    result = subprocess.run(['sudo', 'teamviewer', 'passwd', teamviewer_password], 
+                                          capture_output=True, text=True, timeout=10)
+                    if result.returncode == 0 or 'ok' in result.stdout.lower():
+                        print("   ✅ TeamViewer password set successfully")
+                        print(f"   🔑 Password: {teamviewer_password}")
+                    else:
+                        print("   ⚠️  Password setting may have failed")
+                except Exception as e:
+                    print(f"   ⚠️  Password setting error: {e}")
+                
+                # Step 4: Restart TeamViewer daemon
+                print("   🔄 Restarting TeamViewer daemon...")
+                try:
+                    subprocess.run(['sudo', 'systemctl', 'restart', 'teamviewerd'], 
+                                 check=True, capture_output=True, timeout=15)
+                    print("   ✅ TeamViewer daemon restarted")
+                except subprocess.CalledProcessError as e:
+                    print("   ⚠️  Daemon restart failed - will work after system reboot")
+                
+                # Step 5: Show TeamViewer ID and connection info
+                print("   🆔 Getting TeamViewer connection information...")
+                try:
+                    result = subprocess.run(['sudo', 'teamviewer', 'info'], 
                                           capture_output=True, text=True, timeout=10)
                     if result.returncode == 0 and "TeamViewer ID:" in result.stdout:
                         for line in result.stdout.split('\n'):
                             if 'TeamViewer ID:' in line:
-                                print(f"   🆔 {line.strip()}")
-                                print("   💡 Use this ID to set up unattended access in TeamViewer account")
+                                teamviewer_id = line.strip().split(':')[-1].strip()
+                                print(f"   🆔 TeamViewer ID: {teamviewer_id}")
+                                print(f"   🔑 Password: {teamviewer_password}")
+                                print("   💡 Save these credentials for remote access!")
+                                break
                     else:
                         print("   ⚠️  TeamViewer ID not available yet (will show after reboot)")
-                        print("   💡 Run 'teamviewer --info' after reboot to get ID")
-                except Exception:
-                    print("   ⚠️  TeamViewer ID not available yet (will show after reboot)")
-                    print("   💡 Run 'teamviewer --info' after reboot to get ID")
+                        print("   💡 Run 'sudo teamviewer info' after reboot to get ID")
+                except Exception as e:
+                    print("   ⚠️  Could not get TeamViewer ID - check after reboot")
+                    print("   💡 Run 'sudo teamviewer info' after reboot")
                 
                 # Create unattended access setup instructions
                 instructions_file = Path(user_home) / "teamviewer-setup.txt"
@@ -1103,13 +1169,16 @@ WantedBy=graphical-session.target
         print(f"   - Device ID: {self.device_id}")
         print("2. Create playlists and assign them to this device")
         print("3. Media will automatically download and play in fullscreen")
-        print("4. Reboot to ensure all kiosk settings take effect")
+        print("4. ⚠️  REBOOT REQUIRED for X11/TeamViewer changes to take effect")
+        print("5. TeamViewer will be fully functional after reboot")
         print()
         print("🔧 Useful Commands:")
         print("   sudo systemctl status signage-client    # Check status")
         print("   sudo systemctl restart signage-client   # Restart service")
         print("   sudo systemctl stop signage-client      # Stop service")
         print(f"   tail -f {self.setup_dir}/client.log      # View logs")
+        print("   sudo teamviewer info                    # Get TeamViewer ID")
+        print("   echo $XDG_SESSION_TYPE                  # Verify X11 (after reboot)")
         print()
         print("📁 Files Created:")
         print(f"   {self.client_script}")
