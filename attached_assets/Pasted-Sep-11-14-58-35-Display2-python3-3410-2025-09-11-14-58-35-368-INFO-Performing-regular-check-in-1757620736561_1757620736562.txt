@@ -1,0 +1,29 @@
+Sep 11 14:58:35 Display2 python3[3410]: 2025-09-11 14:58:35,368 - INFO - Performing regular check-in...
+Sep 11 14:58:35 Display2 sudo[3477]:     obtv : PWD=/home/obtv/signage ; USER=root ; COMMAND=/usr/bin/teamviewer --info
+Sep 11 14:58:35 Display2 sudo[3477]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Sep 11 14:58:35 Display2 sudo[3477]: pam_unix(sudo:session): session closed for user root
+Sep 11 14:58:35 Display2 python3[3410]: 2025-09-11 14:58:35,407 - DEBUG - No TeamViewer ID found in output:
+Sep 11 14:58:35 Display2 python3[3410]:  TeamViewer                           15.69.4  (DEB)
+Sep 11 14:58:35 Display2 python3[3410]:  TeamViewer ID:                        717963752
+Sep 11 14:58:35 Display2 python3[3410]:  717963752
+Sep 11 14:58:35 Display2 python3[3410]:  teamviewerd status                   ● teamviewerd.service - TeamViewer remote control daemon
+Sep 11 14:58:35 Display2 python3[3410]:      Loaded: loaded (/etc/systemd/system/teamviewerd.service; enabled; vendor preset: enabled)
+Sep 11 14:58:35 Display2 python3[3410]:      Active: active (running) since Thu 2025-09-11 13:54:58 CDT; 1h 3min ago
+Sep 11 14:58:35 Display2 python3[3410]:     Process: 1666 ExecStart=/opt/teamviewer/tv_bin/teamviewerd -d (code=exited, status=0/SUCCESS)
+Sep 11 14:58:35 Display2 python3[3410]:    Main PID: 1684 (teamviewerd)
+Sep 11 14:58:35 Display2 python3[3410]:       Tasks: 24 (limit: 9172)
+Sep 11 14:58:35 Display2 python3[3410]:      Memory: 40.0M
+Sep 11 14:58:35 Display2 python3[3410]:         CPU: 5min 23.577s
+Sep 11 14:58:35 Display2 python3[3410]:      CGroup: /system.slice/teamviewerd.service
+Sep 11 14:58:35 Display2 python3[3410]:              └─1684 /opt/teamviewer/tv_bin/teamviewerd -d
+Sep 11 14:58:35 Display2 python3[3410]: Sep 11 13:54:58 Display2 systemd[1]: Starting TeamViewer remote control daemon...
+Sep 11 14:58:35 Display2 python3[3410]: Sep 11 13:54:58 Display2 systemd[1]: teamviewerd.service: Can't open PID file /run/teamviewerd.pid (yet?) after start: Operation not permitted
+Sep 11 14:58:35 Display2 python3[3410]: Sep 11 13:54:58 Display2 systemd[1]: Started TeamViewer remote control daemon.
+Sep 11 14:58:35 Display2 python3[3410]: 2025-09-11 14:58:35,409 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 11 14:58:35 Display2 python3[3410]: 2025-09-11 14:58:35,617 - DEBUG - https://display.obtv.io:443 "POST /api/devices/e-2yp8/checkin HTTP/1.1" 200 35
+Sep 11 14:58:35 Display2 python3[3410]: 2025-09-11 14:58:35,619 - DEBUG - Checkin successful: {'playlist_id': None, 'status': 'ok'}
+Sep 11 14:58:36 Display2 python3[3410]: 2025-09-11 14:58:36,133 - INFO - Running rapid playlist check (background thread)...
+Sep 11 14:58:36 Display2 python3[3410]: 2025-09-11 14:58:36,133 - DEBUG - Checking playlist status...
+Sep 11 14:58:36 Display2 python3[3410]: 2025-09-11 14:58:36,134 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 11 14:58:36 Display2 python3[3410]: 2025-09-11 14:58:36,329 - DEBUG - https://display.obtv.io:443 "GET /api/devices/e-2yp8/playlist-status HTTP/1.1" 200 63
+Sep 11 14:58:36 Display2 python3[3410]: 2025-09-11 14:58:36,331 - DEBUG - Current playlist: -7, Server playlist: -7, Current timestamp: 2025-09-11T19:53:55.539326, Server timestamp: 2025-09-11T19:53:55.5393

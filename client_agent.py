@@ -110,10 +110,13 @@ class SignageClient:
             
             # Parse output to find TeamViewer ID line
             for line in result.stdout.split('\n'):
+                self.logger.debug(f"Parsing line: '{line}'")
                 if 'TeamViewer ID:' in line:
+                    # Split on colon and get everything after it, then strip whitespace
                     teamviewer_id = line.split(':')[-1].strip()
+                    self.logger.debug(f"Extracted ID: '{teamviewer_id}', isdigit: {teamviewer_id.isdigit()}")
                     if teamviewer_id and teamviewer_id.isdigit():
-                        self.logger.debug(f"Successfully parsed TeamViewer ID from output: {teamviewer_id}")
+                        self.logger.info(f"Successfully parsed TeamViewer ID: {teamviewer_id}")
                         return teamviewer_id
             
             self.logger.debug(f"No TeamViewer ID found in output: {result.stdout}")
