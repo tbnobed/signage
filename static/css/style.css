@@ -337,11 +337,12 @@ body {
 .stats-card {
     background: var(--gradient-card);
     border: 1px solid var(--border-primary);
-    border-radius: 16px;
-    padding: 1.25rem;
+    border-radius: 12px;
+    padding: 0.75rem;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    min-height: 80px;
 }
 
 .stats-card::before {
@@ -361,14 +362,14 @@ body {
 }
 
 .stat-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
     background: var(--gradient-primary);
     color: white;
     box-shadow: var(--shadow-glow);
@@ -616,7 +617,15 @@ body {
     }
     
     .stats-card {
-        padding: 1rem;
+        padding: 0.5rem;
+        min-height: 70px;
+    }
+    
+    .stat-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
     }
     
     .btn {
@@ -669,6 +678,20 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+}
+
+/* Compact Stats Text */
+.stats-card h3 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+}
+
+.stats-card p {
+    font-size: 0.75rem;
+    line-height: 1.1;
+    margin-bottom: 0;
+    opacity: 0.8;
 }
 
 /* Animation Classes */
