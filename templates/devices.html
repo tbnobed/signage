@@ -109,8 +109,8 @@
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <button type="submit" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-save me-1"></i>Assign Playlist
+                                <button type="submit" class="btn btn-sm btn-outline-primary btn-compact">
+                                    <i class="fas fa-save me-1"></i>Assign
                                 </button>
                             </form>
                         </div>
@@ -130,26 +130,27 @@
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <button type="submit" class="btn btn-sm btn-outline-success">
-                                    <i class="fas fa-save me-1"></i>Assign Media
+                                <button type="submit" class="btn btn-sm btn-outline-success btn-compact">
+                                    <i class="fas fa-save me-1"></i>Assign
                                 </button>
                             </form>
                         </div>
                     </div>
                     
-                    <div class="d-flex justify-content-end mt-3">
-                            <div>
-                                <button type="button" class="btn btn-sm btn-outline-warning me-1" 
-                                        onclick="confirmReboot('{{ device.name }}', '{{ device.id }}')"
-                                        {% if not device.is_online() %}disabled title="Device is offline"{% endif %}>
-                                    <i class="fas fa-power-off me-1"></i>Reboot
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-danger" 
-                                        onclick="confirmDelete('{{ device.name }}', '{{ device.id }}')">
-                                    <i class="fas fa-trash me-1"></i>Delete
-                                </button>
-                            </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap">
+                        <div class="flex-grow-1"></div>
+                        <div class="d-flex gap-1 flex-nowrap">
+                            <button type="button" class="btn btn-sm btn-outline-warning btn-compact" 
+                                    onclick="confirmReboot('{{ device.name }}', '{{ device.id }}')"
+                                    {% if not device.is_online() %}disabled title="Device is offline"{% endif %}>
+                                <i class="fas fa-power-off me-1"></i>Reboot
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-compact" 
+                                    onclick="confirmDelete('{{ device.name }}', '{{ device.id }}')">
+                                <i class="fas fa-trash me-1"></i>Delete
+                            </button>
                         </div>
+                    </div>
                 </div>
             </div>
         </div>

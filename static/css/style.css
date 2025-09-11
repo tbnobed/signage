@@ -851,3 +851,37 @@ body {
     padding: 0.4rem 0.8rem;
     font-weight: 500;
 }
+
+/* Compact Button Styling for Device Actions */
+.btn-compact {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+    white-space: nowrap;
+    min-width: auto;
+    font-weight: 500;
+}
+
+.btn-compact i {
+    font-size: 0.7rem;
+}
+
+/* Device Action Buttons Row */
+.d-flex.gap-1 {
+    gap: 0.3rem;
+}
+
+.flex-nowrap {
+    flex-wrap: nowrap !important;
+}
+
+@media (max-width: 768px) {
+    .btn-compact {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.5rem;
+    }
+    
+    .btn-compact i {
+        font-size: 0.65rem;
+        margin-right: 0.25rem;
+    }
+}
