@@ -207,9 +207,10 @@ class SignageClient:
                 with self._playlist_lock:
                     # Check current assignment type and ID
                     current_playlist_id = self.current_playlist.get('id') if self.current_playlist else None
-                    current_media_id = getattr(self, 'current_media', {}).get('id') if hasattr(self, 'current_media') and self.current_media else None
+                    current_media = getattr(self, 'current_media', None)
+                    current_media_id = current_media.get('id') if current_media else None
                     current_timestamp = self.current_playlist.get('last_updated') if self.current_playlist else None
-                    current_media_timestamp = getattr(self, 'current_media', {}).get('last_updated') if hasattr(self, 'current_media') and self.current_media else None
+                    current_media_timestamp = current_media.get('last_updated') if current_media else None
                 
                 self.logger.debug(f"Current - playlist: {current_playlist_id}, media: {current_media_id}, "
                                 f"Server - playlist: {playlist_id}, media: {media_id}, "
