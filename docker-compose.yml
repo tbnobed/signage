@@ -10,7 +10,7 @@ services:
       - SESSION_SECRET=${SESSION_SECRET:-default_session_secret_change_in_production}
       - FLASK_ENV=production
       - UPLOAD_FOLDER=/app/uploads
-      - MAX_CONTENT_LENGTH=104857600
+      - MAX_CONTENT_LENGTH=524288000
       # Admin user variables (will be read from .env)
       - ADMIN_USER=${ADMIN_USER:-admin}
       - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@signage.local}
