@@ -74,27 +74,32 @@
                     {% if recent_devices %}
                     <div class="list-group list-group-flush">
                         {% for device in recent_devices %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
-                            <div>
-                                <h6 class="mb-1">{{ device.name }}</h6>
-                                <small class="text-muted">{{ device.location or 'No location set' }}</small>
-                            </div>
-                            <div class="text-end">
-                                {% if device.is_online() %}
-                                <span class="badge bg-success">Online</span>
-                                {% else %}
-                                <span class="badge bg-secondary">Offline</span>
-                                {% endif %}
-                                {% if device.last_checkin %}
-                                <br><small class="text-muted">{{ device.last_checkin.strftime('%H:%M') }}</small>
-                                {% endif %}
+                        <div class="list-group-item">
+                            <div class="device-item">
+                                <div class="device-icon">
+                                    <i class="fas fa-desktop"></i>
+                                </div>
+                                <div class="item-content">
+                                    <h6>{{ device.name }}</h6>
+                                    <div class="item-meta">{{ device.location or 'No location set' }}</div>
+                                </div>
+                                <div class="item-status">
+                                    {% if device.is_online() %}
+                                    <span class="status-online"><i class="fas fa-circle me-1"></i>Online</span>
+                                    {% else %}
+                                    <span class="status-offline"><i class="fas fa-circle me-1"></i>Offline</span>
+                                    {% endif %}
+                                    {% if device.last_checkin %}
+                                    <span class="item-time">{{ device.last_checkin.strftime('%H:%M') }}</span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                     {% else %}
-                    <div class="text-center py-4 text-muted">
-                        <i class="fas fa-desktop fa-3x mb-3"></i>
+                    <div class="empty-state">
+                        <i class="fas fa-desktop"></i>
                         <p>No devices registered yet</p>
                         <a href="{{ url_for('main.devices') }}" class="btn btn-primary">Add First Device</a>
                     </div>
@@ -114,25 +119,29 @@
                     {% if recent_media %}
                     <div class="list-group list-group-flush">
                         {% for media in recent_media %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
-                            <div class="d-flex align-items-center">
-                                {% if media.file_type == 'image' %}
-                                <i class="fas fa-image text-primary me-2"></i>
-                                {% else %}
-                                <i class="fas fa-video text-danger me-2"></i>
-                                {% endif %}
-                                <div>
-                                    <h6 class="mb-1">{{ media.original_filename }}</h6>
-                                    <small class="text-muted">{{ media.file_type|title }} • {{ (media.file_size / 1024 / 1024)|round(1) }} MB</small>
+                        <div class="list-group-item">
+                            <div class="media-item">
+                                <div class="media-icon {{ media.file_type }}">
+                                    {% if media.file_type == 'image' %}
+                                    <i class="fas fa-image"></i>
+                                    {% else %}
+                                    <i class="fas fa-video"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="item-content">
+                                    <h6>{{ media.original_filename }}</h6>
+                                    <div class="item-meta">{{ media.file_type|title }} • {{ (media.file_size / 1024 / 1024)|round(1) }} MB</div>
+                                </div>
+                                <div class="item-status">
+                                    <span class="item-time">{{ media.created_at.strftime('%m/%d') }}</span>
                                 </div>
                             </div>
-                            <small class="text-muted">{{ media.created_at.strftime('%m/%d') }}</small>
                         </div>
                         {% endfor %}
                     </div>
                     {% else %}
-                    <div class="text-center py-4 text-muted">
-                        <i class="fas fa-images fa-3x mb-3"></i>
+                    <div class="empty-state">
+                        <i class="fas fa-images"></i>
                         <p>No media files uploaded yet</p>
                         <a href="{{ url_for('main.media') }}" class="btn btn-primary">Upload Media</a>
                     </div>
