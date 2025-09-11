@@ -1,0 +1,77 @@
+Configuration Summary:
+  Server URL: https://display.obtv.io
+  Device ID: t-zyw3
+  Check Interval: 60 seconds
+
+Is this correct? [Y/n]: y
+📁 Creating signage directory...
+   Set ownership to: obtv1
+   Created: /home/obtv1/signage
+⬇️  Downloading client script...
+   Downloaded: /home/obtv1/signage/client_agent.py
+📝 Creating configuration file...
+   Removed existing configuration file
+   Created: /home/obtv1/signage/.env
+   Device ID: t-zyw3
+   Server URL: https://display.obtv.io
+🔌 Testing server connection...
+   ✅ Server is reachable (404 is expected for ping)
+🚀 Setting up auto-start service...
+   📺 Setting up display access...
+   ✅ Autologin configured (GDM3 + systemd)
+   ✅ Screen lock and power management disabled
+   ⚠️  Reboot required for autologin to take effect
+   ✅ Display access configured
+Unit /etc/systemd/system/signage-client.service is added as a dependency to a non-existent unit graphical-session.target.
+   ✅ Service created: /etc/systemd/system/signage-client.service
+   ✅ Service enabled for auto-start
+Start the signage client now? [Y/n]: y
+   ✅ Service started
+
+📊 Service Status:
+● signage-client.service - Digital Signage Client
+     Loaded: loaded (/etc/systemd/system/signage-client.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2025-06-30 23:39:58 UTC; 6min ago
+   Main PID: 988 (python3)
+      Tasks: 1 (limit: 9170)
+     Memory: 17.3M (peak: 18.1M)
+        CPU: 857ms
+     CGroup: /system.slice/signage-client.service
+             └─988 /usr/bin/python3 /home/obtv1/signage/client_agent.py
+
+Jun 30 23:39:59 obtv-client1 python3[988]: 2025-06-30 23:39:59,122 - INFO - Signage client started for device: obtv-client1-client
+Jun 30 23:39:59 obtv-client1 python3[988]: 2025-06-30 23:39:59,123 - INFO - Server URL: https://display.obtv.io
+Jun 30 23:39:59 obtv-client1 python3[988]: 2025-06-30 23:39:59,123 - INFO - Media player: vlc
+Jun 30 23:39:59 obtv-client1 python3[988]: 2025-06-30 23:39:59,276 - ERROR - Checkin failed: 404
+Jun 30 23:40:59 obtv-client1 python3[988]: 2025-06-30 23:40:59,415 - ERROR - Checkin failed: 404
+Jun 30 23:41:59 obtv-client1 python3[988]: 2025-06-30 23:41:59,597 - ERROR - Checkin failed: 404
+Jun 30 23:42:59 obtv-client1 python3[988]: 2025-06-30 23:42:59,801 - ERROR - Checkin failed: 404
+Jun 30 23:43:59 obtv-client1 python3[988]: 2025-06-30 23:43:59,940 - ERROR - Checkin failed: 404
+Jun 30 23:45:00 obtv-client1 python3[988]: 2025-06-30 23:45:00,133 - ERROR - Checkin failed: 404
+Jun 30 23:46:00 obtv-client1 python3[988]: 2025-06-30 23:46:00,288 - ERROR - Checkin failed: 404
+
+============================================================
+🎉 Setup Complete!
+============================================================
+
+Your digital signage client is now configured!
+
+📋 Next Steps:
+1. Register this device in your web dashboard:
+   - Server: https://display.obtv.io
+   - Device ID: t-zyw3
+2. Create playlists and assign them to this device
+3. Media will automatically download and play
+
+🔧 Useful Commands:
+   sudo systemctl status signage-client    # Check status
+   sudo systemctl restart signage-client   # Restart service
+   sudo systemctl stop signage-client      # Stop service
+   tail -f /home/obtv1/signage/client.log      # View logs
+
+📁 Files Created:
+   /home/obtv1/signage/client_agent.py
+   /home/obtv1/signage/.env
+   /etc/systemd/system/signage-client.service
+
+obtv1@obtv-client1:~/signage$

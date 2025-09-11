@@ -104,24 +104,7 @@ class SignageClient:
             )
             
             if response.status_code == 200:
-                try:
-                    result = response.json()
-                    
-                    # Ensure we have valid JSON data
-                    if result is None:
-                        self.logger.error("Received null JSON response from server")
-                        return None
-                    
-                    # Ensure result is actually a dictionary
-                    if not isinstance(result, dict):
-                        self.logger.error(f"Expected JSON object, got {type(result)}: {result}")
-                        return None
-                        
-                except (ValueError, TypeError) as e:
-                    self.logger.error(f"Failed to parse JSON response: {e}")
-                    self.logger.debug(f"Response content: {response.text[:200]}")
-                    return None
-                    
+                result = response.json()
                 self.logger.debug(f"Checkin successful: {result}")
                 
                 # Check for pending commands from server
@@ -175,24 +158,7 @@ class SignageClient:
             )
             
             if response.status_code == 200:
-                try:
-                    data = response.json()
-                    
-                    # Ensure we have valid JSON data
-                    if data is None:
-                        self.logger.error("Received null JSON response from server")
-                        return False
-                    
-                    # Ensure data is actually a dictionary
-                    if not isinstance(data, dict):
-                        self.logger.error(f"Expected JSON object, got {type(data)}: {data}")
-                        return False
-                        
-                except (ValueError, TypeError) as e:
-                    self.logger.error(f"Failed to parse JSON response: {e}")
-                    self.logger.debug(f"Response content: {response.text[:200]}")
-                    return False
-                
+                data = response.json()
                 playlist_id = data.get('playlist_id')
                 media_id = data.get('media_id')
                 last_updated = data.get('last_updated')
@@ -207,10 +173,9 @@ class SignageClient:
                 with self._playlist_lock:
                     # Check current assignment type and ID
                     current_playlist_id = self.current_playlist.get('id') if self.current_playlist else None
-                    current_media = getattr(self, 'current_media', None)
-                    current_media_id = current_media.get('id') if current_media else None
+                    current_media_id = getattr(self, 'current_media', {}).get('id') if hasattr(self, 'current_media') else None
                     current_timestamp = self.current_playlist.get('last_updated') if self.current_playlist else None
-                    current_media_timestamp = current_media.get('last_updated') if current_media else None
+                    current_media_timestamp = getattr(self, 'current_media', {}).get('last_updated') if hasattr(self, 'current_media') else None
                 
                 self.logger.debug(f"Current - playlist: {current_playlist_id}, media: {current_media_id}, "
                                 f"Server - playlist: {playlist_id}, media: {media_id}, "
@@ -234,10 +199,7 @@ class SignageClient:
                 if assignment_changed:
                     self.logger.info(f"Content update detected - stopping current media and fetching new content")
                     self.stop_current_media()  # Stop immediately to start new content
-                    updated = self.fetch_content()
-                    if updated:
-                        self.play_content()  # Actually start playback!
-                    return True
+                    return self.fetch_content()
             else:
                 self.logger.debug(f"Content status check got {response.status_code}")
                     
@@ -255,24 +217,7 @@ class SignageClient:
             )
             
             if response.status_code == 200:
-                try:
-                    data = response.json()
-                    
-                    # Ensure we have valid JSON data
-                    if data is None:
-                        self.logger.error("Received null JSON response from server")
-                        return False
-                    
-                    # Ensure data is actually a dictionary
-                    if not isinstance(data, dict):
-                        self.logger.error(f"Expected JSON object, got {type(data)}: {data}")
-                        return False
-                        
-                except (ValueError, TypeError) as e:
-                    self.logger.error(f"Failed to parse JSON response: {e}")
-                    self.logger.debug(f"Response content: {response.text[:200]}")
-                    return False
-                
+                data = response.json()
                 playlist = data.get('playlist')
                 media = data.get('media')
                 
@@ -454,16 +399,17 @@ class SignageClient:
             if '--loop' in command:
                 command.remove('--loop')
             
-            # Configure VLC for HDMI display output (removed conflicting flags)
+            # Force infinite looping for images and videos
             command.extend([
-                '--loop',             # Loop the entire playlist
-                '--image-duration', '10',  # Images show for 10 seconds each
+                '--loop',             # Loop the entire playlist (NOT repeat current item)
+                '--image-duration', '10',  # Images show for 10 seconds each (backup for EXTVLCOPT)
                 '--playlist-autostart',    # Auto start playlist
                 '--no-random',        # Play in order
-                '--fullscreen',       # Display fullscreen on HDMI
-                '--no-video-title-show',  # Don't show video title
-                '--no-osd',           # No on-screen display
-                '-vvv',               # Verbose logging for debugging
+                '--no-qt-error-dialogs',  # No error popups
+                '--intf', 'dummy',    # No interface (more stable)
+                '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
+                '--avcodec-hw', 'none',  # Disable hardware decoding (compatible parameter)
+                '-vvv',               # Verbose logging to see VLC errors
             ])
             
             # Add the playlist file
@@ -476,87 +422,77 @@ class SignageClient:
             # Kill any existing player process
             self.stop_current_media()
             
-            # Use inherited environment (same as play_media method)
+            # Use inherited environment (Wayland/X11) from user service
             env = os.environ.copy()
+            
+            # CRITICAL: Fix X11 authorization for systemd service
+            env['DISPLAY'] = ':0'  # Force display :0
+            
+            # Get current user session's XAUTHORITY file
+            import subprocess as sp
+            try:
+                # Get XAUTHORITY from loginctl session
+                result = sp.run(['loginctl', 'show-user', 'obtv', '--property=RuntimePath'], 
+                              capture_output=True, text=True, timeout=5)
+                if result.returncode == 0:
+                    runtime_path = result.stdout.strip().split('=')[1]
+                    env['XDG_RUNTIME_DIR'] = runtime_path
+                    
+                # Try multiple XAUTHORITY locations
+                user_home = os.path.expanduser('~')
+                xauth_candidates = [
+                    f'{user_home}/.Xauthority',
+                    f'{user_home}/.Xauth',
+                    '/tmp/.X11-unix/X0'
+                ]
+                
+                for xauth_path in xauth_candidates:
+                    if os.path.exists(xauth_path):
+                        env['XAUTHORITY'] = xauth_path
+                        self.logger.debug(f"Using XAUTHORITY: {xauth_path}")
+                        break
+                        
+            except Exception as e:
+                self.logger.debug(f"X11 setup warning: {e}")
             
             # Log current display environment for debugging
             display_env = env.get('DISPLAY', 'not set')
-            wayland_display = env.get('WAYLAND_DISPLAY', 'not set') 
+            wayland_display = env.get('WAYLAND_DISPLAY', 'not set')
             session_type = env.get('XDG_SESSION_TYPE', 'not set')
-            self.logger.debug(f"Display environment - DISPLAY: {display_env}, WAYLAND_DISPLAY: {wayland_display}, SESSION_TYPE: {session_type}")
+            xauth = env.get('XAUTHORITY', 'not set')
+            self.logger.debug(f"Display environment - DISPLAY: {display_env}, WAYLAND_DISPLAY: {wayland_display}, SESSION_TYPE: {session_type}, XAUTHORITY: {xauth}")
             
-            # Only add XAUTHORITY if we have an X11 display and the file exists
-            if env.get('DISPLAY') and not env.get('XAUTHORITY'):
-                user_home = os.path.expanduser('~')
-                xauth_path = f'{user_home}/.Xauthority'
-                if os.path.exists(xauth_path):
-                    env['XAUTHORITY'] = xauth_path
-            
-            # Start VLC with playlist - capture errors for debugging
+            # Start VLC with playlist - enable logging to see errors
             log_file = os.path.join(MEDIA_DIR, 'vlc_debug.log')
+            with open(log_file, 'w') as vlc_log:
+                self.current_process = subprocess.Popen(
+                    command,
+                    stdout=vlc_log,
+                    stderr=subprocess.STDOUT,  # Redirect stderr to stdout to capture all VLC messages
+                    env=env
+                )
             
-            self.logger.info(f"VLC command: {' '.join(command)}")
+            self.logger.info(f"VLC debug output will be written to: {log_file}")
             
-            try:
-                with open(log_file, 'w') as vlc_log:
-                    self.current_process = subprocess.Popen(
-                        command,
-                        stdout=vlc_log,
-                        stderr=subprocess.STDOUT,
-                        env=env
-                    )
-                
-                # Give VLC a moment to start
-                time.sleep(1)
-                
-                # Check if VLC actually started
-                if self.current_process.poll() is not None:
-                    # VLC exited immediately - read the log to see why
-                    try:
-                        with open(log_file, 'r') as f:
-                            vlc_output = f.read()
-                        self.logger.error(f"VLC failed to start. Exit code: {self.current_process.returncode}")
-                        self.logger.error(f"VLC output: {vlc_output}")
-                        return False
-                    except Exception as e:
-                        self.logger.error(f"VLC failed and couldn't read log: {e}")
-                        return False
-                
-                self.logger.info(f"VLC debug output being written to: {log_file}")
-                self.logger.info("VLC continuous playlist started successfully!")
-                return True
-                
-            except Exception as e:
-                self.logger.error(f"Failed to start VLC process: {e}")
-                return False
+            self.logger.info("VLC continuous playlist started - no more visual interruptions between videos!")
+            return True
             
         except Exception as e:
             self.logger.error(f"Error creating continuous playlist: {e}")
             return False
 
     def stop_current_media(self):
-        """Stop currently playing media and kill ALL VLC processes"""
+        """Stop currently playing media"""
         with self._playlist_lock:
-            # First, try to stop the tracked process
             if self.current_process and self.current_process.poll() is None:
                 try:
                     self.current_process.terminate()
-                    self.current_process.wait(timeout=3)
+                    self.current_process.wait(timeout=5)
                 except subprocess.TimeoutExpired:
                     self.current_process.kill()
                     self.current_process.wait()
                 except Exception as e:
-                    self.logger.error(f"Error stopping tracked process: {e}")
-            
-            # Kill ALL VLC processes to prevent accumulation
-            try:
-                self.logger.debug("Killing all VLC processes to prevent accumulation")
-                subprocess.run(['pkill', '-f', 'vlc'], timeout=5)
-                time.sleep(0.5)  # Give processes time to die
-            except Exception as e:
-                self.logger.debug(f"pkill vlc failed (may be normal): {e}")
-                
-            self.current_process = None
+                    self.logger.error(f"Error stopping media: {e}")
 
     def play_content(self):
         """Play current content (playlist or individual media)"""

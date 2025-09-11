@@ -1,0 +1,68 @@
+root@client1:~# curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.py -o setup_client.py
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 40681  100 40681    0     0   177k      0 --:--:-- --:--:-- --:--:--  178k
+root@client1:~# sudo python3 setup_client.py
+============================================================
+     Digital Signage Client Setup
+============================================================
+
+This script will help you set up a digital signage client device.
+It will download the latest client software and configure your system.
+
+🔍 Checking system requirements...
+⚠️  Warning: Running as root. This is okay for initial setup.
+   The service will run as a regular user for security.
+
+✅ Python 3.12.3 - OK
+
+📦 Installing dependencies...
+   Using apt package manager...
+   Updating package list...
+   ✅ Package list updated
+   ✅ python3-pip installed
+   ✅ python3-requests installed
+   ✅ python3-setuptools installed
+   ✅ python3-dev installed
+   Detected Ubuntu Server - installing minimal X11 environment...
+   ⚠️  This may take a few minutes, please be patient...
+   Installing xorg...
+....................................................................................................
+   ⏰ xorg installation timed out (5 minutes)
+
+   ⚠️  Failed to install xorg (exit code: None)
+   Installing xinit...
+.........
+   ✅ xinit installed
+   Installing x11-xserver-utils...
+.
+   ✅ x11-xserver-utils installed
+   Installing lightdm...
+....................................................................................................
+   ⏰ lightdm installation timed out (5 minutes)
+
+   ⚠️  Failed to install lightdm (exit code: None)
+   Installing openbox...
+.
+   ⚠️  Failed to install openbox (exit code: 100)
+   Installing xterm...
+.
+   ⚠️  Failed to install xterm (exit code: 100)
+   Minimal X11 environment installation complete!
+   Detected generic Linux - installing VLC and FFmpeg...
+   ⚠️  Failed to install vlc
+   ⚠️  Failed to install ffmpeg
+   ✅ Python requests module already available
+
+🔍 Verifying installations...
+   ✅ pip/pip3 available
+   ✅ Python requests module available
+
+🎬 Verifying media players...
+   ❌ omxplayer - Hardware-accelerated (Raspberry Pi)
+   ❌ vlc - Cross-platform media player
+   ❌ ffplay - FFmpeg-based player (part of ffmpeg)
+   ❌ mplayer - Classic media player
+   ⚠️  No media players detected!
+❌ No media players were successfully installed!
+Continue anyway? [y/N]:

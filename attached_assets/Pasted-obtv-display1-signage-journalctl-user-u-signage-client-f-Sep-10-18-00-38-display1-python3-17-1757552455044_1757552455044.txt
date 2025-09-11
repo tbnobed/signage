@@ -1,0 +1,28 @@
+obtv@display1:~/signage$ journalctl --user -u signage-client -f
+Sep 10 18:00:38 display1 python3[17648]: 2025-09-10 18:00:38,068 - INFO - Created VLC playlist with 2 items: /home/obtv/signage/media/current_playlist.m3u
+Sep 10 18:00:38 display1 python3[17648]: 2025-09-10 18:00:38,068 - INFO - Starting continuous VLC playlist: 2 videos
+Sep 10 18:00:38 display1 python3[17648]: 2025-09-10 18:00:38,069 - DEBUG - Display environment - DISPLAY: :0, WAYLAND_DISPLAY: wayland-0, SESSION_TYPE: wayland
+Sep 10 18:00:38 display1 python3[17648]: 2025-09-10 18:00:38,069 - INFO - VLC debug output will be written to: /home/obtv/signage/media/vlc_debug.log
+Sep 10 18:00:38 display1 python3[17648]: 2025-09-10 18:00:38,070 - INFO - VLC continuous playlist started - no more visual interruptions between videos!
+Sep 10 18:00:39 display1 python3[17648]: 2025-09-10 18:00:39,322 - INFO - Running rapid playlist check (background thread)...
+Sep 10 18:00:39 display1 python3[17648]: 2025-09-10 18:00:39,322 - DEBUG - Checking playlist status...
+Sep 10 18:00:39 display1 python3[17648]: 2025-09-10 18:00:39,323 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 18:00:39 display1 python3[17648]: 2025-09-10 18:00:39,388 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 62
+Sep 10 18:00:39 display1 python3[17648]: 2025-09-10 18:00:39,389 - DEBUG - Current playlist: 2, Server playlist: 2, Current timestamp: 2025-09-11T00:43:03.542115, Server timestamp: 2025-09-11T00:43:03.542115
+Sep 10 18:00:41 display1 python3[17648]: 2025-09-10 18:00:41,391 - INFO - Running rapid playlist check (background thread)...
+Sep 10 18:00:41 display1 python3[17648]: 2025-09-10 18:00:41,392 - DEBUG - Checking playlist status...
+Sep 10 18:00:41 display1 python3[17648]: 2025-09-10 18:00:41,393 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 18:00:41 display1 python3[17648]: 2025-09-10 18:00:41,457 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 62
+Sep 10 18:00:41 display1 python3[17648]: 2025-09-10 18:00:41,458 - DEBUG - Current playlist: 2, Server playlist: 2, Current timestamp: 2025-09-11T00:43:03.542115, Server timestamp: 2025-09-11T00:43:03.542115
+Sep 10 18:00:43 display1 python3[17648]: 2025-09-10 18:00:43,070 - INFO - VLC playlist process ended, restarting playback
+Sep 10 18:00:43 display1 python3[17648]: 2025-09-10 18:00:43,070 - INFO - FIXED VERSION: Playlist with 2 items - creating continuous VLC playlist to prevent restarts
+Sep 10 18:00:43 display1 python3[17648]: 2025-09-10 18:00:43,078 - INFO - Created VLC playlist with 2 items: /home/obtv/signage/media/current_playlist.m3u
+Sep 10 18:00:43 display1 python3[17648]: 2025-09-10 18:00:43,078 - INFO - Starting continuous VLC playlist: 2 videos
+Sep 10 18:00:43 display1 python3[17648]: 2025-09-10 18:00:43,078 - DEBUG - Display environment - DISPLAY: :0, WAYLAND_DISPLAY: wayland-0, SESSION_TYPE: wayland
+Sep 10 18:00:43 display1 python3[17648]: 2025-09-10 18:00:43,079 - INFO - VLC debug output will be written to: /home/obtv/signage/media/vlc_debug.log
+Sep 10 18:00:43 display1 python3[17648]: 2025-09-10 18:00:43,079 - INFO - VLC continuous playlist started - no more visual interruptions between videos!
+Sep 10 18:00:43 display1 python3[17648]: 2025-09-10 18:00:43,460 - INFO - Running rapid playlist check (background thread)...
+Sep 10 18:00:43 display1 python3[17648]: 2025-09-10 18:00:43,461 - DEBUG - Checking playlist status...
+Sep 10 18:00:43 display1 python3[17648]: 2025-09-10 18:00:43,462 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+Sep 10 18:00:43 display1 python3[17648]: 2025-09-10 18:00:43,526 - DEBUG - https://display.obtv.io:443 "GET /api/devices/t-jblj/playlist-status HTTP/1.1" 200 62
+Sep 10 18:00:43 display1 python3[17648]: 2025-09-10 18:00:43,527 - DEBUG - Current playlist: 2, Server playlist: 2, Current timestamp: 2025-09-11T00:43:03.542115, Server timestamp: 2025-09-11T00:43:03.542115

@@ -1,0 +1,170 @@
+obtv@display1:~/signage$ systemctl --user status signage-client
+● signage-client.service - Digital Signage Client
+     Loaded: loaded (/home/obtv/.config/systemd/user/signage-client.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2025-09-10 14:03:52 PDT; 52s ago
+   Main PID: 3158 (python3)
+      Tasks: 21 (limit: 9180)
+     Memory: 217.2M (peak: 304.5M)
+        CPU: 4.801s
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/signage-client.service
+             ├─3158 /usr/bin/python3 /home/obtv/signage/client_agent.py
+             └─3160 vlc --fullscreen --no-osd --loop --no-video-title-show --qt-minimal-view --no-qt-privacy-ask /home/>
+
+Sep 10 14:03:52 display1 systemd[1113]: Started signage-client.service - Digital Signage Client.
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,510 - INFO - Found VLC media player
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Signage client started for device: t-jblj
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Server URL: https://display.obtv.io
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Media player: vlc
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Rapid playlist checks every 2 seconds for inst>
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,719 - INFO - New playlist received: Image
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,719 - INFO - Starting immediate playback of new playlist
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,720 - INFO - Playing: 37ef00334ab740fdbe8c16d2cd2cbf70.png
+...skipping...
+● signage-client.service - Digital Signage Client
+     Loaded: loaded (/home/obtv/.config/systemd/user/signage-client.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2025-09-10 14:03:52 PDT; 52s ago
+   Main PID: 3158 (python3)
+      Tasks: 21 (limit: 9180)
+     Memory: 217.2M (peak: 304.5M)
+        CPU: 4.801s
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/signage-client.service
+             ├─3158 /usr/bin/python3 /home/obtv/signage/client_agent.py
+             └─3160 vlc --fullscreen --no-osd --loop --no-video-title-show --qt-minimal-view --no-qt-privacy-ask /home/>
+
+Sep 10 14:03:52 display1 systemd[1113]: Started signage-client.service - Digital Signage Client.
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,510 - INFO - Found VLC media player
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Signage client started for device: t-jblj
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Server URL: https://display.obtv.io
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Media player: vlc
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Rapid playlist checks every 2 seconds for inst>
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,719 - INFO - New playlist received: Image
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,719 - INFO - Starting immediate playback of new playlist
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,720 - INFO - Playing: 37ef00334ab740fdbe8c16d2cd2cbf70.png
+~
+~
+~
+~
+~
+~
+~
+~
+~
+lines 1-20/20 (END)
+obtv@display1:~/signage$ systemctl --user status signage-client
+● signage-client.service - Digital Signage Client
+     Loaded: loaded (/home/obtv/.config/systemd/user/signage-client.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2025-09-10 14:03:52 PDT; 1min 11s ago
+   Main PID: 3158 (python3)
+      Tasks: 21 (limit: 9180)
+     Memory: 246.7M (peak: 304.5M)
+        CPU: 6.239s
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/signage-client.service
+             ├─3158 /usr/bin/python3 /home/obtv/signage/client_agent.py
+             └─3160 vlc --fullscreen --no-osd --loop --no-video-title-show --qt-minimal-view --no-qt-privacy-ask /home/>
+
+Sep 10 14:03:52 display1 systemd[1113]: Started signage-client.service - Digital Signage Client.
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,510 - INFO - Found VLC media player
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Signage client started for device: t-jblj
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Server URL: https://display.obtv.io
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Media player: vlc
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Rapid playlist checks every 2 seconds for inst>
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,719 - INFO - New playlist received: Image
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,719 - INFO - Starting immediate playback of new playlist
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,720 - INFO - Playing: 37ef00334ab740fdbe8c16d2cd2cbf70.png
+...skipping...
+● signage-client.service - Digital Signage Client
+     Loaded: loaded (/home/obtv/.config/systemd/user/signage-client.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2025-09-10 14:03:52 PDT; 1min 11s ago
+   Main PID: 3158 (python3)
+      Tasks: 21 (limit: 9180)
+     Memory: 246.7M (peak: 304.5M)
+        CPU: 6.239s
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/signage-client.service
+             ├─3158 /usr/bin/python3 /home/obtv/signage/client_agent.py
+             └─3160 vlc --fullscreen --no-osd --loop --no-video-title-show --qt-minimal-view --no-qt-privacy-ask /home/>
+
+Sep 10 14:03:52 display1 systemd[1113]: Started signage-client.service - Digital Signage Client.
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,510 - INFO - Found VLC media player
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Signage client started for device: t-jblj
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Server URL: https://display.obtv.io
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Media player: vlc
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Rapid playlist checks every 2 seconds for inst>
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,719 - INFO - New playlist received: Image
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,719 - INFO - Starting immediate playback of new playlist
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,720 - INFO - Playing: 37ef00334ab740fdbe8c16d2cd2cbf70.png
+~
+~
+~
+~
+~
+~
+~
+~
+~
+
+obtv@display1:~/signage$ systemctl --user status signage-client
+● signage-client.service - Digital Signage Client
+     Loaded: loaded (/home/obtv/.config/systemd/user/signage-client.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2025-09-10 14:03:52 PDT; 1min 14s ago
+   Main PID: 3158 (python3)
+      Tasks: 21 (limit: 9180)
+     Memory: 246.7M (peak: 304.5M)
+        CPU: 6.369s
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/signage-client.service
+             ├─3158 /usr/bin/python3 /home/obtv/signage/client_agent.py
+             └─3160 vlc --fullscreen --no-osd --loop --no-video-title-show --qt-minimal-view --no-qt-privacy-ask /home/>
+
+Sep 10 14:03:52 display1 systemd[1113]: Started signage-client.service - Digital Signage Client.
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,510 - INFO - Found VLC media player
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Signage client started for device: t-jblj
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Server URL: https://display.obtv.io
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Media player: vlc
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Rapid playlist checks every 2 seconds for inst>
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,719 - INFO - New playlist received: Image
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,719 - INFO - Starting immediate playback of new playlist
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,720 - INFO - Playing: 37ef00334ab740fdbe8c16d2cd2cbf70.png
+lines 1-20/20 (END)
+obtv@display1:~/signage$ systemctl --user status signage-client
+● signage-client.service - Digital Signage Client
+     Loaded: loaded (/home/obtv/.config/systemd/user/signage-client.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2025-09-10 14:03:52 PDT; 1min 16s ago
+   Main PID: 3158 (python3)
+      Tasks: 21 (limit: 9180)
+     Memory: 246.9M (peak: 304.5M)
+        CPU: 6.480s
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/signage-client.service
+             ├─3158 /usr/bin/python3 /home/obtv/signage/client_agent.py
+             └─3160 vlc --fullscreen --no-osd --loop --no-video-title-show --qt-minimal-view --no-qt-privacy-ask /home/>
+
+Sep 10 14:03:52 display1 systemd[1113]: Started signage-client.service - Digital Signage Client.
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,510 - INFO - Found VLC media player
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Signage client started for device: t-jblj
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Server URL: https://display.obtv.io
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Media player: vlc
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,511 - INFO - Rapid playlist checks every 2 seconds for inst>
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,719 - INFO - New playlist received: Image
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,719 - INFO - Starting immediate playback of new playlist
+Sep 10 14:03:52 display1 python3[3158]: 2025-09-10 14:03:52,720 - INFO - Playing: 37ef00334ab740fdbe8c16d2cd2cbf70.png
+
+obtv@display1:~/signage$ systemctl --user restart signage-client
+obtv@display1:~/signage$ systemctl --user status signage-client
+● signage-client.service - Digital Signage Client
+     Loaded: loaded (/home/obtv/.config/systemd/user/signage-client.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2025-09-10 14:06:08 PDT; 1s ago
+   Main PID: 3283 (python3)
+      Tasks: 32 (limit: 9180)
+     Memory: 502.7M (peak: 502.7M)
+        CPU: 1.154s
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/signage-client.service
+             ├─3283 /usr/bin/python3 /home/obtv/signage/client_agent.py
+             └─3285 vlc --fullscreen --no-osd --loop --no-video-title-show --qt-minimal-view --no-qt-privacy-ask /home/>
+
+Sep 10 14:06:08 display1 systemd[1113]: Started signage-client.service - Digital Signage Client.
+Sep 10 14:06:08 display1 python3[3283]: 2025-09-10 14:06:08,745 - INFO - Found VLC media player
+Sep 10 14:06:08 display1 python3[3283]: 2025-09-10 14:06:08,746 - INFO - Signage client started for device: t-jblj
+Sep 10 14:06:08 display1 python3[3283]: 2025-09-10 14:06:08,746 - INFO - Server URL: https://display.obtv.io
+Sep 10 14:06:08 display1 python3[3283]: 2025-09-10 14:06:08,746 - INFO - Media player: vlc
+Sep 10 14:06:08 display1 python3[3283]: 2025-09-10 14:06:08,746 - INFO - Rapid playlist checks every 2 seconds for inst>
+Sep 10 14:06:08 display1 python3[3283]: 2025-09-10 14:06:08,961 - INFO - New playlist received: Test playlist
+Sep 10 14:06:08 display1 python3[3283]: 2025-09-10 14:06:08,961 - INFO - Starting immediate playback of new playlist
+Sep 10 14:06:08 display1 python3[3283]: 2025-09-10 14:06:08,962 - INFO - Playing: 452bf30e25f440098021a2286724b298.mp4

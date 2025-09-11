@@ -1,0 +1,123 @@
+obtv1@obtv-client1:~$ sudo -i
+root@obtv-client1:~# curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh | sudo bash
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  5479  100  5479    0     0  31349      0 --:--:-- --:--:-- --:--:-- 31488
+============================================================
+     Digital Signage Client Setup
+============================================================
+
+This script will prepare your system and install the signage client.
+
+✅ Python 3 is available
+Python 3 is already installed, skipping installation.
+⬇️  Downloading and running Python setup script...
+   ✅ Downloaded setup script
+
+⚠️  Non-interactive session detected (piped from curl)
+   Copying setup script to current directory...
+
+📋 Next Steps:
+1. Register your device at: https://display.obtv.io
+2. Run the interactive setup: sudo python3 setup_client.py
+3. Enter your device ID when prompted
+
+The setup script is ready at: ./setup_client.py
+Dependencies have been installed successfully.
+root@obtv-client1:~# sudo python3 setup_client.py
+============================================================
+     Digital Signage Client Setup
+============================================================
+
+This script will help you set up a digital signage client device.
+It will download the latest client software and configure your system.
+
+🔍 Checking system requirements...
+⚠️  Warning: Running as root. This is okay for initial setup.
+   The service will run as a regular user for security.
+
+✅ Python 3.12.3 - OK
+
+📦 Installing dependencies...
+   Using apt package manager...
+   Updating package list...
+   ✅ Package list updated
+   ✅ python3-pip installed
+   ✅ python3-requests installed
+   ✅ python3-setuptools installed
+   ✅ python3-dev installed
+   Detected generic Linux - installing VLC and FFmpeg...
+   ✅ vlc installed
+   ✅ ffmpeg installed
+   ✅ Python requests module already available
+
+🔍 Verifying installations...
+   ✅ pip/pip3 available
+   ✅ Python requests module available
+
+🎬 Verifying media players...
+   ❌ omxplayer - Hardware-accelerated (Raspberry Pi)
+   ✅ vlc - Cross-platform media player
+   ✅ ffplay - FFmpeg-based player (part of ffmpeg)
+   ❌ mplayer - Classic media player
+
+⚙️  Configuration
+--------------------
+Server URL (default: https://display.obtv.io): https://display.obtv.io
+Device ID (unique identifier):  t-zyw3
+Check interval in seconds (default: 60): 60
+
+Configuration Summary:
+  Server URL: https://display.obtv.io
+  Device ID: t-zyw3
+  Check Interval: 60 seconds
+
+Is this correct? [Y/n]: y
+📁 Creating signage directory...
+   Created: /root/signage
+⬇️  Downloading client script...
+   Downloaded: /root/signage/client_agent.py
+📝 Creating configuration file...
+   Created: /root/signage/.env
+🔌 Testing server connection...
+   ✅ Server is reachable (404 is expected for ping)
+🚀 Setting up auto-start service...
+Username to run service as (default: pi): obtv1
+   ✅ Service created: /etc/systemd/system/signage-client.service
+   ✅ Service enabled for auto-start
+Start the signage client now? [Y/n]: y
+   ✅ Service started
+
+📊 Service Status:
+● signage-client.service - Digital Signage Client
+     Loaded: loaded (/etc/systemd/system/signage-client.service; enabled; preset: enabled)
+     Active: activating (auto-restart) (Result: exit-code) since Mon 2025-06-30 21:36:15 UTC; 13ms ago
+    Process: 8736 ExecStart=/usr/bin/python3 /root/signage/client_agent.py (code=exited, status=200/CHDIR)
+   Main PID: 8736 (code=exited, status=200/CHDIR)
+        CPU: 2ms
+
+============================================================
+🎉 Setup Complete!
+============================================================
+
+Your digital signage client is now configured!
+
+📋 Next Steps:
+1. Register this device in your web dashboard:
+   - Server: https://display.obtv.io
+   - Device ID: t-zyw3
+2. Create playlists and assign them to this device
+3. Media will automatically download and play
+
+🔧 Useful Commands:
+   sudo systemctl status signage-client    # Check status
+   sudo systemctl restart signage-client   # Restart service
+   sudo systemctl stop signage-client      # Stop service
+   tail -f /root/signage/client.log      # View logs
+
+📁 Files Created:
+   /root/signage/client_agent.py
+   /root/signage/.env
+   /etc/systemd/system/signage-client.service
+
+root@obtv-client1:~#
