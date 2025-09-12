@@ -78,10 +78,7 @@ class SignageClient:
         self._heartbeat_thread.start()
         self.logger.info("Background heartbeat checking started")
         
-        # Start background thread for update checking (every 6 hours)
-        self._update_check_thread = threading.Thread(target=self._update_check_loop, daemon=True)
-        self._update_check_thread.start()
-        self.logger.info("Background update checking started (every 6 hours)")
+        # Update system is now admin-controlled via server commands (no automatic checking)
         
         # Send immediate check-in to publish TeamViewer ID right away
         self.logger.info("Sending initial check-in with TeamViewer ID...")
@@ -260,18 +257,12 @@ class SignageClient:
             except Exception as e:
                 self.logger.error(f"Error in heartbeat loop: {e}")
 
-    def _update_check_loop(self):
-        """Background thread that checks for client updates every 6 hours"""
-        while not self._stop_event.wait(UPDATE_CHECK_INTERVAL):
-            try:
-                self.logger.info("Checking for client updates...")
-                self.check_for_updates()
-            except Exception as e:
-                self.logger.error(f"Error in update check loop: {e}")
-
-    def check_for_updates(self):
-        """Check if a newer client version is available and update if needed"""
+    def handle_update_command(self):
+        """Handle update command received from server"""
         try:
+            self.logger.info("Received update command from server. Fetching latest version...")
+            
+            # Get update information from server
             response = requests.get(
                 f"{SERVER_URL}/api/client/version?current_version={CLIENT_VERSION}",
                 timeout=10
@@ -280,28 +271,21 @@ class SignageClient:
             if response.status_code == 200:
                 data = response.json()
                 latest_version = data.get('latest_version')
-                needs_update = data.get('needs_update', False)
                 
-                self.logger.info(f"Current version: {CLIENT_VERSION}, Latest version: {latest_version}")
+                self.logger.info(f"Admin-initiated update: {CLIENT_VERSION} -> {latest_version}")
+                self.logger.info(f"Release notes: {data.get('release_notes', 'No release notes available')}")
                 
-                if needs_update:
-                    self.logger.info(f"Update available! Updating from {CLIENT_VERSION} to {latest_version}")
-                    self.logger.info(f"Release notes: {data.get('release_notes', 'No release notes available')}")
-                    
-                    # Perform the update
-                    if self.update_client(data):
-                        self.logger.info("Update completed successfully. Restarting client...")
-                        # Restart the client after successful update
-                        self.restart_client()
-                    else:
-                        self.logger.error("Update failed. Continuing with current version.")
+                # Perform the update
+                if self.update_client(data):
+                    self.logger.info("Update completed successfully. Restarting client...")
+                    self.restart_client()
                 else:
-                    self.logger.info("Client is up to date.")
+                    self.logger.error("Update failed. Continuing with current version.")
             else:
-                self.logger.warning(f"Failed to check for updates: {response.status_code}")
+                self.logger.warning(f"Failed to get update information: {response.status_code}")
                 
         except Exception as e:
-            self.logger.error(f"Error checking for updates: {e}")
+            self.logger.error(f"Error handling update command: {e}")
 
     def update_client(self, update_data):
         """Download and install client update"""
@@ -1025,6 +1009,11 @@ class SignageClient:
                 self.stop_current_media()
                 # Execute reboot command
                 subprocess.run(['sudo', 'reboot'], timeout=10)
+            
+            elif command == 'update':
+                self.logger.info("Starting client update as requested by admin")
+                self.send_log('info', 'Starting client update as requested by admin')
+                self.handle_update_command()
             
             elif command == 'restart_service':
                 self.logger.info("Restarting signage service as requested by server")

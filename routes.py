@@ -147,6 +147,19 @@ def reboot_device(device_id):
     flash(f'Reboot command sent to "{device.name}". Device will reboot on next check-in.', 'info')
     return redirect(url_for('main.devices'))
 
+@main.route('/devices/<int:device_id>/update', methods=['POST'])
+@login_required
+def update_device(device_id):
+    device = Device.query.get_or_404(device_id)
+    
+    # Set pending update command
+    device.pending_command = 'update'
+    device.command_timestamp = datetime.utcnow()
+    db.session.commit()
+    
+    flash(f'Update command sent to "{device.name}". Client will update on next check-in.', 'success')
+    return redirect(url_for('main.devices'))
+
 @main.route('/media')
 @login_required
 def media():

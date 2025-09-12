@@ -168,6 +168,11 @@
                     <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap">
                         <div class="flex-grow-1"></div>
                         <div class="d-flex gap-1 flex-nowrap">
+                            <button type="button" class="btn btn-sm btn-outline-info btn-compact" 
+                                    onclick="confirmUpdate('{{ device.name }}', '{{ device.id }}')"
+                                    {% if not device.is_online() %}disabled title="Device is offline"{% endif %}>
+                                <i class="fas fa-download me-1"></i>Update
+                            </button>
                             <button type="button" class="btn btn-sm btn-outline-warning btn-compact" 
                                     onclick="confirmReboot('{{ device.name }}', '{{ device.id }}')"
                                     {% if not device.is_online() %}disabled title="Device is offline"{% endif %}>
@@ -410,6 +415,44 @@
         </div>
     </div>
 </div>
+
+<!-- Update Client Confirmation Modal -->
+<div class="modal fade" id="updateDeviceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info">
+                    <i class="fas fa-download me-2"></i>Update Client
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to update the client on <strong><span id="deviceNameToUpdate"></span></strong>?</p>
+                
+                <div class="alert alert-info">
+                    <strong>What will happen:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>The update command will be sent on the next check-in</li>
+                        <li>Latest client version will be downloaded from GitHub</li>
+                        <li>Current media playback will stop briefly</li>
+                        <li>Client service will restart automatically with new version</li>
+                        <li>Media playback will resume after update</li>
+                    </ul>
+                </div>
+                
+                <p class="mb-0">The device will be offline for about 30-60 seconds during the update process.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="updateDeviceForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-download me-1"></i>Update Client
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -437,6 +480,13 @@ function confirmReboot(deviceName, deviceId) {
     document.getElementById('deviceNameToReboot').textContent = deviceName;
     document.getElementById('rebootDeviceForm').action = "{{ url_for('main.reboot_device', device_id=0) }}".replace('0', deviceId);
     new bootstrap.Modal(document.getElementById('rebootDeviceModal')).show();
+}
+
+// Update device confirmation
+function confirmUpdate(deviceName, deviceId) {
+    document.getElementById('deviceNameToUpdate').textContent = deviceName;
+    document.getElementById('updateDeviceForm').action = "{{ url_for('main.update_device', device_id=0) }}".replace('0', deviceId);
+    new bootstrap.Modal(document.getElementById('updateDeviceModal')).show();
 }
 
 // Delete device confirmation
