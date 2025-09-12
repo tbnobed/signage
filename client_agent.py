@@ -348,22 +348,37 @@ class SignageClient:
             return False
 
     def restart_client(self):
-        """Restart the client after update"""
+        """Restart the client after update by exiting cleanly (systemd will restart automatically)"""
         try:
             self.logger.info("Restarting client after update...")
             self.cleanup()
             
-            # Get the current script path
-            current_script = os.path.abspath(__file__)
-            
-            # Restart using the same Python executable
-            subprocess.Popen([sys.executable, current_script])
-            
-            # Exit the current process
+            # For systemd services, just exit cleanly and let systemd restart us
+            # This is more reliable than trying to start a new process manually
+            self.logger.info("Auto-update complete! Exiting for systemd restart...")
             sys.exit(0)
             
         except Exception as e:
             self.logger.error(f"Error restarting client: {e}")
+
+    def cleanup(self):
+        """Clean up resources before exit"""
+        try:
+            self.logger.info("Cleaning up resources...")
+            
+            # Stop media playback
+            self.stop_current_media()
+            
+            # Set stop event for all background threads
+            self._stop_event.set()
+            
+            # Give threads a moment to stop gracefully
+            import time
+            time.sleep(1)
+            
+            self.logger.info("Cleanup complete")
+        except Exception as e:
+            self.logger.error(f"Error during cleanup: {e}")
 
     def check_playlist_status(self):
         """Quick check if playlist has been updated AND check for urgent commands"""
