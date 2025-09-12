@@ -26,6 +26,7 @@ SERVER_URL = os.environ.get('SIGNAGE_SERVER_URL', 'http://localhost:5000')
 DEVICE_ID = os.environ.get('DEVICE_ID', 'device-001')
 CHECK_INTERVAL = int(os.environ.get('CHECK_INTERVAL', '60'))  # seconds
 RAPID_CHECK_INTERVAL = int(os.environ.get('RAPID_CHECK_INTERVAL', '2'))  # seconds for playlist status checks
+UPDATE_CHECK_INTERVAL = int(os.environ.get('UPDATE_CHECK_INTERVAL', '21600'))  # 6 hours in seconds
 MEDIA_DIR = os.environ.get('MEDIA_DIR', os.path.expanduser('~/signage/media'))
 LOG_FILE = os.environ.get('LOG_FILE', os.path.expanduser('~/signage/client.log'))
 
@@ -69,6 +70,11 @@ class SignageClient:
         self._heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
         self._heartbeat_thread.start()
         self.logger.info("Background heartbeat checking started")
+        
+        # Start background thread for update checking (every 6 hours)
+        self._update_check_thread = threading.Thread(target=self._update_check_loop, daemon=True)
+        self._update_check_thread.start()
+        self.logger.info("Background update checking started (every 6 hours)")
         
         # Send immediate check-in to publish TeamViewer ID right away
         self.logger.info("Sending initial check-in with TeamViewer ID...")
@@ -237,6 +243,111 @@ class SignageClient:
                 self.send_checkin()
             except Exception as e:
                 self.logger.error(f"Error in heartbeat loop: {e}")
+
+    def _update_check_loop(self):
+        """Background thread that checks for client updates every 6 hours"""
+        while not self._stop_event.wait(UPDATE_CHECK_INTERVAL):
+            try:
+                self.logger.info("Checking for client updates...")
+                self.check_for_updates()
+            except Exception as e:
+                self.logger.error(f"Error in update check loop: {e}")
+
+    def check_for_updates(self):
+        """Check if a newer client version is available and update if needed"""
+        try:
+            response = requests.get(
+                f"{SERVER_URL}/api/client/version?current_version={CLIENT_VERSION}",
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                latest_version = data.get('latest_version')
+                needs_update = data.get('needs_update', False)
+                
+                self.logger.info(f"Current version: {CLIENT_VERSION}, Latest version: {latest_version}")
+                
+                if needs_update:
+                    self.logger.info(f"Update available! Updating from {CLIENT_VERSION} to {latest_version}")
+                    self.logger.info(f"Release notes: {data.get('release_notes', 'No release notes available')}")
+                    
+                    # Perform the update
+                    if self.update_client(data):
+                        self.logger.info("Update completed successfully. Restarting client...")
+                        # Restart the client after successful update
+                        self.restart_client()
+                    else:
+                        self.logger.error("Update failed. Continuing with current version.")
+                else:
+                    self.logger.info("Client is up to date.")
+            else:
+                self.logger.warning(f"Failed to check for updates: {response.status_code}")
+                
+        except Exception as e:
+            self.logger.error(f"Error checking for updates: {e}")
+
+    def update_client(self, update_data):
+        """Download and install client update"""
+        try:
+            github_repo = update_data.get('github_repo')
+            if not github_repo:
+                self.logger.error("No GitHub repository URL provided for update")
+                return False
+            
+            self.logger.info(f"Downloading update from: {github_repo}")
+            
+            # Create temporary directory for update
+            import tempfile
+            with tempfile.TemporaryDirectory() as temp_dir:
+                # Clone the repository
+                clone_cmd = ['git', 'clone', github_repo, temp_dir]
+                result = subprocess.run(clone_cmd, capture_output=True, text=True)
+                
+                if result.returncode != 0:
+                    self.logger.error(f"Failed to clone repository: {result.stderr}")
+                    return False
+                
+                # Copy the new client_agent.py
+                import shutil
+                new_client_path = os.path.join(temp_dir, 'client_agent.py')
+                current_client_path = os.path.abspath(__file__)
+                
+                if os.path.exists(new_client_path):
+                    # Backup current version
+                    backup_path = f"{current_client_path}.backup"
+                    shutil.copy2(current_client_path, backup_path)
+                    self.logger.info(f"Backed up current client to: {backup_path}")
+                    
+                    # Install new version
+                    shutil.copy2(new_client_path, current_client_path)
+                    self.logger.info("New client version installed successfully")
+                    return True
+                else:
+                    self.logger.error(f"New client_agent.py not found in repository")
+                    return False
+                    
+        except Exception as e:
+            self.logger.error(f"Error updating client: {e}")
+            return False
+
+    def restart_client(self):
+        """Restart the client after update"""
+        try:
+            self.logger.info("Restarting client after update...")
+            self.cleanup()
+            
+            # Get the current script path
+            current_script = os.path.abspath(__file__)
+            
+            # Restart using the same Python executable
+            subprocess.Popen([sys.executable, current_script])
+            
+            # Exit the current process
+            sys.exit(0)
+            
+        except Exception as e:
+            self.logger.error(f"Error restarting client: {e}")
 
     def check_playlist_status(self):
         """Quick check if playlist has been updated AND check for urgent commands"""
