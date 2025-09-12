@@ -28,7 +28,9 @@ def index():
 @login_required
 def dashboard():
     total_devices = Device.query.count()
-    online_devices = Device.query.filter_by(status='online').count()
+    # Count devices that are actually online (last checkin within 5 minutes)
+    all_devices = Device.query.all()
+    online_devices = sum(1 for device in all_devices if device.is_online())
     total_media = MediaFile.query.count()
     total_playlists = Playlist.query.count()
     
