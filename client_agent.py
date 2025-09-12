@@ -32,7 +32,14 @@ LOG_FILE = os.environ.get('LOG_FILE', os.path.expanduser('~/signage/client.log')
 
 # Media player commands for desktop Ubuntu
 PLAYER_COMMANDS = {
-    'vlc': ['vlc', '--fullscreen', '--no-osd', '--loop', '--no-video-title-show', '--qt-minimal-view', '--no-qt-privacy-ask']
+    'mpv': [
+        'mpv', '--fs', '--no-osc', '--no-osd-bar', '--osd-level=0', '--no-terminal', 
+        '--loop-playlist=inf', '--keep-open=yes', '--prefetch-playlist=yes',
+        '--cache=yes', '--cache-secs=20', '--demuxer-readahead-secs=10',
+        '--demuxer-max-bytes=500M', '--image-display-duration=10',
+        '--vo=gpu', '--video-sync=display-resample'
+    ],
+    'vlc': ['vlc', '--fullscreen', '--no-osd', '--loop', '--no-video-title-show', '--qt-minimal-view', '--no-qt-privacy-ask', '--intf', 'dummy', '--no-qt-error-dialogs']
 }
 
 # Screen targeting support for multi-monitor setups
@@ -96,13 +103,22 @@ class SignageClient:
         self.logger = logging.getLogger(__name__)
 
     def detect_media_player(self):
-        """Detect VLC media player for desktop Ubuntu"""
+        """Detect media player: prefer mpv for gapless playback, fallback to VLC"""
+        # Try mpv first (better for seamless looping)
+        try:
+            subprocess.run(['mpv', '--version'], capture_output=True, timeout=5)
+            self.logger.info("Found mpv media player (preferred for gapless playback)")
+            return 'mpv'
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            self.logger.info("mpv not found, trying VLC...")
+        
+        # Fallback to VLC
         try:
             subprocess.run(['vlc', '--version'], capture_output=True, timeout=5)
-            self.logger.info("Found VLC media player")
+            self.logger.info("Found VLC media player (fallback)")
             return 'vlc'
         except (subprocess.TimeoutExpired, FileNotFoundError):
-            self.logger.error("VLC media player not found! Please install VLC.")
+            self.logger.error("No supported media player found! Please install mpv or VLC.")
             return None
 
     def get_teamviewer_id(self):
@@ -471,7 +487,7 @@ class SignageClient:
             return None
 
     def play_media(self, media_path, duration=None, allow_loop=False):
-        """Play media file using VLC on desktop Ubuntu"""
+        """Play media file using mpv (preferred) or VLC for seamless playback"""
         if not self.media_player:
             self.logger.error("No media player available")
             return False
@@ -479,15 +495,31 @@ class SignageClient:
         try:
             command = PLAYER_COMMANDS[self.media_player].copy()
             
-            # Add screen targeting for multi-monitor setups
-            if SCREEN_INDEX > 0:
-                command.extend(['--qt-fullscreen-screennumber', str(SCREEN_INDEX)])
+            # Player-specific configurations
+            if self.media_player == 'mpv':
+                # For mpv single-file loop, use --loop-file=inf instead of --loop-playlist=inf
+                if allow_loop:
+                    # Remove playlist loop setting and add single-file loop
+                    if '--loop-playlist=inf' in command:
+                        command.remove('--loop-playlist=inf')
+                    command.append('--loop-file=inf')
+                
+                # Screen targeting for mpv (different from VLC)
+                if SCREEN_INDEX > 0:
+                    command.extend(['--fs-screen', str(SCREEN_INDEX)])
+            
+            elif self.media_player == 'vlc':
+                # VLC screen targeting
+                if SCREEN_INDEX > 0:
+                    command.extend(['--qt-fullscreen-screennumber', str(SCREEN_INDEX)])
             
             command.append(media_path)
             
-            self.logger.info(f"Playing: {os.path.basename(media_path)}")
+            self.logger.info(f"Playing with {self.media_player}: {os.path.basename(media_path)}")
             if SCREEN_INDEX > 0:
                 self.logger.info(f"Target screen: {SCREEN_INDEX}")
+            if allow_loop:
+                self.logger.info(f"Looping enabled using {self.media_player}-specific settings")
             
             # Kill any existing player process
             self.stop_current_media()
@@ -509,7 +541,7 @@ class SignageClient:
                 if os.path.exists(xauth_path):
                     env['XAUTHORITY'] = xauth_path
             
-            # Start VLC process
+            # Start media player process
             self.current_process = subprocess.Popen(
                 command,
                 stdout=subprocess.DEVNULL,
@@ -517,11 +549,11 @@ class SignageClient:
                 env=env
             )
             
-            # If allow_loop is True, let VLC run indefinitely with its internal loop
+            # If allow_loop is True, let player run indefinitely with its internal loop
             # This prevents the constant stopping/starting that causes visual interruptions
             if allow_loop:
-                self.logger.info("Allowing VLC to loop indefinitely")
-                # Don't wait with timeout - let VLC loop internally
+                self.logger.info(f"Allowing {self.media_player} to loop indefinitely")
+                # Don't wait with timeout - let player loop internally
                 # The process will only be stopped when playlist changes or client shuts down
                 return True
             
@@ -542,66 +574,85 @@ class SignageClient:
             return False
 
     def play_continuous_playlist(self, media_paths, loop=True):
-        """Play multiple media files as a continuous VLC playlist without interruptions"""
+        """Play multiple media files as a continuous playlist without interruptions"""
         if not self.media_player or not media_paths:
             return False
             
         try:
-            # Create VLC playlist file (.m3u format for better image support)
-            playlist_file = os.path.join(MEDIA_DIR, 'current_playlist.m3u')
-            
-            # Generate M3U playlist content (simpler and more reliable than XSPF)
-            with open(playlist_file, 'w', encoding='utf-8') as f:
-                f.write('#EXTM3U\n')
-                for i, media_path in enumerate(media_paths):
-                    # Check if this is a stream URL or local file
-                    if media_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
-                        # Stream URLs: Use as-is, no file processing
-                        f.write(f'{media_path}\n')
-                    else:
-                        # Local files: Apply absolute path and image duration settings
-                        abs_path = os.path.abspath(media_path)
-                        
-                        # ARCHITECT FIX: Use EXTVLCOPT for image timing, no EXTINF
-                        # This avoids conflicts and gives VLC more reliable per-item control
-                        file_ext = os.path.splitext(media_path)[1].lower()
-                        if file_ext in ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']:
-                            # Images: Use VLC-specific option for 10 second duration
-                            f.write(f'#EXTVLCOPT:image-duration=10\n')
-                        # Videos: No special options, VLC uses intrinsic duration
-                        
-                        f.write(f'{abs_path}\n')
-            
-            self.logger.info(f"Created VLC playlist with {len(media_paths)} items: {playlist_file}")
-            
-            # Build VLC command for continuous playlist playback
             command = PLAYER_COMMANDS[self.media_player].copy()
             
-            # Add screen targeting for multi-monitor setups
-            if SCREEN_INDEX > 0:
-                command.extend(['--qt-fullscreen-screennumber', str(SCREEN_INDEX)])
+            if self.media_player == 'mpv':
+                # MPV: Use direct file arguments - better than playlist files for gapless playback
+                self.logger.info(f"Preparing mpv gapless playlist with {len(media_paths)} items")
+                
+                # Screen targeting for mpv
+                if SCREEN_INDEX > 0:
+                    command.extend(['--fs-screen', str(SCREEN_INDEX)])
+                
+                # Add all media paths directly as arguments
+                for media_path in media_paths:
+                    if media_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
+                        # Stream URLs: Use as-is
+                        command.append(media_path)
+                    else:
+                        # Local files: Use absolute paths
+                        command.append(os.path.abspath(media_path))
+                
+                self.logger.info(f"Starting mpv gapless playlist: {len(media_paths)} items")
+                
+            elif self.media_player == 'vlc':
+                # VLC: Create M3U playlist file (existing logic)
+                playlist_file = os.path.join(MEDIA_DIR, 'current_playlist.m3u')
+                
+                # Generate M3U playlist content (simpler and more reliable than XSPF)
+                with open(playlist_file, 'w', encoding='utf-8') as f:
+                    f.write('#EXTM3U\n')
+                    for i, media_path in enumerate(media_paths):
+                        # Check if this is a stream URL or local file
+                        if media_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
+                            # Stream URLs: Use as-is, no file processing
+                            f.write(f'{media_path}\n')
+                        else:
+                            # Local files: Apply absolute path and image duration settings
+                            abs_path = os.path.abspath(media_path)
+                            
+                            # ARCHITECT FIX: Use EXTVLCOPT for image timing, no EXTINF
+                            # This avoids conflicts and gives VLC more reliable per-item control
+                            file_ext = os.path.splitext(media_path)[1].lower()
+                            if file_ext in ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']:
+                                # Images: Use VLC-specific option for 10 second duration
+                                f.write(f'#EXTVLCOPT:image-duration=10\n')
+                            # Videos: No special options, VLC uses intrinsic duration
+                            
+                            f.write(f'{abs_path}\n')
+                
+                self.logger.info(f"Created VLC playlist with {len(media_paths)} items: {playlist_file}")
+                
+                # VLC screen targeting
+                if SCREEN_INDEX > 0:
+                    command.extend(['--qt-fullscreen-screennumber', str(SCREEN_INDEX)])
+                
+                # Remove default --loop to control explicitly
+                if '--loop' in command:
+                    command.remove('--loop')
+                
+                # Force infinite looping for images and videos
+                command.extend([
+                    '--loop',             # Loop the entire playlist (NOT repeat current item)
+                    '--image-duration', '10',  # Images show for 10 seconds each (backup for EXTVLCOPT)
+                    '--playlist-autostart',    # Auto start playlist
+                    '--no-random',        # Play in order
+                    '--no-qt-error-dialogs',  # No error popups
+                    '--intf', 'dummy',    # No interface (more stable)
+                    '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
+                    '--avcodec-hw', 'none',  # Disable hardware decoding (compatible parameter)
+                    '-vvv',               # Verbose logging to see VLC errors
+                ])
+                
+                # Add the playlist file
+                command.append(playlist_file)
+                
             
-            # Remove default --loop to control explicitly
-            if '--loop' in command:
-                command.remove('--loop')
-            
-            # Force infinite looping for images and videos
-            command.extend([
-                '--loop',             # Loop the entire playlist (NOT repeat current item)
-                '--image-duration', '10',  # Images show for 10 seconds each (backup for EXTVLCOPT)
-                '--playlist-autostart',    # Auto start playlist
-                '--no-random',        # Play in order
-                '--no-qt-error-dialogs',  # No error popups
-                '--intf', 'dummy',    # No interface (more stable)
-                '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
-                '--avcodec-hw', 'none',  # Disable hardware decoding (compatible parameter)
-                '-vvv',               # Verbose logging to see VLC errors
-            ])
-            
-            # Add the playlist file
-            command.append(playlist_file)
-            
-            self.logger.info(f"Starting continuous VLC playlist: {len(media_paths)} videos")
             if SCREEN_INDEX > 0:
                 self.logger.info(f"Target screen: {SCREEN_INDEX}")
             
@@ -668,19 +719,19 @@ class SignageClient:
             xauth = env.get('XAUTHORITY', 'not set')
             self.logger.debug(f"Display environment - DISPLAY: {display_env}, WAYLAND_DISPLAY: {wayland_display}, SESSION_TYPE: {session_type}, XAUTHORITY: {xauth}")
             
-            # Start VLC with playlist - enable logging to see errors
-            log_file = os.path.join(MEDIA_DIR, 'vlc_debug.log')
-            with open(log_file, 'w') as vlc_log:
+            # Start media player with playlist - enable logging to see errors
+            log_file = os.path.join(MEDIA_DIR, f'{self.media_player}_debug.log')
+            with open(log_file, 'w') as player_log:
                 self.current_process = subprocess.Popen(
                     command,
-                    stdout=vlc_log,
-                    stderr=subprocess.STDOUT,  # Redirect stderr to stdout to capture all VLC messages
+                    stdout=player_log,
+                    stderr=subprocess.STDOUT,  # Redirect stderr to stdout to capture all player messages
                     env=env
                 )
             
-            self.logger.info(f"VLC debug output will be written to: {log_file}")
+            self.logger.info(f"{self.media_player} debug output will be written to: {log_file}")
             
-            self.logger.info("VLC continuous playlist started - no more visual interruptions between videos!")
+            self.logger.info(f"{self.media_player} continuous playlist started - gapless playback enabled!")
             return True
             
         except Exception as e:
