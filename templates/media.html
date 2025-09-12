@@ -349,18 +349,27 @@ document.addEventListener('DOMContentLoaded', function() {
             overlay.style.cursor = 'pointer';
             overlay.addEventListener('click', function(e) {
                 e.preventDefault();
+                e.stopPropagation();
+                console.log('Video overlay clicked!', video.paused ? 'Playing' : 'Pausing');
+                
                 if (video.paused) {
                     // Reset to beginning before playing
                     video.currentTime = 0;
-                    video.play().catch(err => {
-                        console.log('Could not play video:', err);
+                    video.play().then(() => {
+                        console.log('Video started playing');
+                        overlay.style.opacity = '0';
+                    }).catch(err => {
+                        console.error('Could not play video:', err);
+                        alert('Error playing video: ' + err.message);
                     });
-                    overlay.style.opacity = '0';
                 } else {
                     video.pause();
+                    console.log('Video paused');
                     overlay.style.opacity = '1';
                 }
             });
+        } else {
+            console.log('No overlay found for video');
         }
         
         // Reset overlay when video ends
@@ -406,17 +415,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <style>
 .video-overlay {
-    pointer-events: none;
+    pointer-events: all;
+    cursor: pointer;
     transition: opacity 0.3s ease;
     z-index: 2; /* Keep overlay below dropdown buttons */
 }
 
 .video-thumbnail:hover + .video-overlay {
     cursor: pointer;
-}
-
-.position-relative:hover .video-overlay {
-    pointer-events: all;
 }
 
 .video-thumbnail {
