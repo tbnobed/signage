@@ -456,6 +456,32 @@ def device_checkin(device_id):
     
     return jsonify(response)
 
+@api.route('/client/version', methods=['GET'])
+def get_client_version():
+    """Get the latest client version and download information"""
+    # Latest client version information
+    latest_version = "2.1.0"
+    
+    # GitHub repository information
+    github_repo = "https://github.com/tbnobed/signage.git"
+    download_base = f"{request.url_root}auth/client-setup-sh"
+    
+    # Check if the requesting client needs an update
+    current_version = request.args.get('current_version')
+    needs_update = False
+    
+    if current_version and current_version != latest_version:
+        needs_update = True
+    
+    return jsonify({
+        'latest_version': latest_version,
+        'needs_update': needs_update,
+        'download_url': download_base,
+        'github_repo': github_repo,
+        'update_available': needs_update,
+        'release_notes': 'Auto-update functionality, improved stability'
+    })
+
 @api.route('/devices/<device_id>/playlist-status')
 def get_device_playlist_status(device_id):
     """Lightweight endpoint to check if playlist has been updated AND urgent commands"""
