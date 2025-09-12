@@ -432,6 +432,10 @@ def device_checkin(device_id):
     if data.get('teamviewer_id'):
         device.teamviewer_id = data.get('teamviewer_id')
     
+    # Update client version if provided by client
+    if data.get('client_version'):
+        device.client_version = data.get('client_version')
+    
     db.session.commit()
     
     # Keep device_checkin backward compatible - only return actual playlist IDs as integers

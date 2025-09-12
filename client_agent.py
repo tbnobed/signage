@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """
-Digital Signage Client Agent
+DisplayHQ Client Agent
 Runs on Raspberry Pi or NUC devices to display media content
 """
+
+# Client version - increment when making updates
+CLIENT_VERSION = "2.1.0"
 
 import os
 import sys
@@ -52,7 +55,7 @@ class SignageClient:
         # Create media directory
         Path(MEDIA_DIR).mkdir(exist_ok=True)
         
-        self.logger.info(f"Signage client started for device: {DEVICE_ID}")
+        self.logger.info(f"DisplayHQ client v{CLIENT_VERSION} started for device: {DEVICE_ID}")
         self.logger.info(f"Server URL: {SERVER_URL}")
         self.logger.info(f"Media player: {self.media_player}")
         self.logger.info(f"Rapid playlist checks every {RAPID_CHECK_INTERVAL} seconds for instant updates")
@@ -167,7 +170,8 @@ class SignageClient:
             
             data = {
                 'current_media': current_media,
-                'timestamp': datetime.now().isoformat()
+                'timestamp': datetime.now().isoformat(),
+                'client_version': CLIENT_VERSION
             }
             
             # Include TeamViewer ID if available

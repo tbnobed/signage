@@ -38,6 +38,7 @@ class Device(db.Model):
     current_media = db.Column(db.String(200))
     ip_address = db.Column(db.String(15))
     teamviewer_id = db.Column(db.String(20))  # TeamViewer ID for remote access
+    client_version = db.Column(db.String(20))  # Client software version
     pending_command = db.Column(db.String(50))  # reboot, restart_service, etc.
     command_timestamp = db.Column(db.DateTime)  # when command was issued
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
