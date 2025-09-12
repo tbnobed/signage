@@ -46,52 +46,59 @@
                     {% endif %}
                 </div>
                 <div class="card-body">
-                    <div class="mb-2">
-                        <small class="text-muted">Device ID:</small><br>
-                        <code>{{ device.device_id }}</code>
-                    </div>
-                    
-                    {% if device.teamviewer_id %}
-                    <div class="mb-2">
-                        <small class="text-muted">TeamViewer ID:</small><br>
-                        <div class="d-flex align-items-center">
-                            <code class="me-2">{{ device.teamviewer_id }}</code>
-                            <button class="btn btn-sm btn-outline-info btn-compact" 
-                                    onclick="copyToClipboard('{{ device.teamviewer_id }}')"
-                                    title="Copy TeamViewer ID">
-                                <i class="fas fa-copy"></i>
-                            </button>
+                    <!-- Device Information in 2 Columns -->
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <small class="text-muted">Device ID:</small><br>
+                                <code>{{ device.device_id }}</code>
+                            </div>
+                            
+                            {% if device.location %}
+                            <div class="mb-2">
+                                <small class="text-muted">Location:</small><br>
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ device.location }}
+                            </div>
+                            {% endif %}
+                            
+                            {% if device.last_checkin %}
+                            <div class="mb-2">
+                                <small class="text-muted">Last Check-in:</small><br>
+                                {{ device.last_checkin.strftime('%Y-%m-%d %H:%M:%S') }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-6">
+                            {% if device.teamviewer_id %}
+                            <div class="mb-2">
+                                <small class="text-muted">TeamViewer ID:</small><br>
+                                <div class="d-flex align-items-center">
+                                    <code class="me-2">{{ device.teamviewer_id }}</code>
+                                    <button class="btn btn-sm btn-outline-info btn-compact" 
+                                            onclick="copyToClipboard('{{ device.teamviewer_id }}')"
+                                            title="Copy TeamViewer ID">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if device.ip_address %}
+                            <div class="mb-2">
+                                <small class="text-muted">IP Address:</small><br>
+                                {{ device.ip_address }}
+                            </div>
+                            {% endif %}
+                            
+                            {% if device.current_media %}
+                            <div class="mb-2">
+                                <small class="text-muted">Currently Playing:</small><br>
+                                <i class="fas fa-play me-1"></i>{{ device.current_media }}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
-                    {% endif %}
-                    
-                    {% if device.location %}
-                    <div class="mb-2">
-                        <small class="text-muted">Location:</small><br>
-                        <i class="fas fa-map-marker-alt me-1"></i>{{ device.location }}
-                    </div>
-                    {% endif %}
-                    
-                    {% if device.ip_address %}
-                    <div class="mb-2">
-                        <small class="text-muted">IP Address:</small><br>
-                        {{ device.ip_address }}
-                    </div>
-                    {% endif %}
-                    
-                    {% if device.last_checkin %}
-                    <div class="mb-2">
-                        <small class="text-muted">Last Check-in:</small><br>
-                        {{ device.last_checkin.strftime('%Y-%m-%d %H:%M:%S') }}
-                    </div>
-                    {% endif %}
-                    
-                    {% if device.current_media %}
-                    <div class="mb-3">
-                        <small class="text-muted">Currently Playing:</small><br>
-                        <i class="fas fa-play me-1"></i>{{ device.current_media }}
-                    </div>
-                    {% endif %}
                     
                     <!-- Assignment Options Tabs -->
                     <ul class="nav nav-tabs nav-sm mb-3" role="tablist">
