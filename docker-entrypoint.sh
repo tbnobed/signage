@@ -134,6 +134,32 @@ with app.app_context():
     except Exception as e:
         print(f'TeamViewer ID schema check/migration info: {e}')
         # Not a critical error - might just mean tables don't exist yet
+    
+    # Add client version column for auto-update functionality
+    try:
+        # Check if client_version column exists
+        check_query = text('''
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'devices' AND column_name = 'client_version'
+        ''')
+        result = db.session.execute(check_query).fetchone()
+        
+        if not result:
+            print('Adding client version column...')
+            alter_query = text('''
+                ALTER TABLE devices 
+                ADD COLUMN client_version VARCHAR(20)
+            ''')
+            db.session.execute(alter_query)
+            db.session.commit()
+            print('Client version migration completed successfully')
+        else:
+            print('Client version column already exists')
+            
+    except Exception as e:
+        print(f'Client version schema check/migration info: {e}')
+        # Not a critical error - might just mean tables don't exist yet
 "
 
 # Check if we need to create an admin user
