@@ -1,8 +1,8 @@
-# Digital Signage Management System
+# DisplayHQ
 
 ## Overview
 
-This is a comprehensive Flask-based web application for managing digital signage displays across multiple remote locations. The system provides a centralized admin dashboard for content management and lightweight client agents that run on remote devices (Raspberry Pi, Intel NUC) to display content on connected TVs.
+This is a comprehensive Flask-based web application for managing display networks across multiple remote locations. DisplayHQ provides a centralized admin dashboard for content management and lightweight client agents that run on remote devices (Raspberry Pi, Intel NUC) to display content on connected TVs.
 
 ## System Architecture
 
