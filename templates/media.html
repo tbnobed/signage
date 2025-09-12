@@ -81,12 +81,13 @@
                     </div>
                     {% else %}
                     <div class="text-center mb-3 position-relative">
-                        <video src="{{ url_for('main.uploaded_file', filename=media.filename) }}" 
-                               class="img-fluid rounded video-thumbnail" 
+                        <video class="img-fluid rounded video-thumbnail" 
                                style="max-height: 150px; width: auto; object-fit: cover;"
                                preload="metadata"
                                muted
-                               onloadedmetadata="this.currentTime = Math.min(3, this.duration * 0.1)">
+                               data-filename="{{ media.filename }}">
+                            <source src="{{ url_for('main.uploaded_file', filename=media.filename) }}#t=1" type="video/mp4">
+                            <source src="{{ url_for('main.uploaded_file', filename=media.filename) }}" type="video/mp4">
                         </video>
                         <div class="video-overlay position-absolute top-50 start-50 translate-middle">
                             <i class="fas fa-play-circle fa-3x text-white" style="text-shadow: 0 0 10px rgba(0,0,0,0.8);"></i>
@@ -326,13 +327,34 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.video-thumbnail').forEach(video => {
         const overlay = video.nextElementSibling;
         
+        // Handle better thumbnail frame loading
+        video.addEventListener('loadedmetadata', function() {
+            // Try to seek to 1 second for better thumbnail if possible
+            if (this.seekable.length > 0 && this.duration > 2) {
+                try {
+                    this.currentTime = 1;
+                } catch (e) {
+                    console.log('Could not seek video for thumbnail:', e);
+                }
+            }
+        });
+        
+        // Handle seeking errors gracefully
+        video.addEventListener('error', function(e) {
+            console.log('Video thumbnail error:', e);
+        });
+        
         // Click overlay to play/pause video
         if (overlay) {
             overlay.style.cursor = 'pointer';
             overlay.addEventListener('click', function(e) {
                 e.preventDefault();
                 if (video.paused) {
-                    video.play();
+                    // Reset to beginning before playing
+                    video.currentTime = 0;
+                    video.play().catch(err => {
+                        console.log('Could not play video:', err);
+                    });
                     overlay.style.opacity = '0';
                 } else {
                     video.pause();
@@ -346,8 +368,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (overlay) {
                 overlay.style.opacity = '1';
             }
-            // Reset to thumbnail frame
-            video.currentTime = Math.min(3, video.duration * 0.1);
+            // Reset to thumbnail frame (1 second)
+            try {
+                this.currentTime = 1;
+            } catch (e) {
+                console.log('Could not reset thumbnail:', e);
+            }
         });
         
         // Hide overlay when playing
@@ -361,6 +387,17 @@ document.addEventListener('DOMContentLoaded', function() {
         video.addEventListener('pause', function() {
             if (overlay) {
                 overlay.style.opacity = '1';
+            }
+        });
+        
+        // Force reload if stuck on first frame
+        video.addEventListener('canplay', function() {
+            if (this.currentTime === 0 && this.duration > 2) {
+                try {
+                    this.currentTime = 1;
+                } catch (e) {
+                    // Ignore if seeking fails
+                }
             }
         });
     });

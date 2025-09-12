@@ -259,7 +259,16 @@ def delete_media(media_id):
 
 @main.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    response = send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    
+    # Add headers for better video playback support
+    if filename.lower().endswith(('.mp4', '.webm', '.avi', '.mov', '.mkv')):
+        response.headers['Accept-Ranges'] = 'bytes'
+        response.headers['Content-Type'] = 'video/mp4' if filename.lower().endswith('.mp4') else response.headers.get('Content-Type', 'video/mp4')
+        # Add cache control for better streaming performance
+        response.headers['Cache-Control'] = 'public, max-age=3600'
+    
+    return response
 
 @main.route('/playlists')
 @login_required
