@@ -1,9 +1,11 @@
 import os
 import uuid
+import re
+import mimetypes
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_from_directory, Response, abort
 from flask_login import login_required, current_user
-from werkzeug.utils import secure_filename
+from werkzeug.utils import secure_filename, safe_join
 from app import app, db
 from models import User, Device, MediaFile, Playlist, PlaylistItem, DeviceLog
 
@@ -257,15 +259,63 @@ def delete_media(media_id):
     flash('Media file deleted successfully', 'success')
     return redirect(url_for('main.media'))
 
-@main.route('/uploads/<filename>')
+@main.route('/uploads/<path:filename>')
 def uploaded_file(filename):
+    # Use safe_join to prevent path traversal attacks
+    file_path = safe_join(app.config['UPLOAD_FOLDER'], filename)
+    
+    if not file_path or not os.path.exists(file_path):
+        abort(404)
+    
+    # Handle HTTP Range requests for video streaming
+    range_header = request.headers.get('Range')
+    
+    if range_header:
+        # Parse Range header (e.g., "bytes=0-1023" or "bytes=1024-")
+        file_size = os.path.getsize(file_path)
+        range_match = re.match(r'bytes=(\d+)-(\d*)', range_header)
+        
+        if range_match:
+            start = int(range_match.group(1))
+            end = int(range_match.group(2)) if range_match.group(2) else file_size - 1
+            
+            # Ensure valid range
+            start = max(0, min(start, file_size - 1))
+            end = max(start, min(end, file_size - 1))
+            length = end - start + 1
+            
+            # Read the requested byte range
+            with open(file_path, 'rb') as f:
+                f.seek(start)
+                data = f.read(length)
+            
+            # Determine content type
+            content_type, _ = mimetypes.guess_type(file_path)
+            if not content_type:
+                if filename.lower().endswith(('.mp4', '.mov')):
+                    content_type = 'video/mp4'
+                elif filename.lower().endswith('.webm'):
+                    content_type = 'video/webm'
+                elif filename.lower().endswith('.avi'):
+                    content_type = 'video/avi'
+                else:
+                    content_type = 'application/octet-stream'
+            
+            # Create 206 Partial Content response
+            response = Response(data, 206, mimetype=content_type)
+            response.headers['Content-Range'] = f'bytes {start}-{end}/{file_size}'
+            response.headers['Accept-Ranges'] = 'bytes'
+            response.headers['Content-Length'] = str(length)
+            response.headers['Cache-Control'] = 'public, max-age=3600'
+            
+            return response
+    
+    # Fallback to normal file serving for non-range requests
     response = send_from_directory(app.config['UPLOAD_FOLDER'], filename)
     
     # Add headers for better video playback support
     if filename.lower().endswith(('.mp4', '.webm', '.avi', '.mov', '.mkv')):
         response.headers['Accept-Ranges'] = 'bytes'
-        response.headers['Content-Type'] = 'video/mp4' if filename.lower().endswith('.mp4') else response.headers.get('Content-Type', 'video/mp4')
-        # Add cache control for better streaming performance
         response.headers['Cache-Control'] = 'public, max-age=3600'
     
     return response
