@@ -460,7 +460,7 @@ def device_checkin(device_id):
 def get_client_version():
     """Get the latest client version and download information"""
     # Latest client version information
-    latest_version = "2.1.0"
+    latest_version = "2.2.0"
     
     # GitHub repository information
     github_repo = "https://github.com/tbnobed/signage.git"
@@ -479,7 +479,7 @@ def get_client_version():
         'download_url': download_base,
         'github_repo': github_repo,
         'update_available': needs_update,
-        'release_notes': 'Auto-update functionality, improved stability'
+        'release_notes': 'MPV integration for gapless video playback - eliminates flickering during loops'
     })
 
 @api.route('/devices/<device_id>/playlist-status')

@@ -5,7 +5,7 @@ Runs on Raspberry Pi or NUC devices to display media content
 """
 
 # Client version - increment when making updates
-CLIENT_VERSION = "2.1.0"
+CLIENT_VERSION = "2.2.0"
 
 import os
 import sys
