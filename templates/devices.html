@@ -50,20 +50,20 @@
                     <div class="row mb-3">
                         <div class="col-6">
                             <div class="mb-2">
-                                <small class="text-muted">Device ID:</small><br>
+                                <strong class="text-info">Device ID:</strong><br>
                                 <code>{{ device.device_id }}</code>
                             </div>
                             
                             {% if device.location %}
                             <div class="mb-2">
-                                <small class="text-muted">Location:</small><br>
+                                <strong class="text-info">Location:</strong><br>
                                 <i class="fas fa-map-marker-alt me-1"></i>{{ device.location }}
                             </div>
                             {% endif %}
                             
                             {% if device.last_checkin %}
                             <div class="mb-2">
-                                <small class="text-muted">Last Check-in:</small><br>
+                                <strong class="text-info">Last Check-in:</strong><br>
                                 {{ device.last_checkin.strftime('%Y-%m-%d %H:%M:%S') }}
                             </div>
                             {% endif %}
@@ -72,7 +72,7 @@
                         <div class="col-6">
                             {% if device.teamviewer_id %}
                             <div class="mb-2">
-                                <small class="text-muted">TeamViewer ID:</small><br>
+                                <strong class="text-info">TeamViewer ID:</strong><br>
                                 <div class="d-flex align-items-center">
                                     <code class="me-2">{{ device.teamviewer_id }}</code>
                                     <button class="btn btn-sm btn-outline-info btn-compact" 
@@ -86,14 +86,14 @@
                             
                             {% if device.ip_address %}
                             <div class="mb-2">
-                                <small class="text-muted">IP Address:</small><br>
+                                <strong class="text-info">IP Address:</strong><br>
                                 {{ device.ip_address }}
                             </div>
                             {% endif %}
                             
                             {% if device.current_media %}
                             <div class="mb-2">
-                                <small class="text-muted">Currently Playing:</small><br>
+                                <strong class="text-info">Currently Playing:</strong><br>
                                 <i class="fas fa-play me-1"></i>{{ device.current_media }}
                             </div>
                             {% endif %}
