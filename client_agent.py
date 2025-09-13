@@ -47,31 +47,47 @@ SCREEN_INDEX = int(os.environ.get('SCREEN_INDEX', '0'))  # Default to primary sc
 
 class SignageClient:
     def __init__(self):
-        self.setup_logging()
-        self.current_playlist = None
-        self.current_process = None
-        self.media_player = self.detect_media_player()
-        self.running = True
-        self.current_media_index = 0
-        self.last_media_change = datetime.now()
-        self.last_playlist_check = None  # Track when we last got playlist timestamp
-        
-        # Thread safety for concurrent access
-        self._playlist_lock = Lock()
-        self._stop_event = threading.Event()
-        
-        # Create media directory
-        Path(MEDIA_DIR).mkdir(exist_ok=True)
-        
-        self.logger.info(f"DisplayHQ client v{CLIENT_VERSION} started for device: {DEVICE_ID}")
-        self.logger.info(f"Server URL: {SERVER_URL}")
-        self.logger.info(f"Media player: {self.media_player}")
-        self.logger.info(f"Rapid playlist checks every {RAPID_CHECK_INTERVAL} seconds for instant updates")
-        
-        # Start background thread for rapid playlist checks
-        self._rapid_check_thread = threading.Thread(target=self._rapid_check_loop, daemon=True)
-        self._rapid_check_thread.start()
-        self.logger.info("Background rapid playlist checking started")
+        try:
+            self.setup_logging()
+            self.current_playlist = None
+            self.current_process = None
+            self.media_player = self.detect_media_player()
+            self.running = True
+            self.current_media_index = 0
+            self.last_media_change = datetime.now()
+            self.last_playlist_check = None  # Track when we last got playlist timestamp
+            
+            # Thread safety for concurrent access
+            self._playlist_lock = Lock()
+            self._stop_event = threading.Event()
+            
+            # Create media directory
+            Path(MEDIA_DIR).mkdir(parents=True, exist_ok=True)
+            
+            self.logger.info(f"DisplayHQ client v{CLIENT_VERSION} started for device: {DEVICE_ID}")
+            self.logger.info(f"Server URL: {SERVER_URL}")
+            self.logger.info(f"Media player: {self.media_player}")
+            
+            # Check if media player is available
+            if not self.media_player:
+                self.logger.error("No media player found! Install mpv or vlc")
+                self.send_log('error', 'No media player found! Install mpv or vlc')
+                # Continue anyway, but with warnings
+            
+            self.logger.info(f"Rapid playlist checks every {RAPID_CHECK_INTERVAL} seconds for instant updates")
+            
+            # Start background thread for rapid playlist checks
+            try:
+                self._rapid_check_thread = threading.Thread(target=self._rapid_check_loop, daemon=True)
+                self._rapid_check_thread.start()
+                self.logger.info("Background rapid playlist checking started")
+            except Exception as e:
+                self.logger.error(f"Failed to start background thread: {e}")
+                # Continue without background thread
+                
+        except Exception as e:
+            print(f"FATAL: Failed to initialize client: {e}")
+            raise
         
         # Start background thread for regular check-ins (TeamViewer ID)
         self._heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
@@ -809,10 +825,16 @@ class SignageClient:
         success = self.play_continuous_playlist(media_paths, loop=self.current_playlist.get('loop', True))
         
         if success:
-            # Keep VLC running continuously - no more stopping between videos!
-            # VLC will handle all transitions internally without visual interruptions
+            # Keep media player running - check periodically but don't block
+            # Media player will handle all transitions internally without visual interruptions
+            player_check_count = 0
             while self.running and self.current_process and self.current_process.poll() is None:
-                time.sleep(5)  # Check every 5 seconds if VLC is still running
+                time.sleep(5)  # Check every 5 seconds if player is still running
+                player_check_count += 1
+                # Prevent infinite loops - break after reasonable time if needed
+                if player_check_count > 360:  # 30 minutes max
+                    self.logger.info("Media player check timeout reached, restarting playback")
+                    break
                 # Playlist update checks will happen via background thread
             
             self.logger.info("VLC playlist process ended, restarting playback")
