@@ -47,47 +47,31 @@ SCREEN_INDEX = int(os.environ.get('SCREEN_INDEX', '0'))  # Default to primary sc
 
 class SignageClient:
     def __init__(self):
-        try:
-            self.setup_logging()
-            self.current_playlist = None
-            self.current_process = None
-            self.media_player = self.detect_media_player()
-            self.running = True
-            self.current_media_index = 0
-            self.last_media_change = datetime.now()
-            self.last_playlist_check = None  # Track when we last got playlist timestamp
-            
-            # Thread safety for concurrent access
-            self._playlist_lock = Lock()
-            self._stop_event = threading.Event()
-            
-            # Create media directory
-            Path(MEDIA_DIR).mkdir(parents=True, exist_ok=True)
-            
-            self.logger.info(f"DisplayHQ client v{CLIENT_VERSION} started for device: {DEVICE_ID}")
-            self.logger.info(f"Server URL: {SERVER_URL}")
-            self.logger.info(f"Media player: {self.media_player}")
-            
-            # Check if media player is available
-            if not self.media_player:
-                self.logger.error("No media player found! Install mpv or vlc")
-                self.send_log('error', 'No media player found! Install mpv or vlc')
-                # Continue anyway, but with warnings
-            
-            self.logger.info(f"Rapid playlist checks every {RAPID_CHECK_INTERVAL} seconds for instant updates")
-            
-            # Start background thread for rapid playlist checks
-            try:
-                self._rapid_check_thread = threading.Thread(target=self._rapid_check_loop, daemon=True)
-                self._rapid_check_thread.start()
-                self.logger.info("Background rapid playlist checking started")
-            except Exception as e:
-                self.logger.error(f"Failed to start background thread: {e}")
-                # Continue without background thread
-                
-        except Exception as e:
-            print(f"FATAL: Failed to initialize client: {e}")
-            raise
+        self.setup_logging()
+        self.current_playlist = None
+        self.current_process = None
+        self.media_player = self.detect_media_player()
+        self.running = True
+        self.current_media_index = 0
+        self.last_media_change = datetime.now()
+        self.last_playlist_check = None  # Track when we last got playlist timestamp
+        
+        # Thread safety for concurrent access
+        self._playlist_lock = Lock()
+        self._stop_event = threading.Event()
+        
+        # Create media directory
+        Path(MEDIA_DIR).mkdir(exist_ok=True)
+        
+        self.logger.info(f"DisplayHQ client v{CLIENT_VERSION} started for device: {DEVICE_ID}")
+        self.logger.info(f"Server URL: {SERVER_URL}")
+        self.logger.info(f"Media player: {self.media_player}")
+        self.logger.info(f"Rapid playlist checks every {RAPID_CHECK_INTERVAL} seconds for instant updates")
+        
+        # Start background thread for rapid playlist checks
+        self._rapid_check_thread = threading.Thread(target=self._rapid_check_loop, daemon=True)
+        self._rapid_check_thread.start()
+        self.logger.info("Background rapid playlist checking started")
         
         # Start background thread for regular check-ins (TeamViewer ID)
         self._heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
@@ -754,24 +738,136 @@ class SignageClient:
             return False
 
     def play_single_media_optimized(self, media_item):
-        """Optimized playback for single media files using detected media player (mpv preferred)"""
+        """Optimized playback for single media files (more efficient than playlist approach)"""
         try:
+            # REPLIT-FIX-MARKER: If you see this log, you have the corrected version
+            self.logger.info("🔧 REPLIT-STREAMING-FIX-ACTIVE: Using corrected streaming media handler")
+            # Debug: Log full media item structure
+            self.logger.debug(f"play_single_media_optimized received: {media_item}")
+            
             # Download the media file or get stream URL
             local_path = self.download_media(media_item)
             if not local_path:
                 self.send_log('error', f"Failed to get media path for: {media_item['original_filename']}")
                 return False
             
-            # Log what we're about to play
+            # Log what we're about to play (helps with debugging)
             if local_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
                 self.logger.info(f"Playing stream URL: {local_path}")
             else:
                 self.logger.info(f"Playing local file: {os.path.basename(local_path)}")
             
-            self.logger.info(f"Starting optimized single media playback with {self.media_player}: {media_item['original_filename']}")
+            self.logger.info(f"Starting optimized single media playback: {media_item['original_filename']}")
             
-            # Use the same seamless looping approach as play_media but with allow_loop=True
-            return self.play_media(local_path, duration=None, allow_loop=True)
+            # Kill any existing player process
+            self.stop_current_media()
+            
+            # CRITICAL: Fix X11 authorization for systemd service
+            env = os.environ.copy()
+            env['DISPLAY'] = ':0'  # Force display :0
+            
+            # FIXED: Get proper X11 authorization from logged-in user session
+            import subprocess as sp
+            try:
+                # Method 1: Get from current user's environment (most reliable)
+                user_home = os.path.expanduser('~')
+                xauth_candidates = [
+                    f'{user_home}/.Xauthority',
+                    f'{user_home}/.Xauth'
+                ]
+                
+                for xauth_path in xauth_candidates:
+                    if os.path.exists(xauth_path):
+                        env['XAUTHORITY'] = xauth_path
+                        self.logger.info(f"Found XAUTHORITY file: {xauth_path}")
+                        break
+                
+                # Method 2: If systemd service, get from active session
+                if not env.get('XAUTHORITY'):
+                    try:
+                        # Get the active session for user obtv
+                        result = sp.run(['loginctl', 'list-sessions', '--no-legend'], 
+                                      capture_output=True, text=True, timeout=5)
+                        if result.returncode == 0:
+                            for line in result.stdout.strip().split('\n'):
+                                if line and 'obtv' in line:
+                                    session_id = line.strip().split()[0]
+                                    self.logger.info(f"Found obtv session: {session_id}")
+                                    break
+                    except Exception as session_e:
+                        self.logger.debug(f"Session detection error: {session_e}")
+                
+                # Method 3: Last resort - try common locations 
+                if not env.get('XAUTHORITY'):
+                    common_xauth_paths = [
+                        f'/home/obtv/.Xauthority',
+                        f'/tmp/.X11-auth-obtv',
+                        f'/var/run/user/1000/gdm/Xauthority'
+                    ]
+                    for xauth_path in common_xauth_paths:
+                        if os.path.exists(xauth_path):
+                            env['XAUTHORITY'] = xauth_path
+                            self.logger.info(f"Using fallback XAUTHORITY: {xauth_path}")
+                            break
+                        
+            except Exception as e:
+                self.logger.error(f"X11 setup error: {e}")
+            
+            # Log current display environment for debugging
+            display_env = env.get('DISPLAY', 'not set')
+            wayland_display = env.get('WAYLAND_DISPLAY', 'not set')
+            session_type = env.get('XDG_SESSION_TYPE', 'not set')
+            xauth = env.get('XAUTHORITY', 'not set')
+            self.logger.debug(f"Display environment - DISPLAY: {display_env}, WAYLAND_DISPLAY: {wayland_display}, SESSION_TYPE: {session_type}, XAUTHORITY: {xauth}")
+            
+            # Build optimized VLC command for single media
+            command = ['vlc', '--fullscreen', '--no-osd', '--no-video-title-show']
+            
+            # Add screen targeting for multi-monitor setups
+            if SCREEN_INDEX > 0:
+                command.extend(['--qt-fullscreen-screennumber', str(SCREEN_INDEX)])
+            
+            # Single media optimization - use simpler, more reliable options
+            command.extend([
+                '--loop',             # Infinite loop for single media
+                '--no-random',        # Not needed for single file, but ensures consistency
+                '--no-qt-error-dialogs',  # No error popups
+                '--intf', 'dummy',    # No interface (more stable)
+                '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
+                '--avcodec-hw', 'none',  # Disable hardware decoding (compatibility)
+                '-v',                 # Less verbose than -vvv for single media
+            ])
+            
+            # Set image duration for images (only for local files, not streams)
+            if not local_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
+                file_ext = os.path.splitext(local_path)[1].lower()
+                if file_ext in ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']:
+                    command.extend(['--image-duration', '10'])
+            
+            # Add the media file
+            command.append(local_path)
+            
+            self.logger.info(f"Starting optimized VLC for single media: {' '.join(command)}")
+            
+            # Start VLC with debug output
+            log_file = os.path.join(MEDIA_DIR, 'vlc_single_debug.log')
+            with open(log_file, 'w') as vlc_log:
+                self.current_process = subprocess.Popen(
+                    command,
+                    stdout=vlc_log,
+                    stderr=subprocess.STDOUT,
+                    env=env
+                )
+            
+            self.logger.info(f"Optimized single media VLC started - seamless looping with X11 auth fix!")
+            
+            # Keep VLC running and monitor it
+            while self.running and self.current_process and self.current_process.poll() is None:
+                time.sleep(5)  # Check every 5 seconds if VLC is still running
+                # Rapid playlist update checks continue in background thread
+            
+            self.logger.info("Single media VLC process ended, will restart on next loop")
+            return True
             
         except Exception as e:
             self.logger.error(f"Failed to start optimized single media playback: {e}")
@@ -825,16 +921,10 @@ class SignageClient:
         success = self.play_continuous_playlist(media_paths, loop=self.current_playlist.get('loop', True))
         
         if success:
-            # Keep media player running - check periodically but don't block
-            # Media player will handle all transitions internally without visual interruptions
-            player_check_count = 0
+            # Keep VLC running continuously - no more stopping between videos!
+            # VLC will handle all transitions internally without visual interruptions
             while self.running and self.current_process and self.current_process.poll() is None:
-                time.sleep(5)  # Check every 5 seconds if player is still running
-                player_check_count += 1
-                # Prevent infinite loops - break after reasonable time if needed
-                if player_check_count > 360:  # 30 minutes max
-                    self.logger.info("Media player check timeout reached, restarting playback")
-                    break
+                time.sleep(5)  # Check every 5 seconds if VLC is still running
                 # Playlist update checks will happen via background thread
             
             self.logger.info("VLC playlist process ended, restarting playback")
