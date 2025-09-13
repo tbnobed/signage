@@ -166,6 +166,7 @@ class SignageSetup:
             'python3-pip',       # Python package manager
             'python3-requests',  # Python HTTP library
             'openssh-server',    # SSH server for remote access
+            'git',               # Git for client updates
         ]
         
         for package in packages:
