@@ -176,6 +176,19 @@ def update_device_name(device_id):
     
     return jsonify({'success': True, 'name': new_name})
 
+@main.route('/devices/<int:device_id>/update-location', methods=['POST'])
+@login_required
+def update_device_location(device_id):
+    device = Device.query.get_or_404(device_id)
+    
+    data = request.get_json()
+    new_location = data.get('location', '').strip()
+    
+    device.location = new_location if new_location else None
+    db.session.commit()
+    
+    return jsonify({'success': True, 'location': new_location})
+
 @main.route('/media')
 @login_required
 def media():

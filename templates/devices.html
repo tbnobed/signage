@@ -16,6 +16,18 @@
     max-width: 200px;
 }
 
+.device-location-display {
+    display: inline-block;
+}
+
+.location-edit-form {
+    display: block;
+}
+
+.location-edit-form input {
+    max-width: 250px;
+}
+
 .btn-link.text-info:hover {
     opacity: 0.8;
 }
@@ -90,12 +102,28 @@
                                 <code>{{ device.device_id }}</code>
                             </div>
                             
-                            {% if device.location %}
                             <div class="mb-2">
                                 <strong class="text-info">Location:</strong><br>
-                                <i class="fas fa-map-marker-alt me-1"></i>{{ device.location }}
+                                <div class="d-flex align-items-center">
+                                    <span class="device-location-display" id="location-display-{{ device.id }}">
+                                        <i class="fas fa-map-marker-alt me-1"></i>{{ device.location or 'Not set' }}
+                                    </span>
+                                    <button class="btn btn-sm btn-link text-info p-0 ms-2" onclick="editDeviceLocation({{ device.id }}, '{{ (device.location or '')|replace("'", "\\'") }}')" title="Edit location">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                                <form id="location-form-{{ device.id }}" class="location-edit-form d-none mt-1" onsubmit="saveDeviceLocation(event, {{ device.id }})">
+                                    <div class="d-flex align-items-center">
+                                        <input type="text" class="form-control form-control-sm me-2" id="location-input-{{ device.id }}" value="{{ device.location or '' }}" placeholder="Enter location">
+                                        <button type="submit" class="btn btn-sm btn-success me-1" title="Save">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEditLocation({{ device.id }})" title="Cancel">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
-                            {% endif %}
                             
                             {% if device.last_checkin %}
                             <div class="mb-2">
@@ -576,6 +604,49 @@ function saveDeviceName(event, deviceId) {
     .catch(error => {
         console.error('Error:', error);
         showAlert('Failed to update device name', 'danger');
+    });
+}
+
+// Edit device location
+function editDeviceLocation(deviceId, currentLocation) {
+    document.getElementById('location-display-' + deviceId).classList.add('d-none');
+    document.getElementById('location-form-' + deviceId).classList.remove('d-none');
+    document.getElementById('location-input-' + deviceId).focus();
+    document.getElementById('location-input-' + deviceId).select();
+}
+
+// Cancel edit location
+function cancelEditLocation(deviceId) {
+    document.getElementById('location-display-' + deviceId).classList.remove('d-none');
+    document.getElementById('location-form-' + deviceId).classList.add('d-none');
+}
+
+// Save device location
+function saveDeviceLocation(event, deviceId) {
+    event.preventDefault();
+    const newLocation = document.getElementById('location-input-' + deviceId).value.trim();
+    
+    fetch("{{ url_for('main.update_device_location', device_id=0) }}".replace('0', deviceId), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ location: newLocation })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const displayText = newLocation ? '<i class="fas fa-map-marker-alt me-1"></i>' + newLocation : '<i class="fas fa-map-marker-alt me-1"></i>Not set';
+            document.getElementById('location-display-' + deviceId).innerHTML = displayText;
+            cancelEditLocation(deviceId);
+            showAlert('Location updated successfully', 'success');
+        } else {
+            showAlert(data.error || 'Failed to update location', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Failed to update location', 'danger');
     });
 }
 
