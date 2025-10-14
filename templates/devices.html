@@ -2,6 +2,26 @@
 
 {% block title %}Devices - DisplayHQ{% endblock %}
 
+{% block extra_css %}
+<style>
+.device-name-display {
+    display: inline-block;
+}
+
+.name-edit-form {
+    display: inline-block;
+}
+
+.name-edit-form input {
+    max-width: 200px;
+}
+
+.btn-link.text-info:hover {
+    opacity: 0.8;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid my-4 fade-in">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -38,7 +58,23 @@
         <div class="col-lg-6 col-xl-4 mb-4">
             <div class="card glass hover-lift">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">{{ device.name }}</h6>
+                    <div class="d-flex align-items-center flex-grow-1">
+                        <h6 class="mb-0 device-name-display" id="name-display-{{ device.id }}">{{ device.name }}</h6>
+                        <button class="btn btn-sm btn-link text-info p-0 ms-2" onclick="editDeviceName({{ device.id }}, '{{ device.name|replace("'", "\\'") }}')" title="Edit name">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <form id="name-form-{{ device.id }}" class="name-edit-form d-none" onsubmit="saveDeviceName(event, {{ device.id }})">
+                            <div class="d-flex align-items-center">
+                                <input type="text" class="form-control form-control-sm me-2" id="name-input-{{ device.id }}" value="{{ device.name }}" required>
+                                <button type="submit" class="btn btn-sm btn-success me-1" title="Save">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEditName({{ device.id }})" title="Cancel">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                     {% if device.is_online() %}
                     <span class="status-online"><i class="fas fa-circle me-1"></i>Online</span>
                     {% else %}
@@ -494,6 +530,66 @@ function confirmDelete(deviceName, deviceId) {
     document.getElementById('deviceNameToDelete').textContent = deviceName;
     document.getElementById('deleteDeviceForm').action = "{{ url_for('main.delete_device', device_id=0) }}".replace('0', deviceId);
     new bootstrap.Modal(document.getElementById('deleteDeviceModal')).show();
+}
+
+// Edit device name
+function editDeviceName(deviceId, currentName) {
+    document.getElementById('name-display-' + deviceId).classList.add('d-none');
+    document.getElementById('name-form-' + deviceId).classList.remove('d-none');
+    document.getElementById('name-input-' + deviceId).focus();
+    document.getElementById('name-input-' + deviceId).select();
+}
+
+// Cancel edit name
+function cancelEditName(deviceId) {
+    document.getElementById('name-display-' + deviceId).classList.remove('d-none');
+    document.getElementById('name-form-' + deviceId).classList.add('d-none');
+}
+
+// Save device name
+function saveDeviceName(event, deviceId) {
+    event.preventDefault();
+    const newName = document.getElementById('name-input-' + deviceId).value.trim();
+    
+    if (!newName) {
+        showAlert('Device name cannot be empty', 'warning');
+        return;
+    }
+    
+    fetch("{{ url_for('main.update_device_name', device_id=0) }}".replace('0', deviceId), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: newName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('name-display-' + deviceId).textContent = newName;
+            cancelEditName(deviceId);
+            showAlert('Device name updated successfully', 'success');
+        } else {
+            showAlert(data.error || 'Failed to update device name', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Failed to update device name', 'danger');
+    });
+}
+
+// Show alert helper
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+    alertDiv.style.zIndex = '9999';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    setTimeout(() => alertDiv.remove(), 3000);
 }
 </script>
 {% endblock %}

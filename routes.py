@@ -160,6 +160,22 @@ def update_device(device_id):
     flash(f'Update command sent to "{device.name}". Client will update on next check-in.', 'success')
     return redirect(url_for('main.devices'))
 
+@main.route('/devices/<int:device_id>/update-name', methods=['POST'])
+@login_required
+def update_device_name(device_id):
+    device = Device.query.get_or_404(device_id)
+    
+    data = request.get_json()
+    new_name = data.get('name', '').strip()
+    
+    if not new_name:
+        return jsonify({'success': False, 'error': 'Device name cannot be empty'}), 400
+    
+    device.name = new_name
+    db.session.commit()
+    
+    return jsonify({'success': True, 'name': new_name})
+
 @main.route('/media')
 @login_required
 def media():
