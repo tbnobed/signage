@@ -5,7 +5,7 @@ Runs on Raspberry Pi or NUC devices to display media content
 """
 
 # Client version - increment when making updates
-CLIENT_VERSION = "2.4.2"  # Fixed VLC Wayland support - removed forced X11 video output
+CLIENT_VERSION = "2.4.4"  # Optimized mpv for all media types on Raspberry Pi with multi-threaded decoding
 
 import os
 import sys
@@ -128,14 +128,19 @@ class SignageClient:
             subprocess.run(['mpv', '--version'], capture_output=True, timeout=5)
             if is_rpi:
                 self.logger.info("Found mpv media player on Raspberry Pi (optimized settings)")
-                # Use Raspberry Pi specific hardware decoding
+                # Raspberry Pi: Try hardware decoding first, fall back to optimized software decoding
                 global PLAYER_COMMANDS
                 PLAYER_COMMANDS['mpv'] = [
                     'mpv', '--fs', '--no-osc', '--no-osd-bar', '--osd-level=0', '--no-terminal',
                     '--loop-playlist=inf', '--keep-open=yes', '--prefetch-playlist=yes',
                     '--cache=yes', '--cache-secs=20', '--demuxer-readahead-secs=10',
                     '--demuxer-max-bytes=500M', '--image-display-duration=10',
-                    '--vo=gpu', '--hwdec=v4l2m2m-copy'  # Raspberry Pi hardware decoding
+                    '--vo=gpu',
+                    '--hwdec=auto',  # Try hardware first
+                    '--vd-lavc-threads=4',  # Use all CPU cores for software decoding
+                    '--framedrop=vo',  # Drop frames to maintain smooth playback
+                    '--opengl-glfinish=yes',  # Better GPU sync
+                    '--opengl-swapinterval=1'  # Vsync for smooth playback
                 ]
             else:
                 self.logger.info("Found mpv media player (preferred for gapless playback)")
