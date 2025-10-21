@@ -5,7 +5,7 @@ Runs on Raspberry Pi or NUC devices to display media content
 """
 
 # Client version - increment when making updates
-CLIENT_VERSION = "2.4.0"  # Raspberry Pi VNC remote access and optimized mpv configuration
+CLIENT_VERSION = "2.4.1"  # Fixed mpv display access - removed forced DRM context
 
 import os
 import sys
@@ -129,13 +129,14 @@ class SignageClient:
             if is_rpi:
                 self.logger.info("Found mpv media player on Raspberry Pi (optimized settings)")
                 # Use better video output for Raspberry Pi - modify the global PLAYER_COMMANDS
+                # Let mpv auto-detect the best GPU context (x11/wayland/drm) instead of forcing DRM
                 global PLAYER_COMMANDS
                 PLAYER_COMMANDS['mpv'] = [
                     'mpv', '--fs', '--no-osc', '--no-osd-bar', '--osd-level=0', '--no-terminal',
                     '--loop-playlist=inf', '--keep-open=yes', '--prefetch-playlist=yes',
                     '--cache=yes', '--cache-secs=20', '--demuxer-readahead-secs=10',
                     '--demuxer-max-bytes=500M', '--image-display-duration=10',
-                    '--vo=gpu', '--hwdec=auto', '--gpu-context=drm'
+                    '--vo=gpu', '--hwdec=auto'
                 ]
             else:
                 self.logger.info("Found mpv media player (preferred for gapless playback)")

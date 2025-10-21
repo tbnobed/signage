@@ -1336,6 +1336,8 @@ Wants=network-online.target
 Type=simple
 WorkingDirectory={self.setup_dir}
 EnvironmentFile={self.config_file}
+Environment=DISPLAY=:0
+Environment=XDG_RUNTIME_DIR=/run/user/%U
 ExecStart=/usr/bin/python3 {self.client_script}
 Restart=always
 RestartSec=10
