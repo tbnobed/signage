@@ -232,6 +232,63 @@ class SignageSetup:
                 print(f"   ⚠️  Failed to install {package}")
             except subprocess.TimeoutExpired:
                 print(f"   ⏰ {package} installation timed out")
+        
+        # Enable VNC on Raspberry Pi
+        if self.is_rpi:
+            self.enable_vnc()
+    
+    def enable_vnc(self):
+        """Enable VNC server on Raspberry Pi"""
+        print("\n🖥️  Enabling VNC for remote access...")
+        
+        try:
+            # Check if raspi-config is available (Raspberry Pi OS)
+            if shutil.which('raspi-config'):
+                print("   Enabling VNC via raspi-config...")
+                # Enable VNC using raspi-config non-interactive mode
+                subprocess.run(['sudo', 'raspi-config', 'nonint', 'do_vnc', '0'], 
+                             check=True, capture_output=True, timeout=30)
+                print("   ✅ VNC enabled via raspi-config")
+            else:
+                # Manual VNC setup for Ubuntu on Raspberry Pi
+                print("   Installing VNC server...")
+                subprocess.run(['sudo', 'apt', 'install', '-y', 'tigervnc-standalone-server', 'tigervnc-common'], 
+                             check=True, capture_output=True, timeout=120)
+                print("   ✅ VNC server installed")
+                
+                # Create VNC systemd service
+                vnc_service = """[Unit]
+Description=TigerVNC server
+After=network.target
+
+[Service]
+Type=forking
+User={user}
+ExecStart=/usr/bin/vncserver :1 -geometry 1920x1080 -depth 24
+ExecStop=/usr/bin/vncserver -kill :1
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+"""
+                # Write VNC service file
+                service_path = Path('/etc/systemd/system/vncserver@.service')
+                with open(service_path, 'w') as f:
+                    f.write(vnc_service.format(user=self.target_user if self.target_user else os.getenv('USER', 'pi')))
+                
+                print("   ✅ VNC service created")
+                print("   ⚠️  Note: You'll need to set a VNC password by running 'vncpasswd' as the user")
+            
+            print("   🎉 VNC is now enabled - you can connect remotely to manage this device")
+            
+        except subprocess.CalledProcessError as e:
+            print(f"   ⚠️  Could not enable VNC automatically")
+            print(f"   You can enable it manually later with: sudo raspi-config")
+        except subprocess.TimeoutExpired:
+            print(f"   ⏰ VNC setup timed out")
+        except Exception as e:
+            print(f"   ⚠️  VNC setup error: {e}")
     
     
     def install_python_requests(self):

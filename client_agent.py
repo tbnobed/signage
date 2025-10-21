@@ -5,7 +5,7 @@ Runs on Raspberry Pi or NUC devices to display media content
 """
 
 # Client version - increment when making updates
-CLIENT_VERSION = "2.3.0"  # Raspberry Pi detection and optimized mpv configuration
+CLIENT_VERSION = "2.4.0"  # Raspberry Pi VNC remote access and optimized mpv configuration
 
 import os
 import sys
@@ -128,8 +128,9 @@ class SignageClient:
             subprocess.run(['mpv', '--version'], capture_output=True, timeout=5)
             if is_rpi:
                 self.logger.info("Found mpv media player on Raspberry Pi (optimized settings)")
-                # Use better video output for Raspberry Pi
-                MEDIA_PLAYERS['mpv'] = [
+                # Use better video output for Raspberry Pi - modify the global PLAYER_COMMANDS
+                global PLAYER_COMMANDS
+                PLAYER_COMMANDS['mpv'] = [
                     'mpv', '--fs', '--no-osc', '--no-osd-bar', '--osd-level=0', '--no-terminal',
                     '--loop-playlist=inf', '--keep-open=yes', '--prefetch-playlist=yes',
                     '--cache=yes', '--cache-secs=20', '--demuxer-readahead-secs=10',
