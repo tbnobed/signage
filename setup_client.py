@@ -68,9 +68,47 @@ class SignageSetup:
         print("It will download the latest client software and configure your system.")
         print()
         
+    def is_raspberry_pi(self):
+        """Detect if running on Raspberry Pi"""
+        try:
+            with open('/proc/cpuinfo', 'r') as f:
+                cpuinfo = f.read()
+                if 'Raspberry Pi' in cpuinfo or 'BCM' in cpuinfo:
+                    return True
+        except:
+            pass
+        
+        # Check for Raspberry Pi in device model
+        try:
+            with open('/proc/device-tree/model', 'r') as f:
+                model = f.read()
+                if 'Raspberry Pi' in model:
+                    return True
+        except:
+            pass
+        
+        # Check architecture
+        arch = platform.machine()
+        if arch.startswith('arm') or arch.startswith('aarch'):
+            # Could be Raspberry Pi, check if /boot/config.txt exists
+            if os.path.exists('/boot/config.txt') or os.path.exists('/boot/firmware/config.txt'):
+                return True
+        
+        return False
+    
     def check_system(self):
         """Check system requirements"""
         print("🔍 Checking system requirements...")
+        
+        # Detect Raspberry Pi
+        self.is_rpi = self.is_raspberry_pi()
+        if self.is_rpi:
+            print("🍓 Raspberry Pi detected!")
+            print("   Will install mpv (optimized for Raspberry Pi)")
+        else:
+            print("💻 Desktop system detected")
+            print("   Will install mpv for best performance")
+        print()
         
         # Check if running as root for systemd setup
         if os.geteuid() == 0:
@@ -101,28 +139,33 @@ class SignageSetup:
         print()
         
     def install_dependencies(self):
-        """Install required dependencies for desktop Ubuntu"""
-        print("📦 Installing dependencies for desktop Ubuntu...")
+        """Install required dependencies"""
+        if self.is_rpi:
+            print("📦 Installing dependencies for Raspberry Pi...")
+        else:
+            print("📦 Installing dependencies for desktop system...")
         
         # Check if we have sudo access
         has_sudo = self.check_sudo_access()
         if not has_sudo:
-            print("❌ This setup requires sudo access to install VLC and other packages.")
+            print("❌ This setup requires sudo access to install media player and other packages.")
             print("   Please run: sudo python3 setup_client.py")
             sys.exit(1)
         
-        # Install VLC and Python requirements
-        self.install_desktop_packages()
+        # Install packages
+        self.install_packages()
         
         # Install Python requests module 
         self.install_python_requests()
         
-        # Verify VLC installation
-        print("\n🎬 Verifying VLC installation...")
-        if shutil.which('vlc'):
-            print("   ✅ VLC media player installed")
+        # Verify media player installation
+        print("\n🎬 Verifying media player installation...")
+        if shutil.which('mpv'):
+            print("   ✅ mpv media player installed")
+        elif shutil.which('vlc'):
+            print("   ✅ VLC media player installed (fallback)")
         else:
-            print("   ❌ VLC not found after installation!")
+            print("   ❌ No media player found after installation!")
             if not self.ask_yes_no("Continue anyway?", default=False):
                 print("Setup cancelled.")
                 sys.exit(1)
@@ -148,9 +191,12 @@ class SignageSetup:
             print("   Continuing with limited functionality...")
             return False
     
-    def install_desktop_packages(self):
-        """Install packages for desktop Ubuntu"""
-        print("   Installing packages for desktop Ubuntu...")
+    def install_packages(self):
+        """Install packages based on platform"""
+        if self.is_rpi:
+            print("   Installing packages optimized for Raspberry Pi...")
+        else:
+            print("   Installing packages for desktop system...")
         
         # Update package list
         print("   Updating package list...")
@@ -160,14 +206,21 @@ class SignageSetup:
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
             print(f"   ⚠️  Package update had issues: {e}")
         
-        # Essential packages for desktop Ubuntu
+        # Essential packages - mpv works better than VLC on all platforms
         packages = [
-            'vlc',               # VLC media player
+            'mpv',               # mpv media player (best for gapless playback)
             'python3-pip',       # Python package manager
             'python3-requests',  # Python HTTP library
             'openssh-server',    # SSH server for remote access
             'git',               # Git for client updates
         ]
+        
+        # Add Raspberry Pi specific packages
+        if self.is_rpi:
+            packages.extend([
+                'libraspberrypi-bin',  # Raspberry Pi utilities
+                'mesa-utils',          # OpenGL utilities
+            ])
         
         for package in packages:
             print(f"   Installing {package}...")

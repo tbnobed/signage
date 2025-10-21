@@ -5,7 +5,7 @@ Runs on Raspberry Pi or NUC devices to display media content
 """
 
 # Client version - increment when making updates
-CLIENT_VERSION = "2.2.0"
+CLIENT_VERSION = "2.3.0"  # Raspberry Pi detection and optimized mpv configuration
 
 import os
 import sys
@@ -99,12 +99,45 @@ class SignageClient:
         )
         self.logger = logging.getLogger(__name__)
 
+    def is_raspberry_pi(self):
+        """Detect if running on Raspberry Pi"""
+        try:
+            with open('/proc/cpuinfo', 'r') as f:
+                cpuinfo = f.read()
+                if 'Raspberry Pi' in cpuinfo or 'BCM' in cpuinfo:
+                    return True
+        except:
+            pass
+        
+        try:
+            with open('/proc/device-tree/model', 'r') as f:
+                model = f.read()
+                if 'Raspberry Pi' in model:
+                    return True
+        except:
+            pass
+        
+        return False
+    
     def detect_media_player(self):
         """Detect media player: prefer mpv for gapless playback, fallback to VLC"""
+        is_rpi = self.is_raspberry_pi()
+        
         # Try mpv first (better for seamless looping)
         try:
             subprocess.run(['mpv', '--version'], capture_output=True, timeout=5)
-            self.logger.info("Found mpv media player (preferred for gapless playback)")
+            if is_rpi:
+                self.logger.info("Found mpv media player on Raspberry Pi (optimized settings)")
+                # Use better video output for Raspberry Pi
+                MEDIA_PLAYERS['mpv'] = [
+                    'mpv', '--fs', '--no-osc', '--no-osd-bar', '--osd-level=0', '--no-terminal',
+                    '--loop-playlist=inf', '--keep-open=yes', '--prefetch-playlist=yes',
+                    '--cache=yes', '--cache-secs=20', '--demuxer-readahead-secs=10',
+                    '--demuxer-max-bytes=500M', '--image-display-duration=10',
+                    '--vo=gpu', '--hwdec=auto', '--gpu-context=drm'
+                ]
+            else:
+                self.logger.info("Found mpv media player (preferred for gapless playback)")
             return 'mpv'
         except (subprocess.TimeoutExpired, FileNotFoundError):
             self.logger.info("mpv not found, trying VLC...")
@@ -112,7 +145,10 @@ class SignageClient:
         # Fallback to VLC
         try:
             subprocess.run(['vlc', '--version'], capture_output=True, timeout=5)
-            self.logger.info("Found VLC media player (fallback)")
+            if is_rpi:
+                self.logger.warning("Using VLC on Raspberry Pi - mpv is recommended for better performance")
+            else:
+                self.logger.info("Found VLC media player (fallback)")
             return 'vlc'
         except (subprocess.TimeoutExpired, FileNotFoundError):
             self.logger.error("No supported media player found! Please install mpv or VLC.")

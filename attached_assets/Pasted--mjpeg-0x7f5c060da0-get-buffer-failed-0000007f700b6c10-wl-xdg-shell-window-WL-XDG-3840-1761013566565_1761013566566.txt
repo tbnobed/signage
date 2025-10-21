@@ -1,0 +1,178 @@
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700b6c10] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700aaf80] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700aaf80] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7005a5a0] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700b6db0] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700aaf80] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f7001ed10] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700aaf80] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700ab120] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f7001ed10] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f700b84b0] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700ab120] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700594d0] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700919e0] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f7007e3d0] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700c4390] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700c4390] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700c4390] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700c4390] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f70062640] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700c4530] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700c4530] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700c4390] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f70077960] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700523e0] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f700985b0] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f70025090] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f700ab160] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f70025090] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700523e0] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700b3f10] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700b3f10] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700b3f10] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700c5180] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700b3f10] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700b3f10] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700b3f10] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700ab120] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700b1c40] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700b1c40] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error: window not available
+[0000007f7000ee10] main video output error: video output creation failed
+[0000007f5c050ac0] main decoder error: failed to create video output
+[mjpeg @ 0x7f5c060da0] get_buffer() failed
+[0000007f700b7030] wl_xdg_shell window: <<< WL XDG: 3840x2160 fs 1 standalone 0
+[0000007f78021510] xcb vout display error:^C
