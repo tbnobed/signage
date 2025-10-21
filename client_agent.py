@@ -858,61 +858,69 @@ class SignageClient:
             xauth = env.get('XAUTHORITY', 'not set')
             self.logger.debug(f"Display environment - DISPLAY: {display_env}, WAYLAND_DISPLAY: {wayland_display}, SESSION_TYPE: {session_type}, XAUTHORITY: {xauth}")
             
-            # Build optimized VLC command for single media
-            command = ['vlc', '--fullscreen', '--no-osd', '--no-video-title-show']
+            # Use the detected media player (mpv or VLC)
+            if self.media_player == 'mpv':
+                # Build mpv command for single media (uses global PLAYER_COMMANDS settings)
+                command = PLAYER_COMMANDS['mpv'].copy()
+                command.append(local_path)
+                self.logger.info(f"Starting mpv for single media: {' '.join(command)}")
+                
+            else:  # VLC
+                # Build optimized VLC command for single media
+                command = ['vlc', '--fullscreen', '--no-osd', '--no-video-title-show']
+                
+                # Add screen targeting for multi-monitor setups
+                if SCREEN_INDEX > 0:
+                    command.extend(['--qt-fullscreen-screennumber', str(SCREEN_INDEX)])
+                
+                # Single media optimization - use simpler, more reliable options
+                command.extend([
+                    '--loop',             # Infinite loop for single media
+                    '--no-random',        # Not needed for single file, but ensures consistency
+                    '--no-qt-error-dialogs',  # No error popups
+                    '--intf', 'dummy',    # No interface (more stable)
+                    '--avcodec-hw', 'none',  # Disable hardware decoding (compatibility)
+                    '-v',                 # Less verbose than -vvv for single media
+                ])
+                
+                # Auto-detect video output based on display server
+                # Don't force x11 - let VLC choose the best option for the environment
+                if wayland_display and wayland_display != 'not set':
+                    self.logger.info(f"Wayland detected ({wayland_display}) - using auto video output")
+                elif display_env and display_env != 'not set':
+                    self.logger.info(f"X11 detected ({display_env}) - using auto video output")
+                else:
+                    self.logger.warning("No display server detected - VLC may fail to display")
+                
+                # Set image duration for images (only for local files, not streams)
+                if not local_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
+                    file_ext = os.path.splitext(local_path)[1].lower()
+                    if file_ext in ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']:
+                        command.extend(['--image-duration', '10'])
+                
+                # Add the media file
+                command.append(local_path)
+                
+                self.logger.info(f"Starting VLC for single media: {' '.join(command)}")
             
-            # Add screen targeting for multi-monitor setups
-            if SCREEN_INDEX > 0:
-                command.extend(['--qt-fullscreen-screennumber', str(SCREEN_INDEX)])
-            
-            # Single media optimization - use simpler, more reliable options
-            command.extend([
-                '--loop',             # Infinite loop for single media
-                '--no-random',        # Not needed for single file, but ensures consistency
-                '--no-qt-error-dialogs',  # No error popups
-                '--intf', 'dummy',    # No interface (more stable)
-                '--avcodec-hw', 'none',  # Disable hardware decoding (compatibility)
-                '-v',                 # Less verbose than -vvv for single media
-            ])
-            
-            # Auto-detect video output based on display server
-            # Don't force x11 - let VLC choose the best option for the environment
-            if wayland_display and wayland_display != 'not set':
-                self.logger.info(f"Wayland detected ({wayland_display}) - using auto video output")
-            elif display_env and display_env != 'not set':
-                self.logger.info(f"X11 detected ({display_env}) - using auto video output")
-            else:
-                self.logger.warning("No display server detected - VLC may fail to display")
-            
-            # Set image duration for images (only for local files, not streams)
-            if not local_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
-                file_ext = os.path.splitext(local_path)[1].lower()
-                if file_ext in ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']:
-                    command.extend(['--image-duration', '10'])
-            
-            # Add the media file
-            command.append(local_path)
-            
-            self.logger.info(f"Starting optimized VLC for single media: {' '.join(command)}")
-            
-            # Start VLC with debug output
-            log_file = os.path.join(MEDIA_DIR, 'vlc_single_debug.log')
-            with open(log_file, 'w') as vlc_log:
+            # Start media player with debug output
+            log_file = os.path.join(MEDIA_DIR, f'{self.media_player}_single_debug.log')
+            with open(log_file, 'w') as player_log:
                 self.current_process = subprocess.Popen(
                     command,
-                    stdout=vlc_log,
+                    stdout=player_log,
                     stderr=subprocess.STDOUT,
                     env=env
                 )
             
-            self.logger.info(f"Optimized single media VLC started - seamless looping with X11 auth fix!")
+            self.logger.info(f"Single media {self.media_player} started - seamless looping enabled!")
             
-            # Keep VLC running and monitor it
+            # Keep player running and monitor it
             while self.running and self.current_process and self.current_process.poll() is None:
-                time.sleep(5)  # Check every 5 seconds if VLC is still running
+                time.sleep(5)  # Check every 5 seconds if player is still running
                 # Rapid playlist update checks continue in background thread
             
-            self.logger.info("Single media VLC process ended, will restart on next loop")
+            self.logger.info(f"Single media {self.media_player} process ended, will restart on next loop")
             return True
             
         except Exception as e:
