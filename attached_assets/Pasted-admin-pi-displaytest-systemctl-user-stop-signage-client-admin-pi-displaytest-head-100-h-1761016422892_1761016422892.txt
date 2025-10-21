@@ -1,0 +1,102 @@
+admin@pi-displaytest:~ $ systemctl --user stop signage-client
+admin@pi-displaytest:~ $ head -100 /home/admin/signage/client.log
+2025-10-20 10:52:16,420 - INFO - mpv not found, trying VLC...
+2025-10-20 10:52:16,500 - INFO - Found VLC media player (fallback)
+2025-10-20 10:52:16,501 - INFO - DisplayHQ client v2.2.0 started for device: p-2byq
+2025-10-20 10:52:16,501 - INFO - Server URL: https://display.obtv.io
+2025-10-20 10:52:16,501 - INFO - Media player: vlc
+2025-10-20 10:52:16,501 - INFO - Rapid playlist checks every 2 seconds for instant updates
+2025-10-20 10:52:16,502 - INFO - Background rapid playlist checking started
+2025-10-20 10:52:16,503 - INFO - Background heartbeat checking started
+2025-10-20 10:52:16,503 - INFO - Sending initial check-in with TeamViewer ID...
+2025-10-20 10:52:16,524 - INFO - TeamViewer sudo failed (returncode 1): sudo: /usr/bin/teamviewer: command not found
+2025-10-20 10:52:16,529 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:16,705 - DEBUG - https://display.obtv.io:443 "POST /api/devices/p-2byq/checkin HTTP/1.1" 200 35
+2025-10-20 10:52:16,706 - DEBUG - Checkin successful: {'playlist_id': None, 'status': 'ok'}
+2025-10-20 10:52:16,706 - INFO - Forcing initial playlist fetch on startup...
+2025-10-20 10:52:16,708 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:16,839 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist HTTP/1.1" 200 18
+2025-10-20 10:52:16,840 - INFO - Playlist received: None
+2025-10-20 10:52:16,841 - INFO - Starting immediate playback of new playlist
+2025-10-20 10:52:16,843 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:17,036 - DEBUG - https://display.obtv.io:443 "POST /api/devices/p-2byq/logs HTTP/1.1" 200 16
+2025-10-20 10:52:17,057 - INFO - TeamViewer sudo failed (returncode 1): sudo: /usr/bin/teamviewer: command not found
+2025-10-20 10:52:17,059 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:17,201 - DEBUG - https://display.obtv.io:443 "POST /api/devices/p-2byq/checkin HTTP/1.1" 200 35
+2025-10-20 10:52:17,202 - DEBUG - Checkin successful: {'playlist_id': None, 'status': 'ok'}
+2025-10-20 10:52:17,204 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:17,339 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist HTTP/1.1" 200 18
+2025-10-20 10:52:17,340 - INFO - Playlist received: None
+2025-10-20 10:52:17,340 - INFO - Starting immediate playback of new playlist
+2025-10-20 10:52:17,341 - DEBUG - No playlist or empty playlist
+2025-10-20 10:52:18,502 - INFO - Running rapid playlist check (background thread)...
+2025-10-20 10:52:18,502 - DEBUG - Checking playlist status...
+2025-10-20 10:52:18,504 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:18,660 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist-status HTTP/1.1" 200 41
+2025-10-20 10:52:18,661 - DEBUG - Current playlist: None, Server playlist: None, Current timestamp: None, Server timestamp: None
+2025-10-20 10:52:18,662 - INFO - Playlist update detected - stopping current media and fetching new playlist
+2025-10-20 10:52:18,663 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:18,814 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist HTTP/1.1" 200 18
+2025-10-20 10:52:18,815 - INFO - Playlist received: None
+2025-10-20 10:52:18,815 - INFO - Starting immediate playback of new playlist
+2025-10-20 10:52:20,817 - INFO - Running rapid playlist check (background thread)...
+2025-10-20 10:52:20,817 - DEBUG - Checking playlist status...
+2025-10-20 10:52:20,819 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:20,985 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist-status HTTP/1.1" 200 41
+2025-10-20 10:52:20,987 - DEBUG - Current playlist: None, Server playlist: None, Current timestamp: None, Server timestamp: None
+2025-10-20 10:52:20,987 - INFO - Playlist update detected - stopping current media and fetching new playlist
+2025-10-20 10:52:20,991 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:21,103 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist HTTP/1.1" 200 18
+2025-10-20 10:52:21,105 - INFO - Playlist received: None
+2025-10-20 10:52:21,105 - INFO - Starting immediate playback of new playlist
+2025-10-20 10:52:23,107 - INFO - Running rapid playlist check (background thread)...
+2025-10-20 10:52:23,108 - DEBUG - Checking playlist status...
+2025-10-20 10:52:23,112 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:23,307 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist-status HTTP/1.1" 200 41
+2025-10-20 10:52:23,309 - DEBUG - Current playlist: None, Server playlist: None, Current timestamp: None, Server timestamp: None
+2025-10-20 10:52:23,309 - INFO - Playlist update detected - stopping current media and fetching new playlist
+2025-10-20 10:52:23,314 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:23,463 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist HTTP/1.1" 200 18
+2025-10-20 10:52:23,465 - INFO - Playlist received: None
+2025-10-20 10:52:23,466 - INFO - Starting immediate playback of new playlist
+2025-10-20 10:52:25,468 - INFO - Running rapid playlist check (background thread)...
+2025-10-20 10:52:25,469 - DEBUG - Checking playlist status...
+2025-10-20 10:52:25,473 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:25,643 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist-status HTTP/1.1" 200 41
+2025-10-20 10:52:25,645 - DEBUG - Current playlist: None, Server playlist: None, Current timestamp: None, Server timestamp: None
+2025-10-20 10:52:25,646 - INFO - Playlist update detected - stopping current media and fetching new playlist
+2025-10-20 10:52:25,649 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:25,807 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist HTTP/1.1" 200 18
+2025-10-20 10:52:25,809 - INFO - Playlist received: None
+2025-10-20 10:52:25,810 - INFO - Starting immediate playback of new playlist
+2025-10-20 10:52:27,341 - DEBUG - No playlist or empty playlist
+2025-10-20 10:52:27,812 - INFO - Running rapid playlist check (background thread)...
+2025-10-20 10:52:27,812 - DEBUG - Checking playlist status...
+2025-10-20 10:52:27,816 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:27,963 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist-status HTTP/1.1" 200 41
+2025-10-20 10:52:27,965 - DEBUG - Current playlist: None, Server playlist: None, Current timestamp: None, Server timestamp: None
+2025-10-20 10:52:27,965 - INFO - Playlist update detected - stopping current media and fetching new playlist
+2025-10-20 10:52:27,969 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:28,131 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist HTTP/1.1" 200 18
+2025-10-20 10:52:28,133 - INFO - Playlist received: None
+2025-10-20 10:52:28,133 - INFO - Starting immediate playback of new playlist
+2025-10-20 10:52:29,050 - INFO - Shutdown signal received
+2025-10-20 10:52:37,342 - INFO - Signage client stopped
+2025-10-20 10:52:37,346 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 10:52:37,522 - DEBUG - https://display.obtv.io:443 "POST /api/devices/p-2byq/logs HTTP/1.1" 200 16
+2025-10-20 11:02:05,113 - INFO - mpv not found, trying VLC...
+2025-10-20 11:02:05,190 - INFO - Found VLC media player (fallback)
+2025-10-20 11:02:05,191 - INFO - DisplayHQ client v2.2.0 started for device: p-2byq
+2025-10-20 11:02:05,191 - INFO - Server URL: https://display.obtv.io
+2025-10-20 11:02:05,191 - INFO - Media player: vlc
+2025-10-20 11:02:05,191 - INFO - Rapid playlist checks every 2 seconds for instant updates
+2025-10-20 11:02:05,192 - INFO - Background rapid playlist checking started
+2025-10-20 11:02:05,192 - INFO - Background heartbeat checking started
+2025-10-20 11:02:05,192 - INFO - Sending initial check-in with TeamViewer ID...
+2025-10-20 11:02:05,213 - INFO - TeamViewer sudo failed (returncode 1): sudo: /usr/bin/teamviewer: command not found
+2025-10-20 11:02:05,218 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 11:02:05,347 - DEBUG - https://display.obtv.io:443 "POST /api/devices/p-2byq/checkin HTTP/1.1" 200 35
+2025-10-20 11:02:05,348 - DEBUG - Checkin successful: {'playlist_id': None, 'status': 'ok'}
+2025-10-20 11:02:05,348 - INFO - Forcing initial playlist fetch on startup...
+2025-10-20 11:02:05,350 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 11:02:05,515 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist HTTP/1.1" 200 391
