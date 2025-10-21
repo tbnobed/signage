@@ -1,0 +1,76 @@
+admin@pi-displaytest:~ $ tail -50 /home/admin/signage/client.log
+2025-10-20 20:49:01,245 - INFO - Running rapid playlist check (background thread)...
+2025-10-20 20:49:01,248 - DEBUG - Checking playlist status...
+2025-10-20 20:49:01,251 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 20:49:01,453 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist-status HTTP/1.1" 200 64
+2025-10-20 20:49:01,454 - DEBUG - Current playlist: -19, Server playlist: -19, Current timestamp: 2025-10-21T03:14:34.712287, Server timestamp: 2025-10-21T03:14:34.712287
+2025-10-20 20:49:03,456 - INFO - Running rapid playlist check (background thread)...
+2025-10-20 20:49:03,456 - DEBUG - Checking playlist status...
+2025-10-20 20:49:03,458 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 20:49:03,582 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist-status HTTP/1.1" 200 64
+2025-10-20 20:49:03,583 - DEBUG - Current playlist: -19, Server playlist: -19, Current timestamp: 2025-10-21T03:14:34.712287, Server timestamp: 2025-10-21T03:14:34.712287
+2025-10-20 20:49:05,585 - INFO - Running rapid playlist check (background thread)...
+2025-10-20 20:49:05,585 - DEBUG - Checking playlist status...
+2025-10-20 20:49:05,588 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 20:49:05,725 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist-status HTTP/1.1" 200 64
+2025-10-20 20:49:05,726 - DEBUG - Current playlist: -19, Server playlist: -19, Current timestamp: 2025-10-21T03:14:34.712287, Server timestamp: 2025-10-21T03:14:34.712287
+2025-10-20 20:49:07,728 - INFO - Running rapid playlist check (background thread)...
+2025-10-20 20:49:07,728 - DEBUG - Checking playlist status...
+2025-10-20 20:49:07,730 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 20:49:07,911 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist-status HTTP/1.1" 200 64
+2025-10-20 20:49:07,913 - DEBUG - Current playlist: -19, Server playlist: -19, Current timestamp: 2025-10-21T03:14:34.712287, Server timestamp: 2025-10-21T03:14:34.712287
+2025-10-20 20:49:09,914 - INFO - Running rapid playlist check (background thread)...
+2025-10-20 20:49:09,914 - DEBUG - Checking playlist status...
+2025-10-20 20:49:09,916 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 20:49:10,081 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist-status HTTP/1.1" 200 64
+2025-10-20 20:49:10,083 - DEBUG - Current playlist: -19, Server playlist: -19, Current timestamp: 2025-10-21T03:14:34.712287, Server timestamp: 2025-10-21T03:14:34.712287
+2025-10-20 20:49:12,084 - INFO - Running rapid playlist check (background thread)...
+2025-10-20 20:49:12,085 - DEBUG - Checking playlist status...
+2025-10-20 20:49:12,086 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 20:49:12,239 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist-status HTTP/1.1" 200 64
+2025-10-20 20:49:12,240 - DEBUG - Current playlist: -19, Server playlist: -19, Current timestamp: 2025-10-21T03:14:34.712287, Server timestamp: 2025-10-21T03:14:34.712287
+2025-10-20 20:49:14,242 - INFO - Running rapid playlist check (background thread)...
+2025-10-20 20:49:14,242 - DEBUG - Checking playlist status...
+2025-10-20 20:49:14,244 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 20:49:14,360 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist-status HTTP/1.1" 200 64
+2025-10-20 20:49:14,362 - DEBUG - Current playlist: -19, Server playlist: -19, Current timestamp: 2025-10-21T03:14:34.712287, Server timestamp: 2025-10-21T03:14:34.712287
+2025-10-20 20:49:16,363 - INFO - Running rapid playlist check (background thread)...
+2025-10-20 20:49:16,364 - DEBUG - Checking playlist status...
+2025-10-20 20:49:16,366 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 20:49:16,525 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist-status HTTP/1.1" 200 64
+2025-10-20 20:49:16,527 - DEBUG - Current playlist: -19, Server playlist: -19, Current timestamp: 2025-10-21T03:14:34.712287, Server timestamp: 2025-10-21T03:14:34.712287
+2025-10-20 20:49:18,528 - INFO - Running rapid playlist check (background thread)...
+2025-10-20 20:49:18,529 - DEBUG - Checking playlist status...
+2025-10-20 20:49:18,530 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 20:49:18,703 - DEBUG - https://display.obtv.io:443 "GET /api/devices/p-2byq/playlist-status HTTP/1.1" 200 64
+2025-10-20 20:49:18,704 - DEBUG - Current playlist: -19, Server playlist: -19, Current timestamp: 2025-10-21T03:14:34.712287, Server timestamp: 2025-10-21T03:14:34.712287
+2025-10-20 20:49:20,322 - INFO - Shutdown signal received
+2025-10-20 20:49:24,155 - INFO - Single media mpv process ended, will restart on next loop
+2025-10-20 20:49:24,156 - INFO - Signage client stopped
+2025-10-20 20:49:24,157 - DEBUG - Starting new HTTPS connection (1): display.obtv.io:443
+2025-10-20 20:49:24,285 - DEBUG - https://display.obtv.io:443 "POST /api/devices/p-2byq/logs HTTP/1.1" 200 16
+admin@pi-displaytest:~ $ grep -E "Starting playback|play_media|mpv|Downloaded|Media file" /home/admin/signage/client.log | tail -50
+2025-10-20 10:52:16,420 - INFO - mpv not found, trying VLC...
+2025-10-20 11:02:05,113 - INFO - mpv not found, trying VLC...
+2025-10-20 11:02:49,939 - INFO - Downloaded: a96b37f9ae444dbfb1123416b638f18a.mov
+2025-10-20 20:07:07,204 - INFO - Found mpv media player on Raspberry Pi (optimized settings)
+2025-10-20 20:07:07,206 - INFO - Media player: mpv
+2025-10-20 20:11:54,336 - INFO - Found mpv media player on Raspberry Pi (optimized settings)
+2025-10-20 20:11:54,337 - INFO - Media player: mpv
+2025-10-20 20:14:46,074 - INFO - Found mpv media player on Raspberry Pi (optimized settings)
+2025-10-20 20:14:46,075 - INFO - Media player: mpv
+2025-10-20 20:15:47,919 - INFO - Found mpv media player on Raspberry Pi (optimized settings)
+2025-10-20 20:15:47,920 - INFO - Media player: mpv
+2025-10-20 20:26:01,722 - INFO - Found mpv media player on Raspberry Pi (optimized settings)
+2025-10-20 20:26:01,723 - INFO - Media player: mpv
+2025-10-20 20:37:09,917 - INFO - Found mpv media player on Raspberry Pi (optimized settings)
+2025-10-20 20:37:09,918 - INFO - Media player: mpv
+2025-10-20 20:37:10,769 - INFO - Starting mpv for single media: mpv --fs --no-osc --no-osd-bar --osd-level=0 --no-terminal --loop-playlist=inf --keep-open=yes --prefetch-playlist=yes --cache=yes --cache-secs=20 --demuxer-readahead-secs=10 --demuxer-max-bytes=500M --image-display-duration=10 --vo=gpu --hwdec=auto /home/admin/signage/media/a96b37f9ae444dbfb1123416b638f18a.mov
+2025-10-20 20:37:10,770 - INFO - Single media mpv started - seamless looping enabled!
+2025-10-20 20:38:15,773 - INFO - Single media mpv process ended, will restart on next loop
+2025-10-20 20:48:48,371 - INFO - Found mpv media player on Raspberry Pi (optimized settings)
+2025-10-20 20:48:48,373 - INFO - Media player: mpv
+2025-10-20 20:48:49,151 - INFO - Starting mpv for single media: mpv --fs --no-osc --no-osd-bar --osd-level=0 --no-terminal --loop-playlist=inf --keep-open=yes --prefetch-playlist=yes --cache=yes --cache-secs=20 --demuxer-readahead-secs=10 --demuxer-max-bytes=500M --image-display-duration=10 --vo=gpu --hwdec=auto /home/admin/signage/media/a96b37f9ae444dbfb1123416b638f18a.mov
+2025-10-20 20:48:49,152 - INFO - Single media mpv started - seamless looping enabled!
+2025-10-20 20:49:24,155 - INFO - Single media mpv process ended, will restart on next loop
+admin@pi-displaytest:~ $
