@@ -128,13 +128,14 @@ class SignageClient:
             subprocess.run(['mpv', '--version'], capture_output=True, timeout=5)
             if is_rpi:
                 self.logger.info("Found mpv media player on Raspberry Pi (optimized settings)")
-                # Raspberry Pi: Optimized for both hardware and software decoding in user session
+                # Raspberry Pi: Use X11/Wayland output (avoid DRM permission issues)
                 global PLAYER_COMMANDS
                 PLAYER_COMMANDS['mpv'] = [
                     'mpv', '--fs', '--no-osc', '--no-osd-bar', '--osd-level=0', '--no-terminal',
                     '--loop-playlist=inf', '--keep-open=yes', '--prefetch-playlist=yes',
                     '--cache=yes', '--cache-secs=20', '--demuxer-readahead-secs=10',
                     '--demuxer-max-bytes=500M', '--image-display-duration=10',
+                    '--gpu-context=wayland,x11egl,x11',  # Prefer Wayland/X11, avoid DRM
                     '--hwdec=auto',  # Try hardware decoding
                     '--vd-lavc-threads=4',  # Multi-threaded software decoding fallback
                     '--framedrop=vo',  # Intelligent frame dropping
