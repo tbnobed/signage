@@ -1338,6 +1338,7 @@ WorkingDirectory={self.setup_dir}
 EnvironmentFile={self.config_file}
 Environment=DISPLAY=:0
 Environment=XDG_RUNTIME_DIR=/run/user/%U
+Environment=WAYLAND_DISPLAY=wayland-0
 ExecStart=/usr/bin/python3 {self.client_script}
 Restart=always
 RestartSec=10
