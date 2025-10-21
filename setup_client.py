@@ -943,7 +943,7 @@ Comment=Apply kiosk mode settings on login
                                 if '[daemon]' in updated_config:
                                     # Insert after [daemon] line
                                     subprocess.run(['sudo', 'sed', '-i', 
-                                                  '/^\[daemon\]/a WaylandEnable=false', 
+                                                  r'/^\[daemon\]/a WaylandEnable=false', 
                                                   gdm_config_path], 
                                                  check=True, timeout=10)
                                 else:
