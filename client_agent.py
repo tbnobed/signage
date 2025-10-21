@@ -139,7 +139,9 @@ class SignageClient:
                     '--hwdec=auto',  # Try hardware decoding
                     '--vd-lavc-threads=4',  # Multi-threaded software decoding fallback
                     '--framedrop=vo',  # Intelligent frame dropping
-                    '--video-sync=display-resample'  # Smooth playback sync
+                    '--video-sync=display-resample',  # Smooth playback sync
+                    '--video-unscaled=no',  # Scale video to fit screen
+                    '--panscan=1.0'  # Fill entire screen
                 ]
             else:
                 self.logger.info("Found mpv media player (preferred for gapless playback)")
