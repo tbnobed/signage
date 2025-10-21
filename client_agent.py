@@ -5,7 +5,7 @@ Runs on Raspberry Pi or NUC devices to display media content
 """
 
 # Client version - increment when making updates
-CLIENT_VERSION = "2.4.1"  # Fixed mpv display access - removed forced DRM context
+CLIENT_VERSION = "2.4.2"  # Fixed VLC Wayland support - removed forced X11 video output
 
 import os
 import sys
@@ -681,10 +681,10 @@ class SignageClient:
                     '--no-random',        # Play in order
                     '--no-qt-error-dialogs',  # No error popups
                     '--intf', 'dummy',    # No interface (more stable)
-                    '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
                     '--avcodec-hw', 'none',  # Disable hardware decoding (compatible parameter)
                     '-vvv',               # Verbose logging to see VLC errors
                 ])
+                # Let VLC auto-detect video output (works with both X11 and Wayland)
                 
                 # Add the playlist file
                 command.append(playlist_file)
@@ -871,10 +871,18 @@ class SignageClient:
                 '--no-random',        # Not needed for single file, but ensures consistency
                 '--no-qt-error-dialogs',  # No error popups
                 '--intf', 'dummy',    # No interface (more stable)
-                '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
                 '--avcodec-hw', 'none',  # Disable hardware decoding (compatibility)
                 '-v',                 # Less verbose than -vvv for single media
             ])
+            
+            # Auto-detect video output based on display server
+            # Don't force x11 - let VLC choose the best option for the environment
+            if wayland_display and wayland_display != 'not set':
+                self.logger.info(f"Wayland detected ({wayland_display}) - using auto video output")
+            elif display_env and display_env != 'not set':
+                self.logger.info(f"X11 detected ({display_env}) - using auto video output")
+            else:
+                self.logger.warning("No display server detected - VLC may fail to display")
             
             # Set image duration for images (only for local files, not streams)
             if not local_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
