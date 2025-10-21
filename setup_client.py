@@ -630,73 +630,76 @@ LOG_FILE={self.setup_dir}/client.log
             print("   Using default background")
             background_path = None
         
-        # Configure GNOME settings for kiosk mode
-        gsettings_commands = [
-            # Disable all notifications
-            "gsettings set org.gnome.desktop.notifications show-banners false",
-            "gsettings set org.gnome.desktop.notifications show-in-lock-screen false",
+        # Configure GNOME settings for kiosk mode (only if GNOME is installed)
+        if shutil.which('gsettings'):
+            gsettings_commands = [
+                # Disable all notifications
+                "gsettings set org.gnome.desktop.notifications show-banners false",
+                "gsettings set org.gnome.desktop.notifications show-in-lock-screen false",
+                
+                # Power settings - never suspend, never turn off screen
+                "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing'",
+                "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 'nothing'",
+                "gsettings set org.gnome.desktop.session idle-delay 0",
+                
+                # Screen saver settings
+                "gsettings set org.gnome.desktop.screensaver lock-enabled false",
+                "gsettings set org.gnome.desktop.screensaver idle-activation-enabled false",
+                
+                # Disable automatic updates notifications
+                "gsettings set org.gnome.software download-updates false",
+                "gsettings set org.gnome.software download-updates-notify false",
+                
+                # Hide desktop icons and taskbar auto-hide for cleaner kiosk look
+                "gsettings set org.gnome.desktop.background show-desktop-icons false",
+                "gsettings set org.gnome.shell.extensions.dash-to-dock autohide true",
+                "gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false",
+                
+                # Disable screen lock
+                "gsettings set org.gnome.desktop.lockdown disable-lock-screen true",
+            ]
             
-            # Power settings - never suspend, never turn off screen
-            "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing'",
-            "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 'nothing'",
-            "gsettings set org.gnome.desktop.session idle-delay 0",
+            # Set background if download was successful
+            if background_path and background_path.exists():
+                gsettings_commands.extend([
+                    f"gsettings set org.gnome.desktop.background picture-uri 'file://{background_path}'",
+                    f"gsettings set org.gnome.desktop.background picture-uri-dark 'file://{background_path}'",
+                    "gsettings set org.gnome.desktop.background picture-options 'centered'",
+                    "gsettings set org.gnome.desktop.background primary-color '#000000'",
+                ])
             
-            # Screen saver settings
-            "gsettings set org.gnome.desktop.screensaver lock-enabled false",
-            "gsettings set org.gnome.desktop.screensaver idle-activation-enabled false",
-            
-            # Disable automatic updates notifications
-            "gsettings set org.gnome.software download-updates false",
-            "gsettings set org.gnome.software download-updates-notify false",
-            
-            # Hide desktop icons and taskbar auto-hide for cleaner kiosk look
-            "gsettings set org.gnome.desktop.background show-desktop-icons false",
-            "gsettings set org.gnome.shell.extensions.dash-to-dock autohide true",
-            "gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false",
-            
-            # Disable screen lock
-            "gsettings set org.gnome.desktop.lockdown disable-lock-screen true",
-        ]
-        
-        # Set background if download was successful
-        if background_path and background_path.exists():
-            gsettings_commands.extend([
-                f"gsettings set org.gnome.desktop.background picture-uri 'file://{background_path}'",
-                f"gsettings set org.gnome.desktop.background picture-uri-dark 'file://{background_path}'",
-                "gsettings set org.gnome.desktop.background picture-options 'centered'",
-                "gsettings set org.gnome.desktop.background primary-color '#000000'",
-            ])
-        
-        # Execute gsettings commands
-        print("   ⚙️  Configuring GNOME settings...")
-        for cmd in gsettings_commands:
-            try:
-                if os.geteuid() == 0:  # Running as root, execute as target user
-                    import pwd
-                    user_uid = pwd.getpwnam(username).pw_uid
-                    user_env = {
-                        'XDG_RUNTIME_DIR': f'/run/user/{user_uid}',
-                        'HOME': user_home,
-                        'USER': username,
-                        'DISPLAY': ':0',  # Ensure we can access the display
-                        'DBUS_SESSION_BUS_ADDRESS': f'unix:path=/run/user/{user_uid}/bus'
-                    }
-                    
-                    subprocess.run(['sudo', '-u', username] + 
-                                 [f'{k}={v}' for k, v in user_env.items()] +
-                                 cmd.split(), 
-                                 check=True, capture_output=True, 
-                                 env={**os.environ, **user_env}, timeout=10)
-                else:
-                    # Running as regular user
-                    subprocess.run(cmd.split(), check=True, capture_output=True, timeout=10)
-                    
-            except subprocess.CalledProcessError as e:
-                print(f"   ⚠️  Warning: Failed to execute: {cmd}")
-            except subprocess.TimeoutExpired:
-                print(f"   ⚠️  Warning: Timeout executing: {cmd}")
-            except Exception as e:
-                print(f"   ⚠️  Warning: Error with {cmd}: {e}")
+            # Execute gsettings commands
+            print("   ⚙️  Configuring GNOME settings...")
+            for cmd in gsettings_commands:
+                try:
+                    if os.geteuid() == 0:  # Running as root, execute as target user
+                        import pwd
+                        user_uid = pwd.getpwnam(username).pw_uid
+                        user_env = {
+                            'XDG_RUNTIME_DIR': f'/run/user/{user_uid}',
+                            'HOME': user_home,
+                            'USER': username,
+                            'DISPLAY': ':0',  # Ensure we can access the display
+                            'DBUS_SESSION_BUS_ADDRESS': f'unix:path=/run/user/{user_uid}/bus'
+                        }
+                        
+                        subprocess.run(['sudo', '-u', username] + 
+                                     [f'{k}={v}' for k, v in user_env.items()] +
+                                     cmd.split(), 
+                                     check=True, capture_output=True, 
+                                     env={**os.environ, **user_env}, timeout=10)
+                    else:
+                        # Running as regular user
+                        subprocess.run(cmd.split(), check=True, capture_output=True, timeout=10)
+                        
+                except subprocess.CalledProcessError as e:
+                    print(f"   ⚠️  Warning: Failed to execute: {cmd}")
+                except subprocess.TimeoutExpired:
+                    print(f"   ⚠️  Warning: Timeout executing: {cmd}")
+                except Exception as e:
+                    print(f"   ⚠️  Warning: Error with {cmd}: {e}")
+        else:
+            print("   💡 GNOME not detected, skipping GNOME-specific settings")
         
         # Configure additional power management settings via systemd
         print("   🔋 Configuring power management...")
@@ -945,14 +948,14 @@ Comment=Apply kiosk mode settings on login
                                     subprocess.run(['sudo', 'sed', '-i', 
                                                   r'/^\[daemon\]/a WaylandEnable=false', 
                                                   gdm_config_path], 
-                                                 check=True, timeout=10)
+                                                 capture_output=True, timeout=10)
                                 else:
                                     # Add [daemon] section with WaylandEnable=false
                                     with open('/tmp/gdm_append.txt', 'w') as f:
                                         f.write('\n[daemon]\nWaylandEnable=false\n')
                                     subprocess.run(['sudo', 'tee', '-a', gdm_config_path], 
                                                  stdin=open('/tmp/gdm_append.txt', 'r'),
-                                                 check=True, timeout=10)
+                                                 capture_output=True, timeout=10)
                                     os.remove('/tmp/gdm_append.txt')
                             
                             print("   ✅ Wayland disabled, X11 will be used after reboot")
@@ -973,15 +976,18 @@ Comment=Apply kiosk mode settings on login
                         
                 except Exception as e:
                     print(f"   ⚠️  Display server config error: {e}")
-                    # Fallback - try direct file modification
-                    try:
-                        print("   🔄 Trying fallback configuration method...")
-                        subprocess.run(['sudo', 'bash', '-c', 
-                                      'echo -e "\\n[daemon]\\nWaylandEnable=false" >> /etc/gdm3/custom.conf'], 
-                                     check=True, timeout=10)
-                        print("   ✅ Fallback configuration applied")
-                    except Exception as fallback_e:
-                        print(f"   ❌ Fallback configuration also failed: {fallback_e}")
+                    # Fallback - try direct file modification only if GDM exists
+                    if os.path.exists('/etc/gdm3/custom.conf'):
+                        try:
+                            print("   🔄 Trying fallback configuration method...")
+                            subprocess.run(['sudo', 'bash', '-c', 
+                                          'echo -e "\\n[daemon]\\nWaylandEnable=false" >> /etc/gdm3/custom.conf'], 
+                                         capture_output=True, timeout=10)
+                            print("   ✅ Fallback configuration applied")
+                        except Exception as fallback_e:
+                            print(f"   ⚠️  Fallback configuration failed: {fallback_e}")
+                    else:
+                        print("   💡 GDM not installed, skipping Wayland configuration")
                 
                 # Step 3: Set TeamViewer password (prompt user for security)
                 print("   🔐 Setting up TeamViewer unattended access...")
