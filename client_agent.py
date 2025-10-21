@@ -128,15 +128,14 @@ class SignageClient:
             subprocess.run(['mpv', '--version'], capture_output=True, timeout=5)
             if is_rpi:
                 self.logger.info("Found mpv media player on Raspberry Pi (optimized settings)")
-                # Use better video output for Raspberry Pi - modify the global PLAYER_COMMANDS
-                # Let mpv auto-detect the best GPU context (x11/wayland/drm) instead of forcing DRM
+                # Use Raspberry Pi specific hardware decoding
                 global PLAYER_COMMANDS
                 PLAYER_COMMANDS['mpv'] = [
                     'mpv', '--fs', '--no-osc', '--no-osd-bar', '--osd-level=0', '--no-terminal',
                     '--loop-playlist=inf', '--keep-open=yes', '--prefetch-playlist=yes',
                     '--cache=yes', '--cache-secs=20', '--demuxer-readahead-secs=10',
                     '--demuxer-max-bytes=500M', '--image-display-duration=10',
-                    '--vo=gpu', '--hwdec=auto'
+                    '--vo=gpu', '--hwdec=v4l2m2m-copy'  # Raspberry Pi hardware decoding
                 ]
             else:
                 self.logger.info("Found mpv media player (preferred for gapless playback)")
