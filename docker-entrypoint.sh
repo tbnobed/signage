@@ -3,16 +3,34 @@ set -e
 
 # Wait for database to be ready
 echo "Waiting for database to be ready..."
-while ! pg_isready -h db -p 5432 -U signage_user -d signage_db; do
+until pg_isready -h db -p 5432 -U signage_user -d signage_db > /dev/null 2>&1; do
     echo "Database not ready, waiting..."
     sleep 2
 done
 
 echo "Database is ready!"
 
-# Give PostgreSQL a moment to fully initialize for application connections
+# Give PostgreSQL additional time to fully initialize for application connections
 echo "Waiting for PostgreSQL to be fully ready for connections..."
-sleep 3
+sleep 5
+
+# Test actual database connection before proceeding
+echo "Testing database connection..."
+export PGPASSWORD="${POSTGRES_PASSWORD:-signage_pass}"
+max_retries=10
+retry_count=0
+until psql -h db -U signage_user -d signage_db -c "SELECT 1" > /dev/null 2>&1; do
+    retry_count=$((retry_count + 1))
+    if [ $retry_count -ge $max_retries ]; then
+        echo "Failed to connect to database after $max_retries attempts"
+        exit 1
+    fi
+    echo "Database connection test failed, retrying ($retry_count/$max_retries)..."
+    sleep 2
+done
+unset PGPASSWORD
+
+echo "Database connection verified!"
 
 # Ensure upload directories exist
 echo "Setting up upload directories..."
