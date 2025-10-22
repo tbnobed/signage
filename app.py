@@ -26,6 +26,7 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_pre_ping": True,
     "connect_args": {
         "connect_timeout": 10,
+        "host": "db",  # Force TCP connection to db hostname
     }
 }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
