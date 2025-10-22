@@ -45,6 +45,23 @@ def dashboard():
                          recent_devices=recent_devices,
                          recent_media=recent_media)
 
+@main.route('/control')
+@login_required
+def control():
+    devices_list = Device.query.order_by(Device.name).all()
+    playlists = Playlist.query.filter_by(is_active=True).order_by(Playlist.name).all()
+    media_files = MediaFile.query.order_by(MediaFile.original_filename).all()
+    
+    online_count = sum(1 for device in devices_list if device.is_online())
+    offline_count = len(devices_list) - online_count
+    
+    return render_template('control.html', 
+                         devices=devices_list, 
+                         playlists=playlists, 
+                         media_files=media_files,
+                         online_count=online_count,
+                         offline_count=offline_count)
+
 @main.route('/devices')
 @login_required
 def devices():
