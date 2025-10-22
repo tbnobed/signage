@@ -10,6 +10,10 @@ done
 
 echo "Database is ready!"
 
+# Give PostgreSQL a moment to fully initialize for application connections
+echo "Waiting for PostgreSQL to be fully ready for connections..."
+sleep 3
+
 # Ensure upload directories exist
 echo "Setting up upload directories..."
 mkdir -p /app/uploads /app/logs
