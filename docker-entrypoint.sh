@@ -40,12 +40,32 @@ mkdir -p /app/uploads /app/logs
 # Initialize database tables and handle schema updates
 echo "Initializing database tables..."
 python3 -c "
+import time
 from app import app, db
 from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
+
+# Retry logic for database connection
+max_retries = 15
+retry_delay = 2
+
+for attempt in range(max_retries):
+    try:
+        with app.app_context():
+            # Create all tables (handles new deployments)
+            db.create_all()
+            print('Database tables created successfully')
+            break
+    except OperationalError as e:
+        if attempt < max_retries - 1:
+            print(f'Database connection failed (attempt {attempt + 1}/{max_retries}), retrying in {retry_delay}s...')
+            time.sleep(retry_delay)
+        else:
+            print(f'Failed to connect to database after {max_retries} attempts')
+            raise
+
+# Continue with migrations only if connection succeeded
 with app.app_context():
-    # Create all tables (handles new deployments)
-    db.create_all()
-    print('Database tables created successfully')
     
     # Handle schema migration for existing deployments
     # Add new columns for reboot functionality if they don't exist
