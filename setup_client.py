@@ -68,47 +68,9 @@ class SignageSetup:
         print("It will download the latest client software and configure your system.")
         print()
         
-    def is_raspberry_pi(self):
-        """Detect if running on Raspberry Pi"""
-        try:
-            with open('/proc/cpuinfo', 'r') as f:
-                cpuinfo = f.read()
-                if 'Raspberry Pi' in cpuinfo or 'BCM' in cpuinfo:
-                    return True
-        except:
-            pass
-        
-        # Check for Raspberry Pi in device model
-        try:
-            with open('/proc/device-tree/model', 'r') as f:
-                model = f.read()
-                if 'Raspberry Pi' in model:
-                    return True
-        except:
-            pass
-        
-        # Check architecture
-        arch = platform.machine()
-        if arch.startswith('arm') or arch.startswith('aarch'):
-            # Could be Raspberry Pi, check if /boot/config.txt exists
-            if os.path.exists('/boot/config.txt') or os.path.exists('/boot/firmware/config.txt'):
-                return True
-        
-        return False
-    
     def check_system(self):
         """Check system requirements"""
         print("🔍 Checking system requirements...")
-        
-        # Detect Raspberry Pi
-        self.is_rpi = self.is_raspberry_pi()
-        if self.is_rpi:
-            print("🍓 Raspberry Pi detected!")
-            print("   Will install mpv (optimized for Raspberry Pi)")
-        else:
-            print("💻 Desktop system detected")
-            print("   Will install mpv for best performance")
-        print()
         
         # Check if running as root for systemd setup
         if os.geteuid() == 0:
@@ -139,33 +101,28 @@ class SignageSetup:
         print()
         
     def install_dependencies(self):
-        """Install required dependencies"""
-        if self.is_rpi:
-            print("📦 Installing dependencies for Raspberry Pi...")
-        else:
-            print("📦 Installing dependencies for desktop system...")
+        """Install required dependencies for desktop Ubuntu"""
+        print("📦 Installing dependencies for desktop Ubuntu...")
         
         # Check if we have sudo access
         has_sudo = self.check_sudo_access()
         if not has_sudo:
-            print("❌ This setup requires sudo access to install media player and other packages.")
+            print("❌ This setup requires sudo access to install VLC and other packages.")
             print("   Please run: sudo python3 setup_client.py")
             sys.exit(1)
         
-        # Install packages
-        self.install_packages()
+        # Install VLC and Python requirements
+        self.install_desktop_packages()
         
         # Install Python requests module 
         self.install_python_requests()
         
-        # Verify media player installation
-        print("\n🎬 Verifying media player installation...")
-        if shutil.which('mpv'):
-            print("   ✅ mpv media player installed")
-        elif shutil.which('vlc'):
-            print("   ✅ VLC media player installed (fallback)")
+        # Verify VLC installation
+        print("\n🎬 Verifying VLC installation...")
+        if shutil.which('vlc'):
+            print("   ✅ VLC media player installed")
         else:
-            print("   ❌ No media player found after installation!")
+            print("   ❌ VLC not found after installation!")
             if not self.ask_yes_no("Continue anyway?", default=False):
                 print("Setup cancelled.")
                 sys.exit(1)
@@ -191,12 +148,9 @@ class SignageSetup:
             print("   Continuing with limited functionality...")
             return False
     
-    def install_packages(self):
-        """Install packages based on platform"""
-        if self.is_rpi:
-            print("   Installing packages optimized for Raspberry Pi...")
-        else:
-            print("   Installing packages for desktop system...")
+    def install_desktop_packages(self):
+        """Install packages for desktop Ubuntu"""
+        print("   Installing packages for desktop Ubuntu...")
         
         # Update package list
         print("   Updating package list...")
@@ -206,21 +160,14 @@ class SignageSetup:
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
             print(f"   ⚠️  Package update had issues: {e}")
         
-        # Essential packages - mpv works better than VLC on all platforms
+        # Essential packages for desktop Ubuntu
         packages = [
-            'mpv',               # mpv media player (best for gapless playback)
+            'vlc',               # VLC media player
             'python3-pip',       # Python package manager
             'python3-requests',  # Python HTTP library
             'openssh-server',    # SSH server for remote access
             'git',               # Git for client updates
         ]
-        
-        # Add Raspberry Pi specific packages
-        if self.is_rpi:
-            packages.extend([
-                'libraspberrypi-bin',  # Raspberry Pi utilities
-                'mesa-utils',          # OpenGL utilities
-            ])
         
         for package in packages:
             print(f"   Installing {package}...")
@@ -232,63 +179,6 @@ class SignageSetup:
                 print(f"   ⚠️  Failed to install {package}")
             except subprocess.TimeoutExpired:
                 print(f"   ⏰ {package} installation timed out")
-        
-        # Enable VNC on Raspberry Pi
-        if self.is_rpi:
-            self.enable_vnc()
-    
-    def enable_vnc(self):
-        """Enable VNC server on Raspberry Pi"""
-        print("\n🖥️  Enabling VNC for remote access...")
-        
-        try:
-            # Check if raspi-config is available (Raspberry Pi OS)
-            if shutil.which('raspi-config'):
-                print("   Enabling VNC via raspi-config...")
-                # Enable VNC using raspi-config non-interactive mode
-                subprocess.run(['sudo', 'raspi-config', 'nonint', 'do_vnc', '0'], 
-                             check=True, capture_output=True, timeout=30)
-                print("   ✅ VNC enabled via raspi-config")
-            else:
-                # Manual VNC setup for Ubuntu on Raspberry Pi
-                print("   Installing VNC server...")
-                subprocess.run(['sudo', 'apt', 'install', '-y', 'tigervnc-standalone-server', 'tigervnc-common'], 
-                             check=True, capture_output=True, timeout=120)
-                print("   ✅ VNC server installed")
-                
-                # Create VNC systemd service
-                vnc_service = """[Unit]
-Description=TigerVNC server
-After=network.target
-
-[Service]
-Type=forking
-User={user}
-ExecStart=/usr/bin/vncserver :1 -geometry 1920x1080 -depth 24
-ExecStop=/usr/bin/vncserver -kill :1
-Restart=on-failure
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-"""
-                # Write VNC service file
-                service_path = Path('/etc/systemd/system/vncserver@.service')
-                with open(service_path, 'w') as f:
-                    f.write(vnc_service.format(user=self.target_user if self.target_user else os.getenv('USER', 'pi')))
-                
-                print("   ✅ VNC service created")
-                print("   ⚠️  Note: You'll need to set a VNC password by running 'vncpasswd' as the user")
-            
-            print("   🎉 VNC is now enabled - you can connect remotely to manage this device")
-            
-        except subprocess.CalledProcessError as e:
-            print(f"   ⚠️  Could not enable VNC automatically")
-            print(f"   You can enable it manually later with: sudo raspi-config")
-        except subprocess.TimeoutExpired:
-            print(f"   ⏰ VNC setup timed out")
-        except Exception as e:
-            print(f"   ⚠️  VNC setup error: {e}")
     
     
     def install_python_requests(self):
@@ -630,76 +520,73 @@ LOG_FILE={self.setup_dir}/client.log
             print("   Using default background")
             background_path = None
         
-        # Configure GNOME settings for kiosk mode (only if GNOME is installed)
-        if shutil.which('gsettings'):
-            gsettings_commands = [
-                # Disable all notifications
-                "gsettings set org.gnome.desktop.notifications show-banners false",
-                "gsettings set org.gnome.desktop.notifications show-in-lock-screen false",
-                
-                # Power settings - never suspend, never turn off screen
-                "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing'",
-                "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 'nothing'",
-                "gsettings set org.gnome.desktop.session idle-delay 0",
-                
-                # Screen saver settings
-                "gsettings set org.gnome.desktop.screensaver lock-enabled false",
-                "gsettings set org.gnome.desktop.screensaver idle-activation-enabled false",
-                
-                # Disable automatic updates notifications
-                "gsettings set org.gnome.software download-updates false",
-                "gsettings set org.gnome.software download-updates-notify false",
-                
-                # Hide desktop icons and taskbar auto-hide for cleaner kiosk look
-                "gsettings set org.gnome.desktop.background show-desktop-icons false",
-                "gsettings set org.gnome.shell.extensions.dash-to-dock autohide true",
-                "gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false",
-                
-                # Disable screen lock
-                "gsettings set org.gnome.desktop.lockdown disable-lock-screen true",
-            ]
+        # Configure GNOME settings for kiosk mode
+        gsettings_commands = [
+            # Disable all notifications
+            "gsettings set org.gnome.desktop.notifications show-banners false",
+            "gsettings set org.gnome.desktop.notifications show-in-lock-screen false",
             
-            # Set background if download was successful
-            if background_path and background_path.exists():
-                gsettings_commands.extend([
-                    f"gsettings set org.gnome.desktop.background picture-uri 'file://{background_path}'",
-                    f"gsettings set org.gnome.desktop.background picture-uri-dark 'file://{background_path}'",
-                    "gsettings set org.gnome.desktop.background picture-options 'centered'",
-                    "gsettings set org.gnome.desktop.background primary-color '#000000'",
-                ])
+            # Power settings - never suspend, never turn off screen
+            "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing'",
+            "gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 'nothing'",
+            "gsettings set org.gnome.desktop.session idle-delay 0",
             
-            # Execute gsettings commands
-            print("   ⚙️  Configuring GNOME settings...")
-            for cmd in gsettings_commands:
-                try:
-                    if os.geteuid() == 0:  # Running as root, execute as target user
-                        import pwd
-                        user_uid = pwd.getpwnam(username).pw_uid
-                        user_env = {
-                            'XDG_RUNTIME_DIR': f'/run/user/{user_uid}',
-                            'HOME': user_home,
-                            'USER': username,
-                            'DISPLAY': ':0',  # Ensure we can access the display
-                            'DBUS_SESSION_BUS_ADDRESS': f'unix:path=/run/user/{user_uid}/bus'
-                        }
-                        
-                        subprocess.run(['sudo', '-u', username] + 
-                                     [f'{k}={v}' for k, v in user_env.items()] +
-                                     cmd.split(), 
-                                     check=True, capture_output=True, 
-                                     env={**os.environ, **user_env}, timeout=10)
-                    else:
-                        # Running as regular user
-                        subprocess.run(cmd.split(), check=True, capture_output=True, timeout=10)
-                        
-                except subprocess.CalledProcessError as e:
-                    print(f"   ⚠️  Warning: Failed to execute: {cmd}")
-                except subprocess.TimeoutExpired:
-                    print(f"   ⚠️  Warning: Timeout executing: {cmd}")
-                except Exception as e:
-                    print(f"   ⚠️  Warning: Error with {cmd}: {e}")
-        else:
-            print("   💡 GNOME not detected, skipping GNOME-specific settings")
+            # Screen saver settings
+            "gsettings set org.gnome.desktop.screensaver lock-enabled false",
+            "gsettings set org.gnome.desktop.screensaver idle-activation-enabled false",
+            
+            # Disable automatic updates notifications
+            "gsettings set org.gnome.software download-updates false",
+            "gsettings set org.gnome.software download-updates-notify false",
+            
+            # Hide desktop icons and taskbar auto-hide for cleaner kiosk look
+            "gsettings set org.gnome.desktop.background show-desktop-icons false",
+            "gsettings set org.gnome.shell.extensions.dash-to-dock autohide true",
+            "gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false",
+            
+            # Disable screen lock
+            "gsettings set org.gnome.desktop.lockdown disable-lock-screen true",
+        ]
+        
+        # Set background if download was successful
+        if background_path and background_path.exists():
+            gsettings_commands.extend([
+                f"gsettings set org.gnome.desktop.background picture-uri 'file://{background_path}'",
+                f"gsettings set org.gnome.desktop.background picture-uri-dark 'file://{background_path}'",
+                "gsettings set org.gnome.desktop.background picture-options 'centered'",
+                "gsettings set org.gnome.desktop.background primary-color '#000000'",
+            ])
+        
+        # Execute gsettings commands
+        print("   ⚙️  Configuring GNOME settings...")
+        for cmd in gsettings_commands:
+            try:
+                if os.geteuid() == 0:  # Running as root, execute as target user
+                    import pwd
+                    user_uid = pwd.getpwnam(username).pw_uid
+                    user_env = {
+                        'XDG_RUNTIME_DIR': f'/run/user/{user_uid}',
+                        'HOME': user_home,
+                        'USER': username,
+                        'DISPLAY': ':0',  # Ensure we can access the display
+                        'DBUS_SESSION_BUS_ADDRESS': f'unix:path=/run/user/{user_uid}/bus'
+                    }
+                    
+                    subprocess.run(['sudo', '-u', username] + 
+                                 [f'{k}={v}' for k, v in user_env.items()] +
+                                 cmd.split(), 
+                                 check=True, capture_output=True, 
+                                 env={**os.environ, **user_env}, timeout=10)
+                else:
+                    # Running as regular user
+                    subprocess.run(cmd.split(), check=True, capture_output=True, timeout=10)
+                    
+            except subprocess.CalledProcessError as e:
+                print(f"   ⚠️  Warning: Failed to execute: {cmd}")
+            except subprocess.TimeoutExpired:
+                print(f"   ⚠️  Warning: Timeout executing: {cmd}")
+            except Exception as e:
+                print(f"   ⚠️  Warning: Error with {cmd}: {e}")
         
         # Configure additional power management settings via systemd
         print("   🔋 Configuring power management...")
@@ -946,16 +833,16 @@ Comment=Apply kiosk mode settings on login
                                 if '[daemon]' in updated_config:
                                     # Insert after [daemon] line
                                     subprocess.run(['sudo', 'sed', '-i', 
-                                                  r'/^\[daemon\]/a WaylandEnable=false', 
+                                                  '/^\[daemon\]/a WaylandEnable=false', 
                                                   gdm_config_path], 
-                                                 capture_output=True, timeout=10)
+                                                 check=True, timeout=10)
                                 else:
                                     # Add [daemon] section with WaylandEnable=false
                                     with open('/tmp/gdm_append.txt', 'w') as f:
                                         f.write('\n[daemon]\nWaylandEnable=false\n')
                                     subprocess.run(['sudo', 'tee', '-a', gdm_config_path], 
                                                  stdin=open('/tmp/gdm_append.txt', 'r'),
-                                                 capture_output=True, timeout=10)
+                                                 check=True, timeout=10)
                                     os.remove('/tmp/gdm_append.txt')
                             
                             print("   ✅ Wayland disabled, X11 will be used after reboot")
@@ -976,18 +863,15 @@ Comment=Apply kiosk mode settings on login
                         
                 except Exception as e:
                     print(f"   ⚠️  Display server config error: {e}")
-                    # Fallback - try direct file modification only if GDM exists
-                    if os.path.exists('/etc/gdm3/custom.conf'):
-                        try:
-                            print("   🔄 Trying fallback configuration method...")
-                            subprocess.run(['sudo', 'bash', '-c', 
-                                          'echo -e "\\n[daemon]\\nWaylandEnable=false" >> /etc/gdm3/custom.conf'], 
-                                         capture_output=True, timeout=10)
-                            print("   ✅ Fallback configuration applied")
-                        except Exception as fallback_e:
-                            print(f"   ⚠️  Fallback configuration failed: {fallback_e}")
-                    else:
-                        print("   💡 GDM not installed, skipping Wayland configuration")
+                    # Fallback - try direct file modification
+                    try:
+                        print("   🔄 Trying fallback configuration method...")
+                        subprocess.run(['sudo', 'bash', '-c', 
+                                      'echo -e "\\n[daemon]\\nWaylandEnable=false" >> /etc/gdm3/custom.conf'], 
+                                     check=True, timeout=10)
+                        print("   ✅ Fallback configuration applied")
+                    except Exception as fallback_e:
+                        print(f"   ❌ Fallback configuration also failed: {fallback_e}")
                 
                 # Step 3: Set TeamViewer password (prompt user for security)
                 print("   🔐 Setting up TeamViewer unattended access...")
@@ -1342,9 +1226,6 @@ Wants=network-online.target
 Type=simple
 WorkingDirectory={self.setup_dir}
 EnvironmentFile={self.config_file}
-Environment=DISPLAY=:0
-Environment=XDG_RUNTIME_DIR=/run/user/%U
-Environment=WAYLAND_DISPLAY=wayland-0
 ExecStart=/usr/bin/python3 {self.client_script}
 Restart=always
 RestartSec=10
