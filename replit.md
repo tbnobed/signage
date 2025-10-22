@@ -33,6 +33,7 @@ This is a comprehensive Flask-based web application for managing display network
 3. **Media Library**: Upload, organize, and manage images and videos
 4. **Playlist System**: Create ordered sequences of media content with timing controls
 5. **Dashboard**: Real-time overview of system status and device health
+6. **Tablet Control Panel**: Touch-optimized /control interface for field operators with 7"-10" tablets
 
 ### Client Agent Components
 1. **Media Synchronization**: Automatic download and caching of media files
@@ -123,6 +124,7 @@ This is a comprehensive Flask-based web application for managing display network
 - September 11, 2025. Single media assignment system: Implemented complete single media file assignment capability for devices. Added database schema for assigned_media_id and assignment_updated_at fields. Created backward-compatible API endpoints using synthetic playlists with negative integer IDs. Built elegant tabbed UI interface for both playlist and single media assignment with dynamic tab activation. Includes Docker deployment migration and maintains zero client changes requirement - existing client_agent.py works unchanged with instant content switching.
 - September 11, 2025. Kiosk mode enhancement: Enhanced setup_client.py with comprehensive kiosk mode configuration for Ubuntu 22.04. Features include: complete notification disabling, power management configuration (never sleep/suspend), screen lock disabling, TBN logo background setup, automatic updates disabling, TeamViewer remote management installation, and persistent settings restoration. Creates autostart script to maintain kiosk settings across reboots and user sessions. Provides true production-ready kiosk mode for unattended digital signage deployment.
 - September 12, 2025. Auto-update system implementation: Built comprehensive auto-update system with client version tracking (CLIENT_VERSION = "2.1.0"), server API endpoint for version checking, 6-hour background update checks, secure Git-based download and installation process, and client version display in admin dashboard. Updated Docker build files with client_version database column migration to ensure proper deployment support for the auto-update functionality.
+- October 22, 2025. Tablet control panel implementation: Created dedicated /control interface optimized for 7"-10" tablet screens. Features touch-friendly device cards with expandable controls, large tap targets (64px minimum), AJAX-based actions to maintain single-page workflow, playlist/media assignment modals with big selection tiles, device management controls (reboot, update), and auto-refresh every 30 seconds. Interface excludes admin functions (upload, edit, user management) to provide simplified field operator experience. Responsive grid layout adapts between portrait single-column and landscape two-column layouts. Uses dark theme with cyan/blue accents matching overall design preferences.
 
 ## User Preferences
 
