@@ -32,6 +32,11 @@ unset PGPASSWORD
 
 echo "Database connection verified!"
 
+# Additional wait to ensure Python psycopg2 can connect
+# (psql can connect before psycopg2 is ready)
+echo "Allowing additional time for Python database driver..."
+sleep 5
+
 # Ensure upload directories exist
 echo "Setting up upload directories..."
 mkdir -p /app/uploads /app/logs
