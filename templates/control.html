@@ -56,21 +56,15 @@
         
         .device-grid {
             display: grid;
+            grid-template-columns: repeat(5, 1fr);
             gap: 1rem;
             padding: 1rem;
         }
         
-        @media (max-width: 767px) {
+        @media (max-width: 480px) {
             .device-grid { 
                 grid-template-columns: repeat(2, 1fr);
                 gap: 0.75rem;
-            }
-        }
-        
-        @media (min-width: 768px) {
-            .device-grid { 
-                grid-template-columns: repeat(5, 1fr);
-                gap: 1rem;
             }
         }
         
