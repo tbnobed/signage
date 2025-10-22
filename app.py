@@ -46,10 +46,8 @@ login_manager.login_message = 'Please log in to access this page.'
 # Create upload directory if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-with app.app_context():
-    # Import models here to ensure they're registered
-    import models
-    db.create_all()
-    logging.info("Database tables created")
+# Import models to register them with SQLAlchemy
+# Note: Database tables are created by docker-entrypoint.sh or manually in development
+import models  # noqa: F401
 
 # Blueprints are registered in main.py
