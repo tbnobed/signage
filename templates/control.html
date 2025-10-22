@@ -648,20 +648,23 @@
         function assignPlaylist() {
             if (currentDeviceId === null) return;
             
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/devices/${currentDeviceId}/assign`;
-            
+            const formData = new FormData();
             if (selectedPlaylistId !== null) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'playlist_id';
-                input.value = selectedPlaylistId;
-                form.appendChild(input);
+                formData.append('playlist_id', selectedPlaylistId);
             }
             
-            document.body.appendChild(form);
-            form.submit();
+            fetch(`/devices/${currentDeviceId}/assign`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('playlistModal')).hide();
+                    showRefreshIndicator();
+                    setTimeout(() => location.reload(), 500);
+                }
+            })
+            .catch(error => console.error('Error:', error));
         }
         
         function openMediaModal(deviceId, deviceName) {
@@ -695,39 +698,52 @@
         function assignMedia() {
             if (currentDeviceId === null) return;
             
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/devices/${currentDeviceId}/assign-media`;
-            
+            const formData = new FormData();
             if (selectedMediaId !== null) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'media_id';
-                input.value = selectedMediaId;
-                form.appendChild(input);
+                formData.append('media_id', selectedMediaId);
             }
             
-            document.body.appendChild(form);
-            form.submit();
+            fetch(`/devices/${currentDeviceId}/assign-media`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('mediaModal')).hide();
+                    showRefreshIndicator();
+                    setTimeout(() => location.reload(), 500);
+                }
+            })
+            .catch(error => console.error('Error:', error));
         }
         
         function rebootDevice(deviceId, deviceName) {
             if (confirm(`Reboot ${deviceName}?\n\nThe device will restart on its next check-in.`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/devices/${deviceId}/reboot`;
-                document.body.appendChild(form);
-                form.submit();
+                fetch(`/devices/${deviceId}/reboot`, {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showRefreshIndicator();
+                        setTimeout(() => location.reload(), 500);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
             }
         }
         
         function updateDevice(deviceId, deviceName) {
             if (confirm(`Update ${deviceName}?\n\nThe client will update on its next check-in.`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/devices/${deviceId}/update`;
-                document.body.appendChild(form);
-                form.submit();
+                fetch(`/devices/${deviceId}/update`, {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showRefreshIndicator();
+                        setTimeout(() => location.reload(), 500);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
             }
         }
         
