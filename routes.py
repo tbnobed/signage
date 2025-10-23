@@ -18,6 +18,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi', 'mov', 'mkv', '
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def natural_sort_key(text):
+    """Convert text to a key for natural/numerical sorting (e.g., 'TV 2' before 'TV 10')."""
+    return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', text)]
+
 @main.route('/')
 def index():
     if current_user.is_authenticated:
@@ -48,7 +52,8 @@ def dashboard():
 @main.route('/control')
 @login_required
 def control():
-    devices_list = Device.query.order_by(Device.name).all()
+    devices_list = Device.query.all()
+    devices_list.sort(key=lambda d: natural_sort_key(d.name))
     playlists = Playlist.query.filter_by(is_active=True).order_by(Playlist.name).all()
     media_files = MediaFile.query.order_by(MediaFile.original_filename).all()
     
@@ -65,7 +70,8 @@ def control():
 @main.route('/devices')
 @login_required
 def devices():
-    devices_list = Device.query.order_by(Device.created_at.desc()).all()
+    devices_list = Device.query.all()
+    devices_list.sort(key=lambda d: natural_sort_key(d.name))
     playlists = Playlist.query.filter_by(is_active=True).all()
     media_files = MediaFile.query.order_by(MediaFile.created_at.desc()).all()
     return render_template('devices.html', devices=devices_list, playlists=playlists, media_files=media_files)
