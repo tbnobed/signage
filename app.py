@@ -24,10 +24,6 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:/
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
-    "connect_args": {
-        "connect_timeout": 10,
-        "host": "db",  # Force TCP connection to db hostname
-    }
 }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -50,8 +46,10 @@ login_manager.login_message = 'Please log in to access this page.'
 # Create upload directory if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Import models to register them with SQLAlchemy
-# Note: Database tables are created by docker-entrypoint.sh or manually in development
-import models  # noqa: F401
+with app.app_context():
+    # Import models here to ensure they're registered
+    import models
+    db.create_all()
+    logging.info("Database tables created")
 
 # Blueprints are registered in main.py

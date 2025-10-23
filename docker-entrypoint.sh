@@ -3,39 +3,12 @@ set -e
 
 # Wait for database to be ready
 echo "Waiting for database to be ready..."
-until pg_isready -h db -p 5432 -U signage_user -d signage_db > /dev/null 2>&1; do
+while ! pg_isready -h db -p 5432 -U signage_user -d signage_db; do
     echo "Database not ready, waiting..."
     sleep 2
 done
 
 echo "Database is ready!"
-
-# Give PostgreSQL additional time to fully initialize for application connections
-echo "Waiting for PostgreSQL to be fully ready for connections..."
-sleep 5
-
-# Test actual database connection before proceeding
-echo "Testing database connection..."
-export PGPASSWORD="${POSTGRES_PASSWORD:-signage_pass}"
-max_retries=10
-retry_count=0
-until psql -h db -U signage_user -d signage_db -c "SELECT 1" > /dev/null 2>&1; do
-    retry_count=$((retry_count + 1))
-    if [ $retry_count -ge $max_retries ]; then
-        echo "Failed to connect to database after $max_retries attempts"
-        exit 1
-    fi
-    echo "Database connection test failed, retrying ($retry_count/$max_retries)..."
-    sleep 2
-done
-unset PGPASSWORD
-
-echo "Database connection verified!"
-
-# Additional wait to ensure Python psycopg2 can connect
-# (psql can connect before psycopg2 is ready)
-echo "Allowing additional time for Python database driver..."
-sleep 5
 
 # Ensure upload directories exist
 echo "Setting up upload directories..."
@@ -45,32 +18,12 @@ mkdir -p /app/uploads /app/logs
 # Initialize database tables and handle schema updates
 echo "Initializing database tables..."
 python3 -c "
-import time
 from app import app, db
 from sqlalchemy import text
-from sqlalchemy.exc import OperationalError
-
-# Retry logic for database connection
-max_retries = 15
-retry_delay = 2
-
-for attempt in range(max_retries):
-    try:
-        with app.app_context():
-            # Create all tables (handles new deployments)
-            db.create_all()
-            print('Database tables created successfully')
-            break
-    except OperationalError as e:
-        if attempt < max_retries - 1:
-            print(f'Database connection failed (attempt {attempt + 1}/{max_retries}), retrying in {retry_delay}s...')
-            time.sleep(retry_delay)
-        else:
-            print(f'Failed to connect to database after {max_retries} attempts')
-            raise
-
-# Continue with migrations only if connection succeeded
 with app.app_context():
+    # Create all tables (handles new deployments)
+    db.create_all()
+    print('Database tables created successfully')
     
     # Handle schema migration for existing deployments
     # Add new columns for reboot functionality if they don't exist

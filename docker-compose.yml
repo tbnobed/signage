@@ -6,9 +6,7 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-signage_user}:${POSTGRES_PASSWORD:-signage_pass}@db:5432/${POSTGRES_DB:-signage_db}?connect_timeout=10
-      - PGHOST=db
-      - PGHOSTADDR=
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-signage_user}:${POSTGRES_PASSWORD:-signage_pass}@db:5432/${POSTGRES_DB:-signage_db}
       - SESSION_SECRET=${SESSION_SECRET:-default_session_secret_change_in_production}
       - FLASK_ENV=production
       - UPLOAD_FOLDER=/app/uploads
