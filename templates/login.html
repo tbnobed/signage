@@ -20,11 +20,13 @@
         body {
             background: linear-gradient(135deg, #0a0e14 0%, #1a2332 50%, #0f1923 100%);
             min-height: 100vh;
+            height: 100vh;
             display: flex;
             align-items: center;
+            justify-content: center;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             position: relative;
-            overflow: hidden;
+            overflow: auto;
         }
         
         body::before {
@@ -77,34 +79,63 @@
         
         .logo-section {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        @media (min-width: 768px) {
+            .logo-section {
+                margin-bottom: 2.5rem;
+            }
         }
         
         .logo-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 1.5rem;
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1rem;
             background: linear-gradient(135deg, #00d9ff 0%, #0088cc 100%);
-            border-radius: 20px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.5rem;
+            font-size: 1.75rem;
             color: #fff;
             box-shadow: 0 8px 24px rgba(0, 217, 255, 0.3);
         }
         
+        @media (min-width: 768px) {
+            .logo-icon {
+                width: 80px;
+                height: 80px;
+                margin: 0 auto 1.5rem;
+                border-radius: 20px;
+                font-size: 2.5rem;
+            }
+        }
+        
         .login-title {
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: #ffffff;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.35rem;
             letter-spacing: -0.5px;
+        }
+        
+        @media (min-width: 768px) {
+            .login-title {
+                font-size: 2rem;
+                margin-bottom: 0.5rem;
+            }
         }
         
         .login-subtitle {
             color: #8899aa;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
+        }
+        
+        @media (min-width: 768px) {
+            .login-subtitle {
+                font-size: 0.95rem;
+            }
         }
         
         .form-label {
@@ -163,7 +194,13 @@
             display: flex;
             align-items: center;
             text-align: center;
-            margin: 2rem 0;
+            margin: 1.5rem 0;
+        }
+        
+        @media (min-width: 768px) {
+            .divider {
+                margin: 2rem 0;
+            }
         }
         
         .divider::before,
