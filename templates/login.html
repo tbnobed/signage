@@ -45,20 +45,34 @@
         
         .login-container {
             max-width: 600px;
-            width: 100%;
+            width: 90%;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 1rem;
             position: relative;
             z-index: 1;
+        }
+        
+        @media (min-width: 768px) {
+            .login-container {
+                width: 100%;
+                padding: 2rem;
+            }
         }
         
         .login-card {
             background: rgba(20, 28, 40, 0.85);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(0, 217, 255, 0.15);
-            border-radius: 24px;
-            padding: 3rem 2.5rem;
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        @media (min-width: 768px) {
+            .login-card {
+                border-radius: 24px;
+                padding: 3rem 2.5rem;
+            }
         }
         
         .logo-section {
