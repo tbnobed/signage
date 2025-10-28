@@ -66,43 +66,47 @@
             backdrop-filter: blur(20px);
             border: 1px solid rgba(0, 217, 255, 0.15);
             border-radius: 20px;
-            padding: 2rem 1.5rem;
+            padding: 1.5rem 1.25rem;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-height: 95vh;
+            overflow-y: auto;
         }
         
-        @media (min-width: 768px) {
+        @media (min-width: 1024px) {
             .login-card {
                 border-radius: 24px;
                 padding: 3rem 2.5rem;
+                max-height: none;
+                overflow-y: visible;
             }
         }
         
         .logo-section {
             text-align: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
         
-        @media (min-width: 768px) {
+        @media (min-width: 1024px) {
             .logo-section {
                 margin-bottom: 2.5rem;
             }
         }
         
         .logo-icon {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 1rem;
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 0.75rem;
             background: linear-gradient(135deg, #00d9ff 0%, #0088cc 100%);
-            border-radius: 16px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             color: #fff;
             box-shadow: 0 8px 24px rgba(0, 217, 255, 0.3);
         }
         
-        @media (min-width: 768px) {
+        @media (min-width: 1024px) {
             .logo-icon {
                 width: 80px;
                 height: 80px;
@@ -113,14 +117,14 @@
         }
         
         .login-title {
-            font-size: 1.5rem;
+            font-size: 1.35rem;
             font-weight: 700;
             color: #ffffff;
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.25rem;
             letter-spacing: -0.5px;
         }
         
-        @media (min-width: 768px) {
+        @media (min-width: 1024px) {
             .login-title {
                 font-size: 2rem;
                 margin-bottom: 0.5rem;
@@ -129,10 +133,10 @@
         
         .login-subtitle {
             color: #8899aa;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
         
-        @media (min-width: 768px) {
+        @media (min-width: 1024px) {
             .login-subtitle {
                 font-size: 0.95rem;
             }
@@ -150,11 +154,19 @@
         .form-control {
             background: rgba(255, 255, 255, 0.05);
             border: 2px solid rgba(0, 217, 255, 0.2);
-            border-radius: 12px;
-            padding: 0.875rem 1.25rem;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
             color: #ffffff;
-            font-size: 1rem;
+            font-size: 0.95rem;
             transition: all 0.3s ease;
+        }
+        
+        @media (min-width: 1024px) {
+            .form-control {
+                border-radius: 12px;
+                padding: 0.875rem 1.25rem;
+                font-size: 1rem;
+            }
         }
         
         .form-control:focus {
@@ -171,13 +183,21 @@
         .btn-signin {
             background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
             border: none;
-            border-radius: 12px;
-            padding: 1rem;
+            border-radius: 10px;
+            padding: 0.875rem;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: #ffffff;
             transition: all 0.3s ease;
             box-shadow: 0 4px 16px rgba(0, 217, 255, 0.3);
+        }
+        
+        @media (min-width: 1024px) {
+            .btn-signin {
+                border-radius: 12px;
+                padding: 1rem;
+                font-size: 1rem;
+            }
         }
         
         .btn-signin:hover {
@@ -194,10 +214,10 @@
             display: flex;
             align-items: center;
             text-align: center;
-            margin: 1.5rem 0;
+            margin: 1.25rem 0;
         }
         
-        @media (min-width: 768px) {
+        @media (min-width: 1024px) {
             .divider {
                 margin: 2rem 0;
             }
@@ -219,11 +239,20 @@
         .btn-setup {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(0, 217, 255, 0.3);
-            border-radius: 12px;
-            padding: 0.875rem;
+            border-radius: 10px;
+            padding: 0.75rem;
             color: #00d9ff;
             font-weight: 500;
+            font-size: 0.9rem;
             transition: all 0.3s ease;
+        }
+        
+        @media (min-width: 1024px) {
+            .btn-setup {
+                border-radius: 12px;
+                padding: 0.875rem;
+                font-size: 1rem;
+            }
         }
         
         .btn-setup:hover {
