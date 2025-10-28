@@ -20,13 +20,9 @@
         body {
             background: linear-gradient(135deg, #0a0e14 0%, #1a2332 50%, #0f1923 100%);
             min-height: 100vh;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             position: relative;
-            overflow: auto;
+            padding: 1rem 0;
         }
         
         body::before {
@@ -46,17 +42,17 @@
         }
         
         .login-container {
-            max-width: 600px;
+            max-width: 500px;
             width: 90%;
             margin: 0 auto;
-            padding: 1rem;
+            padding: 0.5rem;
             position: relative;
             z-index: 1;
         }
         
-        @media (min-width: 768px) {
+        @media (min-width: 1024px) {
             .login-container {
-                width: 100%;
+                max-width: 600px;
                 padding: 2rem;
             }
         }
@@ -65,25 +61,21 @@
             background: rgba(20, 28, 40, 0.85);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(0, 217, 255, 0.15);
-            border-radius: 20px;
-            padding: 1.5rem 1.25rem;
+            border-radius: 16px;
+            padding: 1.25rem 1rem;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            max-height: 95vh;
-            overflow-y: auto;
         }
         
         @media (min-width: 1024px) {
             .login-card {
                 border-radius: 24px;
                 padding: 3rem 2.5rem;
-                max-height: none;
-                overflow-y: visible;
             }
         }
         
         .logo-section {
             text-align: center;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
         
         @media (min-width: 1024px) {
@@ -93,15 +85,15 @@
         }
         
         .logo-icon {
-            width: 50px;
-            height: 50px;
-            margin: 0 auto 0.75rem;
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 0.5rem;
             background: linear-gradient(135deg, #00d9ff 0%, #0088cc 100%);
-            border-radius: 14px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             color: #fff;
             box-shadow: 0 8px 24px rgba(0, 217, 255, 0.3);
         }
@@ -117,10 +109,10 @@
         }
         
         .login-title {
-            font-size: 1.35rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: #ffffff;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.2rem;
             letter-spacing: -0.5px;
         }
         
@@ -133,7 +125,7 @@
         
         .login-subtitle {
             color: #8899aa;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
         
         @media (min-width: 1024px) {
@@ -145,19 +137,26 @@
         .form-label {
             font-weight: 600;
             color: #c8d3e0;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+        
+        @media (min-width: 1024px) {
+            .form-label {
+                font-size: 0.875rem;
+                margin-bottom: 0.5rem;
+            }
         }
         
         .form-control {
             background: rgba(255, 255, 255, 0.05);
             border: 2px solid rgba(0, 217, 255, 0.2);
             border-radius: 10px;
-            padding: 0.75rem 1rem;
+            padding: 0.65rem 0.9rem;
             color: #ffffff;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             transition: all 0.3s ease;
         }
         
@@ -184,9 +183,9 @@
             background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
             border: none;
             border-radius: 10px;
-            padding: 0.875rem;
+            padding: 0.75rem;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: #ffffff;
             transition: all 0.3s ease;
             box-shadow: 0 4px 16px rgba(0, 217, 255, 0.3);
@@ -214,7 +213,7 @@
             display: flex;
             align-items: center;
             text-align: center;
-            margin: 1.25rem 0;
+            margin: 1rem 0;
         }
         
         @media (min-width: 1024px) {
@@ -240,10 +239,10 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(0, 217, 255, 0.3);
             border-radius: 10px;
-            padding: 0.75rem;
+            padding: 0.65rem;
             color: #00d9ff;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             transition: all 0.3s ease;
         }
         
