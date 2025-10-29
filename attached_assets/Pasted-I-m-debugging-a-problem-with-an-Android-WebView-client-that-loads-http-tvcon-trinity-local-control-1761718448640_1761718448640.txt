@@ -1,0 +1,51 @@
+I’m debugging a problem with an Android WebView client that loads http://tvcon.trinity.local/control. 
+The site works fine in a browser (Chrome/Silk) but not inside the WebView — the media list and other dynamic data fail to load.
+
+That means my backend needs to be updated to allow full cookie + CORS support for local HTTP requests from Android WebView clients.
+
+Please modify my backend server configuration accordingly:
+
+1. Enable **CORS** for http://tvcon.trinity.local (and optionally localhost) with credentials support.
+   - Include these headers in every response:
+       Access-Control-Allow-Origin: http://tvcon.trinity.local
+       Access-Control-Allow-Credentials: true
+       Vary: Origin
+   - Also include Access-Control-Allow-Methods and Access-Control-Allow-Headers if needed.
+
+2. Fix cookie handling:
+   - When setting cookies (like session IDs or JWTs), use:
+         SameSite=Lax
+         Secure=False
+   - Never set `SameSite=None; Secure` when using plain HTTP — WebView will reject them.
+   - Always send cookies in API responses and accept them in requests.
+
+3. If the backend is **Express.js**, update it to:
+       import cors from "cors";
+       app.use(cors({
+         origin: "http://tvcon.trinity.local",
+         credentials: true
+       }));
+       app.use((req, res, next) => {
+         res.header("Access-Control-Allow-Origin", "http://tvcon.trinity.local");
+         res.header("Access-Control-Allow-Credentials", "true");
+         next();
+       });
+
+   When setting cookies in Express:
+       res.cookie("sessionid", value, {
+         httpOnly: true,
+         secure: false,
+         sameSite: "lax"
+       });
+
+4. If the backend is **Flask**, update it to:
+       from flask_cors import CORS
+       app = Flask(__name__)
+       CORS(app, supports_credentials=True, origins=["http://tvcon.trinity.local"])
+
+   And when setting cookies:
+       response.set_cookie("sessionid", value, samesite="Lax", secure=False)
+
+5. Restart the backend and verify that `/api/media` or equivalent now returns data when called from WebView with credentials.
+
+After applying these changes, explain briefly how this fixes the WebView issue (cookies + CORS on LAN HTTP) and provide the final updated backend code block.
