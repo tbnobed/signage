@@ -272,8 +272,7 @@
         }
         
         .modal-body {
-            min-height: 500px;
-            max-height: 80vh;
+            max-height: 55vh;
             overflow-y: auto;
         }
         
@@ -296,8 +295,8 @@
         .media-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
-            padding: 0.5rem;
+            gap: 0.875rem;
+            padding: 0.25rem;
         }
         
         @media (min-width: 768px) {
@@ -314,7 +313,7 @@
             transition: all 0.15s ease;
             position: relative;
             overflow: hidden;
-            min-height: 220px;
+            min-height: 180px;
             display: flex;
             flex-direction: column;
         }
@@ -337,7 +336,7 @@
         
         .media-card-preview {
             width: 100%;
-            height: 140px;
+            height: 110px;
             background: rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
@@ -739,7 +738,7 @@
                             <div class="media-card" onclick="selectMedia({{ media.id }})" data-media-id="{{ media.id }}" data-filename="{{ media.filename }}">
                                 <div class="media-card-preview">
                                     {% if media.file_type == 'image' %}
-                                    <img src="{{ url_for('static', filename='uploads/' + media.filename) }}" alt="{{ media.original_filename }}" loading="lazy">
+                                    <img src="{{ url_for('main.uploaded_file', filename=media.filename) }}" alt="{{ media.original_filename }}" loading="lazy">
                                     <div class="media-card-icon">
                                         <i class="fas fa-image"></i>
                                     </div>
