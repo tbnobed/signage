@@ -688,19 +688,60 @@
         }
         
         function openMediaModal(deviceId, deviceName) {
+            console.log('openMediaModal called:', deviceId, deviceName);
             currentDeviceId = deviceId;
             selectedMediaId = null;
-            document.getElementById('mediaModalDeviceName').textContent = 'Device: ' + deviceName;
             
-            document.querySelectorAll('#mediaModal .selection-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            
-            const modal = new bootstrap.Modal(document.getElementById('mediaModal'));
-            modal.show();
+            try {
+                const deviceNameEl = document.getElementById('mediaModalDeviceName');
+                if (deviceNameEl) {
+                    deviceNameEl.textContent = 'Device: ' + deviceName;
+                    console.log('Device name set');
+                }
+                
+                const items = document.querySelectorAll('#mediaModal .selection-item');
+                console.log('Found media items:', items.length);
+                items.forEach(item => {
+                    item.classList.remove('selected');
+                });
+                
+                const modalEl = document.getElementById('mediaModal');
+                console.log('Modal element:', modalEl);
+                
+                if (modalEl) {
+                    const modal = new bootstrap.Modal(modalEl, {
+                        backdrop: true,
+                        keyboard: true,
+                        focus: true
+                    });
+                    console.log('Modal instance created');
+                    modal.show();
+                    console.log('Modal show() called');
+                    
+                    setTimeout(() => {
+                        if (modalEl.classList.contains('show')) {
+                            console.log('Modal is visible');
+                        } else {
+                            console.error('Modal did not become visible');
+                            modalEl.style.display = 'block';
+                            modalEl.classList.add('show');
+                            document.body.classList.add('modal-open');
+                            const backdrop = document.createElement('div');
+                            backdrop.className = 'modal-backdrop fade show';
+                            backdrop.id = 'mediaModalBackdrop';
+                            document.body.appendChild(backdrop);
+                        }
+                    }, 100);
+                } else {
+                    console.error('Modal element not found');
+                }
+            } catch (error) {
+                console.error('Error opening media modal:', error);
+            }
         }
         
         function selectMedia(mediaId) {
+            console.log('selectMedia called:', mediaId);
             selectedMediaId = mediaId;
             
             document.querySelectorAll('#mediaModal .selection-item').forEach(item => {
@@ -711,11 +752,15 @@
                 event.currentTarget.classList.add('selected');
             } else {
                 const item = document.querySelector(`#mediaModal .selection-item[data-media-id="${mediaId}"]`);
-                if (item) item.classList.add('selected');
+                if (item) {
+                    item.classList.add('selected');
+                    console.log('Media item selected');
+                }
             }
         }
         
         function assignMedia() {
+            console.log('assignMedia called, deviceId:', currentDeviceId, 'mediaId:', selectedMediaId);
             if (currentDeviceId === null) return;
             
             const formData = new FormData();
@@ -725,16 +770,28 @@
             
             fetch(`/devices/${currentDeviceId}/assign-media`, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => {
+                console.log('Assign media response:', response.status);
                 if (response.ok) {
-                    bootstrap.Modal.getInstance(document.getElementById('mediaModal')).hide();
+                    const modalEl = document.getElementById('mediaModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    } else {
+                        modalEl.style.display = 'none';
+                        modalEl.classList.remove('show');
+                        document.body.classList.remove('modal-open');
+                        const backdrop = document.getElementById('mediaModalBackdrop');
+                        if (backdrop) backdrop.remove();
+                    }
                     showRefreshIndicator();
                     setTimeout(() => location.reload(), 500);
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => console.error('Error assigning media:', error));
         }
         
         function rebootDevice(deviceId, deviceName) {
