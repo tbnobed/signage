@@ -272,8 +272,10 @@
         }
         
         .modal-body {
-            max-height: 55vh;
+            min-height: 400px;
+            max-height: 65vh;
             overflow-y: auto;
+            padding: 1.25rem;
         }
         
         .modal-header {
@@ -293,10 +295,11 @@
         }
         
         .media-grid {
-            display: grid;
+            display: grid !important;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 0.875rem;
             padding: 0.25rem;
+            visibility: visible !important;
         }
         
         @media (min-width: 768px) {
@@ -314,8 +317,9 @@
             position: relative;
             overflow: hidden;
             min-height: 180px;
-            display: flex;
+            display: flex !important;
             flex-direction: column;
+            visibility: visible !important;
         }
         
         .media-card:hover {
