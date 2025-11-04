@@ -524,8 +524,20 @@ def device_checkin(device_id):
 @api.route('/client/version', methods=['GET'])
 def get_client_version():
     """Get the latest client version and download information"""
-    # Latest client version information
-    latest_version = "2.3.0"
+    # Read version directly from client_agent.py to avoid duplication
+    latest_version = "2.3.2"  # Fallback
+    try:
+        import re
+        client_path = os.path.join(os.path.dirname(__file__), 'client_agent.py')
+        if os.path.exists(client_path):
+            with open(client_path, 'r') as f:
+                content = f.read()
+                match = re.search(r'CLIENT_VERSION\s*=\s*["\']([^"\']+)["\']', content)
+                if match:
+                    latest_version = match.group(1)
+                    app.logger.info(f"Read client version from file: {latest_version}")
+    except Exception as e:
+        app.logger.warning(f"Could not read version from client_agent.py: {e}")
     
     # GitHub repository information
     github_repo = "https://github.com/tbnobed/signage.git"
@@ -544,7 +556,7 @@ def get_client_version():
         'download_url': download_base,
         'github_repo': github_repo,
         'update_available': needs_update,
-        'release_notes': 'MPV integration for gapless video playback - eliminates flickering during loops'
+        'release_notes': 'v2.3.2 - HLS streaming fixes: 1080p lock, 5-second buffering, no freezing on resolution changes'
     })
 
 @api.route('/devices/<device_id>/playlist-status')
