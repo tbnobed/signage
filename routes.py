@@ -519,7 +519,7 @@ def device_checkin(device_id):
 def get_client_version():
     """Get the latest client version and download information"""
     # Latest client version information
-    latest_version = "2.2.0"
+    latest_version = "2.3.1"
     
     # GitHub repository information
     github_repo = "https://github.com/tbnobed/signage.git"
