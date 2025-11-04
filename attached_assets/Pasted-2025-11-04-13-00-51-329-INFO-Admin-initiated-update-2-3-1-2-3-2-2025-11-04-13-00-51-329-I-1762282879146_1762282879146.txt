@@ -1,0 +1,21 @@
+2025-11-04 13:00:51,329 - INFO - Admin-initiated update: 2.3.1 -> 2.3.2
+2025-11-04 13:00:51,329 - INFO - Release notes: v2.3.2 - HLS streaming fixes: 1080p lock, 5-second buffering, no freezing on resolution changes
+2025-11-04 13:00:51,329 - INFO - Downloading update from: https://github.com/tbnobed/signage.git
+2025-11-04 13:00:53,766 - INFO - Backed up current client to: /home/administrator/signage/client_agent.py.backup
+2025-11-04 13:00:53,767 - INFO - New client version installed successfully
+2025-11-04 13:00:53,776 - INFO - Update completed successfully. Restarting client...
+2025-11-04 13:00:53,776 - INFO - Restarting client after update...
+2025-11-04 13:00:53,776 - INFO - Cleaning up resources...
+2025-11-04 13:00:54,809 - INFO - Cleanup complete
+2025-11-04 13:00:54,810 - INFO - Auto-update complete! Exiting for systemd restart...
+2025-11-04 13:00:57,267 - INFO - Single media VLC process ended, will restart on next loop
+2025-11-04 13:00:57,268 - INFO - Single media detected: TBN Inspire - using optimized direct playback
+2025-11-04 13:00:57,268 - INFO - 🔧 REPLIT-STREAMING-FIX-ACTIVE: Using corrected streaming media handler
+2025-11-04 13:00:57,268 - DEBUG - play_single_media_optimized received: {'duration': None, 'file_type': 'stream', 'filename': None, 'id': 12, 'is_stream': True, 'original_filename': 'TBN Inspire', 'stream_type': 'hls', 'stream_url': 'https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8', 'url': 'https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8'}
+2025-11-04 13:00:57,268 - DEBUG - download_media called with: dict_keys(['duration', 'file_type', 'filename', 'id', 'is_stream', 'original_filename', 'stream_type', 'stream_url', 'url'])
+2025-11-04 13:00:57,269 - INFO - Using stream URL: TBN Inspire -> https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:00:57,269 - INFO - Playing stream URL: https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:00:57,269 - INFO - Starting optimized single media playback: TBN Inspire
+2025-11-04 13:00:57,270 - DEBUG - Display environment - DISPLAY: :0, WAYLAND_DISPLAY: not set, SESSION_TYPE: x11, XAUTHORITY: /run/user/1000/gdm/Xauthority
+2025-11-04 13:00:57,270 - INFO - Starting optimized VLC for single media: vlc --fullscreen --no-osd --no-video-title-show --loop --no-random --no-qt-error-dialogs --intf dummy --vout x11 --avcodec-hw none -v https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:00:57,272 - INFO - Optimized single media VLC started - seamless looping with X11 auth fix!
