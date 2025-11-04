@@ -518,8 +518,19 @@ def device_checkin(device_id):
 @api.route('/client/version', methods=['GET'])
 def get_client_version():
     """Get the latest client version and download information"""
-    # Latest client version information
-    latest_version = "2.3.1"
+    # Read version directly from client_agent.py to avoid duplication
+    latest_version = "2.3.1"  # Fallback
+    try:
+        import re
+        client_path = os.path.join(os.path.dirname(__file__), 'client_agent.py')
+        if os.path.exists(client_path):
+            with open(client_path, 'r') as f:
+                content = f.read()
+                match = re.search(r'CLIENT_VERSION\s*=\s*["\']([^"\']+)["\']', content)
+                if match:
+                    latest_version = match.group(1)
+    except Exception as e:
+        app.logger.warning(f"Could not read version from client_agent.py: {e}")
     
     # GitHub repository information
     github_repo = "https://github.com/tbnobed/signage.git"
