@@ -1,0 +1,73 @@
+administrator@LBTV-PC02:~$ curl -sSL https://raw.githubusercontent.com/tbnobed/signage/tablet/install_vnc.sh | bash
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DisplayHQ VNC Server Installation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👤 Installing VNC for user: administrator
+
+📦 Installing required packages...
+Hit:1 https://linux.teamviewer.com/deb stable InRelease
+Hit:2 http://us.archive.ubuntu.com/ubuntu jammy InRelease
+Hit:3 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Hit:4 http://us.archive.ubuntu.com/ubuntu jammy-updates InRelease
+Hit:5 http://us.archive.ubuntu.com/ubuntu jammy-backports InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+91 packages can be upgraded. Run 'apt list --upgradable' to see them.
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+expect is already the newest version (5.45.4-2build1).
+x11vnc is already the newest version (0.9.16-8).
+0 upgraded, 0 newly installed, 0 to remove and 91 not upgraded.
+✅ Packages installed successfully
+
+🔐 Setting VNC password...
+   Setting default password: TBN@dmin!!
+   ✅ Password set via expect
+❌ Failed to create VNC password file
+   Please run manually after installation:
+   x11vnc -storepasswd ~/.vnc/passwd
+   sudo systemctl restart x11vnc
+   (Continuing with installation anyway...)
+✅ VNC password configured
+
+⚙️  Creating systemd service...
+✅ Systemd service created
+🔄 Enabling VNC service...
+Created symlink /etc/systemd/system/multi-user.target.wants/x11vnc.service → /etc/systemd/system/x11vnc.service.
+✅ VNC server is running
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ✅ VNC Installation Complete!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Connection Details:
+  IP Address:   10.63.1.209
+  VNC Port:     5900
+  Full Address: 10.63.1.209:5900
+  Password:     TBN@dmin!!
+
+VNC Clients:
+  • Windows/Mac/Linux: RealVNC Viewer (https://www.realvnc.com/en/connect/download/viewer/)
+  • Windows: TightVNC Viewer (https://www.tightvnc.com/)
+  • macOS: Built-in Screen Sharing (vnc://10.63.1.209:5900)
+
+Service Management:
+  Stop VNC:    sudo systemctl stop x11vnc
+  Start VNC:   sudo systemctl start x11vnc
+  Restart VNC: sudo systemctl restart x11vnc
+  Status:      sudo systemctl status x11vnc
+  Disable:     sudo systemctl disable x11vnc
+
+Change Password:
+  x11vnc -storepasswd ~/.vnc/passwd
+  sudo systemctl restart x11vnc
+
+Firewall:
+  If you can't connect, allow port 5900:
+  sudo ufw allow 5900/tcp
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+administrator@LBTV-PC02:~$
