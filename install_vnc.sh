@@ -54,18 +54,10 @@ mkdir -p "$VNC_DIR"
 
 # Set VNC password
 echo -e "${BLUE}🔐 Setting VNC password...${NC}"
+echo -e "${YELLOW}   Setting default password: TBN@dmin!!${NC}"
 
-# Check if running interactively
-if [ -t 0 ]; then
-    # Interactive mode - prompt for password
-    echo -e "${YELLOW}   Please enter a password for VNC access (6-8 characters recommended)${NC}"
-    x11vnc -storepasswd "$VNC_DIR/passwd"
-else
-    # Non-interactive mode (piped from curl) - use default password
-    echo -e "${YELLOW}   Non-interactive installation detected${NC}"
-    echo -e "${YELLOW}   Setting default password: TBN@dmin!!${NC}"
-    echo "TBN@dmin!!" | x11vnc -storepasswd "$VNC_DIR/passwd" -
-fi
+# Use printf to pipe both password entries to x11vnc
+printf "TBN@dmin!!\nTBN@dmin!!\n" | x11vnc -storepasswd "$VNC_DIR/passwd" >/dev/null 2>&1
 
 if [ ! -f "$VNC_DIR/passwd" ]; then
     echo -e "${RED}❌ Failed to create VNC password${NC}"
