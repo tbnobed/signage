@@ -56,30 +56,53 @@ mkdir -p "$VNC_DIR"
 echo -e "${BLUE}🔐 Setting VNC password...${NC}"
 echo -e "${YELLOW}   Setting default password: TBN@dmin!!${NC}"
 
-# Try different methods to create password file
-if command -v expect &> /dev/null; then
-    # Method 1: Use expect if available (most reliable)
-    expect <<EOF >/dev/null 2>&1
-spawn x11vnc -storepasswd "$VNC_DIR/passwd"
-expect "Enter VNC password:"
-send "TBN@dmin!!\r"
-expect "Verify password:"
-send "TBN@dmin!!\r"
+# Create temporary expect script
+EXPECT_SCRIPT=$(mktemp)
+cat > "$EXPECT_SCRIPT" <<'EXPECTEOF'
+#!/usr/bin/expect -f
+set timeout 10
+set password "TBN@dmin!!"
+set passwd_file [lindex $argv 0]
+
+spawn x11vnc -storepasswd $passwd_file
+expect {
+    "Enter VNC password:" {
+        send "$password\r"
+        expect "Verify password:" {
+            send "$password\r"
+        }
+    }
+    timeout {
+        exit 1
+    }
+}
 expect eof
-EOF
-elif x11vnc -storepasswd TBN@dmin!! "$VNC_DIR/passwd" >/dev/null 2>&1; then
-    # Method 2: Direct password argument (some versions support this)
-    echo "   Using direct password method"
+EXPECTEOF
+
+chmod +x "$EXPECT_SCRIPT"
+
+# Run expect script
+if "$EXPECT_SCRIPT" "$VNC_DIR/passwd" >/dev/null 2>&1; then
+    echo -e "   ✅ Password set via expect"
 else
-    # Method 3: Pipe password (requires special handling)
-    (echo TBN@dmin!!; echo TBN@dmin!!) | x11vnc -storepasswd "$VNC_DIR/passwd" >/dev/null 2>&1
+    # Fallback: try direct write (less secure but works)
+    echo -e "   ⚠️  Expect method failed, using fallback"
+    # VNC password uses a simple obfuscation - we'll use x11vnc's built-in method differently
+    echo -e "TBN@dmin!!\nTBN@dmin!!" | script -q -c "x11vnc -storepasswd $VNC_DIR/passwd" /dev/null >/dev/null 2>&1
 fi
+
+# Cleanup temp file
+rm -f "$EXPECT_SCRIPT"
 
 # Verify password file was created
 if [ ! -f "$VNC_DIR/passwd" ]; then
     echo -e "${RED}❌ Failed to create VNC password file${NC}"
-    echo -e "${YELLOW}   Please run manually: x11vnc -storepasswd ~/.vnc/passwd${NC}"
-    exit 1
+    echo -e "${YELLOW}   Please run manually after installation:${NC}"
+    echo -e "${YELLOW}   x11vnc -storepasswd ~/.vnc/passwd${NC}"
+    echo -e "${YELLOW}   sudo systemctl restart x11vnc${NC}"
+    echo -e "${YELLOW}   (Continuing with installation anyway...)${NC}"
+    # Create empty file so service can still be created
+    touch "$VNC_DIR/passwd"
 fi
 
 chmod 600 "$VNC_DIR/passwd"
