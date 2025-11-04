@@ -1,0 +1,80 @@
+2025-11-04 13:21:13,932 - INFO - Single media VLC process ended, will restart on next loop
+2025-11-04 13:21:13,933 - INFO - Single media detected: TBN Inspire - using optimized direct playback
+2025-11-04 13:21:13,933 - INFO - 🔧 REPLIT-STREAMING-FIX-ACTIVE: Using corrected streaming media handler
+2025-11-04 13:21:13,933 - DEBUG - play_single_media_optimized received: {'duration': None, 'file_type': 'stream', 'filename': None, 'id': 12, 'is_stream': True, 'original_filename': 'TBN Inspire', 'stream_type': 'hls', 'stream_url': 'https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8', 'url': 'https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8'}
+2025-11-04 13:21:13,933 - DEBUG - download_media called with: dict_keys(['duration', 'file_type', 'filename', 'id', 'is_stream', 'original_filename', 'stream_type', 'stream_url', 'url'])
+2025-11-04 13:21:13,933 - INFO - Using stream URL: TBN Inspire -> https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:21:13,934 - INFO - Playing stream URL: https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:21:13,934 - INFO - Starting optimized single media playback: TBN Inspire
+2025-11-04 13:21:13,934 - DEBUG - Display environment - DISPLAY: :0, WAYLAND_DISPLAY: not set, SESSION_TYPE: x11, XAUTHORITY: /run/user/1000/gdm/Xauthority
+2025-11-04 13:21:13,935 - INFO - Starting optimized VLC for single media: vlc --fullscreen --no-osd --no-video-title-show --loop --no-random --no-qt-error-dialogs --intf dummy --vout x11 --avcodec-hw none --adaptive-logic 3 --adaptive-maxheight 1080 --network-caching 5000 --live-caching 5000 --file-caching 5000 --http-reconnect --hls-segment-threads 2 --hls-live-edge 3 -v https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:21:13,936 - INFO - Optimized single media VLC started - seamless looping with X11 auth fix!
+2025-11-04 13:21:15,166 - INFO - Running rapid playlist check (background thread)...
+2025-11-04 13:21:15,166 - DEBUG - Checking playlist status...
+2025-11-04 13:21:15,168 - DEBUG - Starting new HTTP connection (1): tvcon.trinity.local:80
+2025-11-04 13:21:15,330 - DEBUG - http://tvcon.trinity.local:80 "GET /api/devices/l-k5pi/playlist-status HTTP/1.1" 200 64
+2025-11-04 13:21:15,331 - DEBUG - Current playlist: -12, Server playlist: -12, Current timestamp: 2025-11-04T19:20:55.808442, Server timestamp: 2025-11-04T19:20:55.808442
+2025-11-04 13:21:17,332 - INFO - Running rapid playlist check (background thread)...
+2025-11-04 13:21:17,332 - DEBUG - Checking playlist status...
+2025-11-04 13:21:17,335 - DEBUG - Starting new HTTP connection (1): tvcon.trinity.local:80
+2025-11-04 13:21:17,490 - DEBUG - http://tvcon.trinity.local:80 "GET /api/devices/l-k5pi/playlist-status HTTP/1.1" 200 64
+2025-11-04 13:21:17,492 - DEBUG - Current playlist: -12, Server playlist: -12, Current timestamp: 2025-11-04T19:20:55.808442, Server timestamp: 2025-11-04T19:20:55.808442
+2025-11-04 13:21:18,941 - INFO - Single media VLC process ended, will restart on next loop
+2025-11-04 13:21:18,942 - INFO - Single media detected: TBN Inspire - using optimized direct playback
+2025-11-04 13:21:18,942 - INFO - 🔧 REPLIT-STREAMING-FIX-ACTIVE: Using corrected streaming media handler
+2025-11-04 13:21:18,943 - DEBUG - play_single_media_optimized received: {'duration': None, 'file_type': 'stream', 'filename': None, 'id': 12, 'is_stream': True, 'original_filename': 'TBN Inspire', 'stream_type': 'hls', 'stream_url': 'https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8', 'url': 'https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8'}
+2025-11-04 13:21:18,943 - DEBUG - download_media called with: dict_keys(['duration', 'file_type', 'filename', 'id', 'is_stream', 'original_filename', 'stream_type', 'stream_url', 'url'])
+2025-11-04 13:21:18,943 - INFO - Using stream URL: TBN Inspire -> https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:21:18,943 - INFO - Playing stream URL: https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:21:18,944 - INFO - Starting optimized single media playback: TBN Inspire
+2025-11-04 13:21:18,944 - DEBUG - Display environment - DISPLAY: :0, WAYLAND_DISPLAY: not set, SESSION_TYPE: x11, XAUTHORITY: /run/user/1000/gdm/Xauthority
+2025-11-04 13:21:18,944 - INFO - Starting optimized VLC for single media: vlc --fullscreen --no-osd --no-video-title-show --loop --no-random --no-qt-error-dialogs --intf dummy --vout x11 --avcodec-hw none --adaptive-logic 3 --adaptive-maxheight 1080 --network-caching 5000 --live-caching 5000 --file-caching 5000 --http-reconnect --hls-segment-threads 2 --hls-live-edge 3 -v https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:21:18,945 - INFO - Optimized single media VLC started - seamless looping with X11 auth fix!
+2025-11-04 13:21:19,492 - INFO - Running rapid playlist check (background thread)...
+2025-11-04 13:21:19,492 - DEBUG - Checking playlist status...
+2025-11-04 13:21:19,495 - DEBUG - Starting new HTTP connection (1): tvcon.trinity.local:80
+2025-11-04 13:21:19,649 - DEBUG - http://tvcon.trinity.local:80 "GET /api/devices/l-k5pi/playlist-status HTTP/1.1" 200 64
+2025-11-04 13:21:19,651 - DEBUG - Current playlist: -12, Server playlist: -12, Current timestamp: 2025-11-04T19:20:55.808442, Server timestamp: 2025-11-04T19:20:55.808442
+2025-11-04 13:21:21,652 - INFO - Running rapid playlist check (background thread)...
+2025-11-04 13:21:21,652 - DEBUG - Checking playlist status...
+2025-11-04 13:21:21,655 - DEBUG - Starting new HTTP connection (1): tvcon.trinity.local:80
+2025-11-04 13:21:21,814 - DEBUG - http://tvcon.trinity.local:80 "GET /api/devices/l-k5pi/playlist-status HTTP/1.1" 200 64
+2025-11-04 13:21:21,816 - DEBUG - Current playlist: -12, Server playlist: -12, Current timestamp: 2025-11-04T19:20:55.808442, Server timestamp: 2025-11-04T19:20:55.808442
+2025-11-04 13:21:23,816 - INFO - Running rapid playlist check (background thread)...
+2025-11-04 13:21:23,817 - DEBUG - Checking playlist status...
+2025-11-04 13:21:23,820 - DEBUG - Starting new HTTP connection (1): tvcon.trinity.local:80
+2025-11-04 13:21:23,951 - INFO - Single media VLC process ended, will restart on next loop
+2025-11-04 13:21:23,951 - INFO - Single media detected: TBN Inspire - using optimized direct playback
+2025-11-04 13:21:23,952 - INFO - 🔧 REPLIT-STREAMING-FIX-ACTIVE: Using corrected streaming media handler
+2025-11-04 13:21:23,952 - DEBUG - play_single_media_optimized received: {'duration': None, 'file_type': 'stream', 'filename': None, 'id': 12, 'is_stream': True, 'original_filename': 'TBN Inspire', 'stream_type': 'hls', 'stream_url': 'https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8', 'url': 'https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8'}
+2025-11-04 13:21:23,952 - DEBUG - download_media called with: dict_keys(['duration', 'file_type', 'filename', 'id', 'is_stream', 'original_filename', 'stream_type', 'stream_url', 'url'])
+2025-11-04 13:21:23,952 - INFO - Using stream URL: TBN Inspire -> https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:21:23,952 - INFO - Playing stream URL: https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:21:23,953 - INFO - Starting optimized single media playback: TBN Inspire
+2025-11-04 13:21:23,953 - DEBUG - Display environment - DISPLAY: :0, WAYLAND_DISPLAY: not set, SESSION_TYPE: x11, XAUTHORITY: /run/user/1000/gdm/Xauthority
+2025-11-04 13:21:23,953 - INFO - Starting optimized VLC for single media: vlc --fullscreen --no-osd --no-video-title-show --loop --no-random --no-qt-error-dialogs --intf dummy --vout x11 --avcodec-hw none --adaptive-logic 3 --adaptive-maxheight 1080 --network-caching 5000 --live-caching 5000 --file-caching 5000 --http-reconnect --hls-segment-threads 2 --hls-live-edge 3 -v https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:21:23,955 - INFO - Optimized single media VLC started - seamless looping with X11 auth fix!
+2025-11-04 13:21:23,974 - DEBUG - http://tvcon.trinity.local:80 "GET /api/devices/l-k5pi/playlist-status HTTP/1.1" 200 64
+2025-11-04 13:21:23,976 - DEBUG - Current playlist: -12, Server playlist: -12, Current timestamp: 2025-11-04T19:20:55.808442, Server timestamp: 2025-11-04T19:20:55.808442
+2025-11-04 13:21:25,976 - INFO - Running rapid playlist check (background thread)...
+2025-11-04 13:21:25,977 - DEBUG - Checking playlist status...
+2025-11-04 13:21:25,979 - DEBUG - Starting new HTTP connection (1): tvcon.trinity.local:80
+2025-11-04 13:21:26,136 - DEBUG - http://tvcon.trinity.local:80 "GET /api/devices/l-k5pi/playlist-status HTTP/1.1" 200 64
+2025-11-04 13:21:26,137 - DEBUG - Current playlist: -12, Server playlist: -12, Current timestamp: 2025-11-04T19:20:55.808442, Server timestamp: 2025-11-04T19:20:55.808442
+2025-11-04 13:21:28,138 - INFO - Running rapid playlist check (background thread)...
+2025-11-04 13:21:28,138 - DEBUG - Checking playlist status...
+2025-11-04 13:21:28,141 - DEBUG - Starting new HTTP connection (1): tvcon.trinity.local:80
+2025-11-04 13:21:28,296 - DEBUG - http://tvcon.trinity.local:80 "GET /api/devices/l-k5pi/playlist-status HTTP/1.1" 200 64
+2025-11-04 13:21:28,297 - DEBUG - Current playlist: -12, Server playlist: -12, Current timestamp: 2025-11-04T19:20:55.808442, Server timestamp: 2025-11-04T19:20:55.808442
+2025-11-04 13:21:28,960 - INFO - Single media VLC process ended, will restart on next loop
+2025-11-04 13:21:28,960 - INFO - Single media detected: TBN Inspire - using optimized direct playback
+2025-11-04 13:21:28,961 - INFO - 🔧 REPLIT-STREAMING-FIX-ACTIVE: Using corrected streaming media handler
+2025-11-04 13:21:28,961 - DEBUG - play_single_media_optimized received: {'duration': None, 'file_type': 'stream', 'filename': None, 'id': 12, 'is_stream': True, 'original_filename': 'TBN Inspire', 'stream_type': 'hls', 'stream_url': 'https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8', 'url': 'https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8'}
+2025-11-04 13:21:28,961 - DEBUG - download_media called with: dict_keys(['duration', 'file_type', 'filename', 'id', 'is_stream', 'original_filename', 'stream_type', 'stream_url', 'url'])
+2025-11-04 13:21:28,961 - INFO - Using stream URL: TBN Inspire -> https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:21:28,962 - INFO - Playing stream URL: https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:21:28,962 - INFO - Starting optimized single media playback: TBN Inspire
+2025-11-04 13:21:28,962 - DEBUG - Display environment - DISPLAY: :0, WAYLAND_DISPLAY: not set, SESSION_TYPE: x11, XAUTHORITY: /run/user/1000/gdm/Xauthority
+2025-11-04 13:21:28,962 - INFO - Starting optimized VLC for single media: vlc --fullscreen --no-osd --no-video-title-show --loop --no-random --no-qt-error-dialogs --intf dummy --vout x11 --avcodec-hw none --adaptive-logic 3 --adaptive-maxheight 1080 --network-caching 5000 --live-caching 5000 --file-caching 5000 --http-reconnect --hls-segment-threads 2 --hls-live-edge 3 -v https://6740bddc3aebe.streamlock.net/inspire-live/smil:monitor-ins.smil/playlist.m3u8
+2025-11-04 13:21:28,964 - INFO - Optimized single media VLC started - seamless looping with X11 auth fix!
+2025-11-04 13:21:30,298 - INFO - Running rapid playlist check (background thread)...

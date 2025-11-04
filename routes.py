@@ -525,7 +525,7 @@ def device_checkin(device_id):
 def get_client_version():
     """Get the latest client version and download information"""
     # Read version directly from client_agent.py to avoid duplication
-    latest_version = "2.3.3"  # Fallback
+    latest_version = "2.3.5"  # Fallback
     try:
         import re
         client_path = os.path.join(os.path.dirname(__file__), 'client_agent.py')
@@ -556,7 +556,7 @@ def get_client_version():
         'download_url': download_base,
         'github_repo': github_repo,
         'update_available': needs_update,
-        'release_notes': 'v2.3.3 - Complete HLS streaming fixes for both playlist AND single media playback modes'
+        'release_notes': 'v2.3.5 - Universal streaming improvements: 5-second buffering for all stream types (HLS, RTMP, RTSP)'
     })
 
 @api.route('/devices/<device_id>/playlist-status')
