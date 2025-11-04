@@ -5,7 +5,7 @@ Runs on Raspberry Pi or NUC devices to display media content
 """
 
 # Client version - increment when making updates
-CLIENT_VERSION = "2.3.3"
+CLIENT_VERSION = "2.3.5"
 
 import os
 import sys
@@ -645,17 +645,15 @@ class SignageClient:
                     '--intf', 'dummy',    # No interface (more stable)
                     '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
                     '--avcodec-hw', 'none',  # Disable hardware decoding (compatible parameter)
-                    # HLS adaptive streaming fixes - prevent freezing on resolution changes
-                    '--adaptive-logic', '3',  # Pin to fixed resolution (no adaptive switching)
-                    '--adaptive-maxheight', '1080',  # Lock to 1080p max (prevents upshifts)
+                    # General streaming optimizations for all stream types
                     '--network-caching', '5000',  # 5 second buffer for network streams
                     '--live-caching', '5000',     # 5 second buffer for live streams
                     '--file-caching', '5000',     # 5 second buffer for files
                     '--http-reconnect',           # Auto-reconnect on HTTP errors
-                    '--hls-segment-threads', '2',  # Parallel HLS segment fetching
-                    '--hls-live-edge', '3',       # Stay 3 segments behind live edge
                     '-vvv',               # Verbose logging to see VLC errors
                 ])
+                
+                # No additional HLS-specific parameters - the general buffering above is sufficient
                 
                 # Add the playlist file
                 command.append(playlist_file)
@@ -844,17 +842,15 @@ class SignageClient:
                 '--intf', 'dummy',    # No interface (more stable)
                 '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
                 '--avcodec-hw', 'none',  # Disable hardware decoding (compatibility)
-                # HLS adaptive streaming fixes - prevent freezing on resolution changes
-                '--adaptive-logic', '3',  # Pin to fixed resolution (no adaptive switching)
-                '--adaptive-maxheight', '1080',  # Lock to 1080p max (prevents upshifts)
+                # General streaming optimizations for all stream types
                 '--network-caching', '5000',  # 5 second buffer for network streams
                 '--live-caching', '5000',     # 5 second buffer for live streams
                 '--file-caching', '5000',     # 5 second buffer for files
                 '--http-reconnect',           # Auto-reconnect on HTTP errors
-                '--hls-segment-threads', '2',  # Parallel HLS segment fetching
-                '--hls-live-edge', '3',       # Stay 3 segments behind live edge
                 '-v',                 # Less verbose than -vvv for single media
             ])
+            
+            # No additional HLS-specific parameters - the general buffering above is sufficient
             
             # Set image duration for images (only for local files, not streams)
             if not local_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
