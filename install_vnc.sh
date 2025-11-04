@@ -35,17 +35,17 @@ CURRENT_USER=$(whoami)
 echo -e "${GREEN}👤 Installing VNC for user: ${CURRENT_USER}${NC}"
 echo ""
 
-# Install x11vnc
-echo -e "${BLUE}📦 Installing x11vnc package...${NC}"
+# Install x11vnc and expect
+echo -e "${BLUE}📦 Installing required packages...${NC}"
 sudo apt update
-sudo apt install -y x11vnc
+sudo apt install -y x11vnc expect
 
 if ! command -v x11vnc &> /dev/null; then
     echo -e "${RED}❌ x11vnc installation failed${NC}"
     exit 1
 fi
 
-echo -e "${GREEN}✅ x11vnc installed successfully${NC}"
+echo -e "${GREEN}✅ Packages installed successfully${NC}"
 echo ""
 
 # Create VNC password directory
@@ -56,11 +56,29 @@ mkdir -p "$VNC_DIR"
 echo -e "${BLUE}🔐 Setting VNC password...${NC}"
 echo -e "${YELLOW}   Setting default password: TBN@dmin!!${NC}"
 
-# Use printf to pipe both password entries to x11vnc
-printf "TBN@dmin!!\nTBN@dmin!!\n" | x11vnc -storepasswd "$VNC_DIR/passwd" >/dev/null 2>&1
+# Try different methods to create password file
+if command -v expect &> /dev/null; then
+    # Method 1: Use expect if available (most reliable)
+    expect <<EOF >/dev/null 2>&1
+spawn x11vnc -storepasswd "$VNC_DIR/passwd"
+expect "Enter VNC password:"
+send "TBN@dmin!!\r"
+expect "Verify password:"
+send "TBN@dmin!!\r"
+expect eof
+EOF
+elif x11vnc -storepasswd TBN@dmin!! "$VNC_DIR/passwd" >/dev/null 2>&1; then
+    # Method 2: Direct password argument (some versions support this)
+    echo "   Using direct password method"
+else
+    # Method 3: Pipe password (requires special handling)
+    (echo TBN@dmin!!; echo TBN@dmin!!) | x11vnc -storepasswd "$VNC_DIR/passwd" >/dev/null 2>&1
+fi
 
+# Verify password file was created
 if [ ! -f "$VNC_DIR/passwd" ]; then
-    echo -e "${RED}❌ Failed to create VNC password${NC}"
+    echo -e "${RED}❌ Failed to create VNC password file${NC}"
+    echo -e "${YELLOW}   Please run manually: x11vnc -storepasswd ~/.vnc/passwd${NC}"
     exit 1
 fi
 
