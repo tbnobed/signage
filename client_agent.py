@@ -647,7 +647,7 @@ class SignageClient:
                     '--avcodec-hw', 'none',  # Disable hardware decoding (compatible parameter)
                     # HLS adaptive streaming fixes - prevent freezing on resolution changes
                     '--adaptive-logic', '3',  # Pin to fixed resolution (no adaptive switching)
-                    '--adaptive-maxheight', '720',  # Lock to 720p max (prevents upshifts)
+                    '--adaptive-maxheight', '1080',  # Lock to 1080p max (prevents upshifts)
                     '--network-caching', '5000',  # 5 second buffer for network streams
                     '--live-caching', '5000',     # 5 second buffer for live streams
                     '--file-caching', '5000',     # 5 second buffer for files
