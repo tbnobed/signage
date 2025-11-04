@@ -5,7 +5,7 @@ Runs on Raspberry Pi or NUC devices to display media content
 """
 
 # Client version - increment when making updates
-CLIENT_VERSION = "2.3.6"
+CLIENT_VERSION = "2.3.7"
 
 import os
 import sys
@@ -441,6 +441,50 @@ class SignageClient:
             
         return False
 
+    def parse_hls_master_playlist(self, master_url):
+        """Parse HLS master playlist and return the highest quality variant URL"""
+        try:
+            self.logger.info(f"Parsing HLS master playlist: {master_url}")
+            response = requests.get(master_url, timeout=10)
+            response.raise_for_status()
+            
+            playlist_content = response.text
+            lines = playlist_content.split('\n')
+            
+            variants = []
+            for i, line in enumerate(lines):
+                if line.startswith('#EXT-X-STREAM-INF:'):
+                    # Parse bandwidth from this line
+                    bandwidth = None
+                    for param in line.split(','):
+                        if 'BANDWIDTH=' in param:
+                            bandwidth = int(param.split('BANDWIDTH=')[1])
+                            break
+                    
+                    # Next line should be the variant URL
+                    if i + 1 < len(lines) and bandwidth:
+                        variant_url = lines[i + 1].strip()
+                        if variant_url and not variant_url.startswith('#'):
+                            # Make absolute URL if relative
+                            if not variant_url.startswith(('http://', 'https://')):
+                                from urllib.parse import urljoin
+                                variant_url = urljoin(master_url, variant_url)
+                            variants.append((bandwidth, variant_url))
+            
+            if variants:
+                # Sort by bandwidth (highest first) and pick the best quality
+                variants.sort(reverse=True)
+                highest_bandwidth, highest_url = variants[0]
+                self.logger.info(f"Selected highest quality HLS variant: {highest_bandwidth} bps -> {highest_url}")
+                return highest_url
+            else:
+                self.logger.warning("No variants found in master playlist, using master URL")
+                return master_url
+                
+        except Exception as e:
+            self.logger.error(f"Failed to parse HLS master playlist: {e}, using original URL")
+            return master_url
+    
     def download_media(self, media_item):
         """Download media file if not cached locally, or return stream URL for streaming media"""
         
@@ -451,6 +495,10 @@ class SignageClient:
         if media_item.get('is_stream', False):
             stream_url = media_item.get('stream_url') or media_item.get('url')
             if stream_url and isinstance(stream_url, str) and stream_url.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
+                # For HLS streams, parse master playlist and get highest quality variant
+                if media_item.get('stream_type') == 'hls' or stream_url.endswith('.m3u8'):
+                    stream_url = self.parse_hls_master_playlist(stream_url)
+                
                 self.logger.info(f"Using stream URL: {media_item['original_filename']} -> {stream_url}")
                 return stream_url
             else:
@@ -850,15 +898,8 @@ class SignageClient:
                 '-v',                 # Less verbose than -vvv for single media
             ])
             
-            # HLS-specific: Lock to lowest quality to prevent adaptive switching freezes
-            is_hls = media_item.get('stream_type') == 'hls' or local_path.endswith('.m3u8')
-            if is_hls:
-                command.extend([
-                    '--adaptive-logic=lowest',  # Always use lowest quality (no switching)
-                    '--adaptive-maxwidth=1920',  # Max 1080p width
-                    '--adaptive-maxheight=1080', # Max 1080p height
-                ])
-                self.logger.info("HLS stream - locking to lowest quality to prevent freezing")
+            # HLS streams now use pre-selected variant URL (highest quality)
+            # No adaptive switching parameters needed since we're giving VLC a single variant
             
             # Set image duration for images (only for local files, not streams)
             if not local_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):

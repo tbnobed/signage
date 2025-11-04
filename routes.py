@@ -556,7 +556,7 @@ def get_client_version():
         'download_url': download_base,
         'github_repo': github_repo,
         'update_available': needs_update,
-        'release_notes': 'v2.3.6 - Fix HLS adaptive switching freezes by locking to lowest quality stream'
+        'release_notes': 'v2.3.7 - Fix HLS freezing by auto-selecting highest quality variant (no adaptive switching)'
     })
 
 @api.route('/devices/<device_id>/playlist-status')
