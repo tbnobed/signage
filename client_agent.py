@@ -645,6 +645,15 @@ class SignageClient:
                     '--intf', 'dummy',    # No interface (more stable)
                     '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
                     '--avcodec-hw', 'none',  # Disable hardware decoding (compatible parameter)
+                    # HLS adaptive streaming fixes - prevent freezing on resolution changes
+                    '--adaptive-logic', '3',  # Pin to fixed resolution (no adaptive switching)
+                    '--adaptive-maxheight', '720',  # Lock to 720p max (prevents upshifts)
+                    '--network-caching', '5000',  # 5 second buffer for network streams
+                    '--live-caching', '5000',     # 5 second buffer for live streams
+                    '--file-caching', '5000',     # 5 second buffer for files
+                    '--http-reconnect',           # Auto-reconnect on HTTP errors
+                    '--hls-segment-threads', '2',  # Parallel HLS segment fetching
+                    '--hls-live-edge', '3',       # Stay 3 segments behind live edge
                     '-vvv',               # Verbose logging to see VLC errors
                 ])
                 
