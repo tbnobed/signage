@@ -56,57 +56,70 @@ mkdir -p "$VNC_DIR"
 echo -e "${BLUE}🔐 Setting VNC password...${NC}"
 echo -e "${YELLOW}   Setting default password: TBN@dmin!!${NC}"
 
-# Create temporary expect script
-EXPECT_SCRIPT=$(mktemp)
-cat > "$EXPECT_SCRIPT" <<'EXPECTEOF'
-#!/usr/bin/expect -f
-set timeout 10
-set password "TBN@dmin!!"
-set passwd_file [lindex $argv 0]
+# Use expect to automate password entry - bulletproof version
+PASSWD_FILE="$VNC_DIR/passwd"
 
-spawn x11vnc -storepasswd $passwd_file
+expect -c "
+set timeout 10
+spawn x11vnc -storepasswd \"$PASSWD_FILE\"
+expect \"Enter VNC password:\"
+send \"TBN@dmin!!\r\"
+expect \"Verify password:\"
+send \"TBN@dmin!!\r\"
 expect {
-    "Enter VNC password:" {
-        send "$password\r"
-        expect "Verify password:" {
-            send "$password\r"
-        }
+    \"Password written\" { exit 0 }
+    \"Write password\" {
+        send \"y\r\"
+        expect eof
+        exit 0
     }
-    timeout {
-        exit 1
-    }
+    timeout { exit 1 }
 }
 expect eof
-EXPECTEOF
+" >/dev/null 2>&1
 
-chmod +x "$EXPECT_SCRIPT"
-
-# Run expect script
-if "$EXPECT_SCRIPT" "$VNC_DIR/passwd" >/dev/null 2>&1; then
-    echo -e "   ✅ Password set via expect"
+# Verify password file was created and has content
+if [ -f "$PASSWD_FILE" ] && [ -s "$PASSWD_FILE" ]; then
+    chmod 600 "$PASSWD_FILE"
+    echo -e "${GREEN}✅ VNC password configured successfully${NC}"
 else
-    # Fallback: try direct write (less secure but works)
-    echo -e "   ⚠️  Expect method failed, using fallback"
-    # VNC password uses a simple obfuscation - we'll use x11vnc's built-in method differently
-    echo -e "TBN@dmin!!\nTBN@dmin!!" | script -q -c "x11vnc -storepasswd $VNC_DIR/passwd" /dev/null >/dev/null 2>&1
+    echo -e "${YELLOW}⚠️  Automated password setup failed, trying alternative method...${NC}"
+    
+    # Alternative method using a temporary expect script file
+    TEMP_EXPECT="/tmp/vnc_setup_$$.exp"
+    cat > "$TEMP_EXPECT" <<'EOF'
+#!/usr/bin/expect -f
+set password "TBN@dmin!!"
+set passwd_file [lindex $argv 0]
+spawn x11vnc -storepasswd $passwd_file
+expect "Enter VNC password:"
+send "$password\r"
+expect "Verify password:"
+send "$password\r"
+expect {
+    "Password written" { }
+    "Write password" { send "y\r" }
+}
+expect eof
+EOF
+    chmod +x "$TEMP_EXPECT"
+    "$TEMP_EXPECT" "$PASSWD_FILE" >/dev/null 2>&1
+    rm -f "$TEMP_EXPECT"
+    
+    # Final verification
+    if [ -f "$PASSWD_FILE" ] && [ -s "$PASSWD_FILE" ]; then
+        chmod 600 "$PASSWD_FILE"
+        echo -e "${GREEN}✅ VNC password configured successfully${NC}"
+    else
+        echo -e "${RED}❌ Unable to create VNC password file automatically${NC}"
+        echo -e "${YELLOW}   Creating service anyway - you'll need to set password manually:${NC}"
+        echo -e "${YELLOW}   x11vnc -storepasswd ~/.vnc/passwd${NC}"
+        echo -e "${YELLOW}   sudo systemctl restart x11vnc${NC}"
+        # Create placeholder file so service doesn't fail immediately
+        touch "$PASSWD_FILE"
+        chmod 600 "$PASSWD_FILE"
+    fi
 fi
-
-# Cleanup temp file
-rm -f "$EXPECT_SCRIPT"
-
-# Verify password file was created
-if [ ! -f "$VNC_DIR/passwd" ]; then
-    echo -e "${RED}❌ Failed to create VNC password file${NC}"
-    echo -e "${YELLOW}   Please run manually after installation:${NC}"
-    echo -e "${YELLOW}   x11vnc -storepasswd ~/.vnc/passwd${NC}"
-    echo -e "${YELLOW}   sudo systemctl restart x11vnc${NC}"
-    echo -e "${YELLOW}   (Continuing with installation anyway...)${NC}"
-    # Create empty file so service can still be created
-    touch "$VNC_DIR/passwd"
-fi
-
-chmod 600 "$VNC_DIR/passwd"
-echo -e "${GREEN}✅ VNC password configured${NC}"
 echo ""
 
 # Create systemd service for x11vnc
