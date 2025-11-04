@@ -706,8 +706,8 @@ Comment=Apply kiosk mode settings on login
         # TeamViewer Host download URL (for unattended kiosk access)
         teamviewer_url = "https://download.teamviewer.com/download/linux/teamviewer-host_amd64.deb"
         
-        # Download path
-        download_dir = Path("/tmp")
+        # Download to setup directory where we have write permissions
+        download_dir = Path(self.setup_dir)
         teamviewer_deb = download_dir / "teamviewer-host_amd64.deb"
         
         try:
@@ -721,7 +721,7 @@ Comment=Apply kiosk mode settings on login
             request.add_header('Referer', 'https://www.teamviewer.com/')
             
             # Download with proper headers
-            with urllib.request.urlopen(request) as response, open(teamviewer_deb, 'wb') as out_file:
+            with urllib.request.urlopen(request) as response, open(str(teamviewer_deb), 'wb') as out_file:
                 out_file.write(response.read())
             
             print(f"   ✅ Downloaded: {teamviewer_deb}")
