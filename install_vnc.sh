@@ -54,8 +54,18 @@ mkdir -p "$VNC_DIR"
 
 # Set VNC password
 echo -e "${BLUE}🔐 Setting VNC password...${NC}"
-echo -e "${YELLOW}   Please enter a password for VNC access (6-8 characters recommended)${NC}"
-x11vnc -storepasswd "$VNC_DIR/passwd"
+
+# Check if running interactively
+if [ -t 0 ]; then
+    # Interactive mode - prompt for password
+    echo -e "${YELLOW}   Please enter a password for VNC access (6-8 characters recommended)${NC}"
+    x11vnc -storepasswd "$VNC_DIR/passwd"
+else
+    # Non-interactive mode (piped from curl) - use default password
+    echo -e "${YELLOW}   Non-interactive installation detected${NC}"
+    echo -e "${YELLOW}   Setting default password: TBN@dmin!!${NC}"
+    echo "TBN@dmin!!" | x11vnc -storepasswd "$VNC_DIR/passwd" -
+fi
 
 if [ ! -f "$VNC_DIR/passwd" ]; then
     echo -e "${RED}❌ Failed to create VNC password${NC}"
@@ -63,7 +73,7 @@ if [ ! -f "$VNC_DIR/passwd" ]; then
 fi
 
 chmod 600 "$VNC_DIR/passwd"
-echo -e "${GREEN}✅ VNC password saved to $VNC_DIR/passwd${NC}"
+echo -e "${GREEN}✅ VNC password configured${NC}"
 echo ""
 
 # Create systemd service for x11vnc
@@ -120,9 +130,10 @@ echo -e "${GREEN}   ✅ VNC Installation Complete!${NC}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo -e "${BLUE}Connection Details:${NC}"
-echo -e "  IP Address: ${YELLOW}${IP_ADDRESS}${NC}"
-echo -e "  VNC Port:   ${YELLOW}5900${NC}"
+echo -e "  IP Address:   ${YELLOW}${IP_ADDRESS}${NC}"
+echo -e "  VNC Port:     ${YELLOW}5900${NC}"
 echo -e "  Full Address: ${YELLOW}${IP_ADDRESS}:5900${NC}"
+echo -e "  Password:     ${YELLOW}TBN@dmin!!${NC}"
 echo ""
 echo -e "${BLUE}VNC Clients:${NC}"
 echo -e "  • Windows/Mac/Linux: RealVNC Viewer (https://www.realvnc.com/en/connect/download/viewer/)"
