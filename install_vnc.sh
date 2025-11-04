@@ -3,11 +3,12 @@
 # Installs and configures x11vnc for remote desktop access to digital signage displays
 # 
 # Usage:
-#   curl -sSL https://raw.githubusercontent.com/tbnobed/signage/main/install_vnc.sh | bash
-#   OR download and run manually:
-#   wget https://raw.githubusercontent.com/tbnobed/signage/main/install_vnc.sh
+#   wget https://raw.githubusercontent.com/tbnobed/signage/tablet/install_vnc.sh
 #   chmod +x install_vnc.sh
 #   ./install_vnc.sh
+#
+# One-liner (downloads and runs):
+#   wget -qO- https://raw.githubusercontent.com/tbnobed/signage/tablet/install_vnc.sh | bash
 
 set -e
 
@@ -35,17 +36,17 @@ CURRENT_USER=$(whoami)
 echo -e "${GREEN}👤 Installing VNC for user: ${CURRENT_USER}${NC}"
 echo ""
 
-# Install x11vnc and expect
-echo -e "${BLUE}📦 Installing required packages...${NC}"
-sudo apt update
-sudo apt install -y x11vnc expect
+# Install x11vnc
+echo -e "${BLUE}📦 Installing x11vnc...${NC}"
+sudo apt update -qq
+sudo apt install -y x11vnc
 
 if ! command -v x11vnc &> /dev/null; then
     echo -e "${RED}❌ x11vnc installation failed${NC}"
     exit 1
 fi
 
-echo -e "${GREEN}✅ Packages installed successfully${NC}"
+echo -e "${GREEN}✅ x11vnc installed successfully${NC}"
 echo ""
 
 # Create VNC password directory
@@ -54,71 +55,23 @@ mkdir -p "$VNC_DIR"
 
 # Set VNC password
 echo -e "${BLUE}🔐 Setting VNC password...${NC}"
-echo -e "${YELLOW}   Setting default password: TBN@dmin!!${NC}"
+echo -e "${YELLOW}   Please enter a VNC password (recommended: TBN@dmin!!)${NC}"
+echo ""
 
-# Use expect to automate password entry - bulletproof version
 PASSWD_FILE="$VNC_DIR/passwd"
 
-expect -c "
-set timeout 10
-spawn x11vnc -storepasswd \"$PASSWD_FILE\"
-expect \"Enter VNC password:\"
-send \"TBN@dmin!!\r\"
-expect \"Verify password:\"
-send \"TBN@dmin!!\r\"
-expect {
-    \"Password written\" { exit 0 }
-    \"Write password\" {
-        send \"y\r\"
-        expect eof
-        exit 0
-    }
-    timeout { exit 1 }
-}
-expect eof
-" >/dev/null 2>&1
+# Interactive password entry
+x11vnc -storepasswd "$PASSWD_FILE"
 
 # Verify password file was created and has content
 if [ -f "$PASSWD_FILE" ] && [ -s "$PASSWD_FILE" ]; then
     chmod 600 "$PASSWD_FILE"
+    echo ""
     echo -e "${GREEN}✅ VNC password configured successfully${NC}"
 else
-    echo -e "${YELLOW}⚠️  Automated password setup failed, trying alternative method...${NC}"
-    
-    # Alternative method using a temporary expect script file
-    TEMP_EXPECT="/tmp/vnc_setup_$$.exp"
-    cat > "$TEMP_EXPECT" <<'EOF'
-#!/usr/bin/expect -f
-set password "TBN@dmin!!"
-set passwd_file [lindex $argv 0]
-spawn x11vnc -storepasswd $passwd_file
-expect "Enter VNC password:"
-send "$password\r"
-expect "Verify password:"
-send "$password\r"
-expect {
-    "Password written" { }
-    "Write password" { send "y\r" }
-}
-expect eof
-EOF
-    chmod +x "$TEMP_EXPECT"
-    "$TEMP_EXPECT" "$PASSWD_FILE" >/dev/null 2>&1
-    rm -f "$TEMP_EXPECT"
-    
-    # Final verification
-    if [ -f "$PASSWD_FILE" ] && [ -s "$PASSWD_FILE" ]; then
-        chmod 600 "$PASSWD_FILE"
-        echo -e "${GREEN}✅ VNC password configured successfully${NC}"
-    else
-        echo -e "${RED}❌ Unable to create VNC password file automatically${NC}"
-        echo -e "${YELLOW}   Creating service anyway - you'll need to set password manually:${NC}"
-        echo -e "${YELLOW}   x11vnc -storepasswd ~/.vnc/passwd${NC}"
-        echo -e "${YELLOW}   sudo systemctl restart x11vnc${NC}"
-        # Create placeholder file so service doesn't fail immediately
-        touch "$PASSWD_FILE"
-        chmod 600 "$PASSWD_FILE"
-    fi
+    echo ""
+    echo -e "${RED}❌ Password file creation failed${NC}"
+    exit 1
 fi
 echo ""
 
@@ -179,7 +132,7 @@ echo -e "${BLUE}Connection Details:${NC}"
 echo -e "  IP Address:   ${YELLOW}${IP_ADDRESS}${NC}"
 echo -e "  VNC Port:     ${YELLOW}5900${NC}"
 echo -e "  Full Address: ${YELLOW}${IP_ADDRESS}:5900${NC}"
-echo -e "  Password:     ${YELLOW}TBN@dmin!!${NC}"
+echo -e "  Password:     ${YELLOW}(the password you just set)${NC}"
 echo ""
 echo -e "${BLUE}VNC Clients:${NC}"
 echo -e "  • Windows/Mac/Linux: RealVNC Viewer (https://www.realvnc.com/en/connect/download/viewer/)"
