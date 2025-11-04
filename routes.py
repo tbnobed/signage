@@ -525,7 +525,7 @@ def device_checkin(device_id):
 def get_client_version():
     """Get the latest client version and download information"""
     # Read version directly from client_agent.py to avoid duplication
-    latest_version = "2.3.5"  # Fallback
+    latest_version = "2.0.0"  # Fallback only if file read fails
     try:
         import re
         client_path = os.path.join(os.path.dirname(__file__), 'client_agent.py')
