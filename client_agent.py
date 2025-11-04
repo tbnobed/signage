@@ -5,7 +5,7 @@ Runs on Raspberry Pi or NUC devices to display media content
 """
 
 # Client version - increment when making updates
-CLIENT_VERSION = "2.3.5"
+CLIENT_VERSION = "2.3.6"
 
 import os
 import sys
@@ -843,14 +843,22 @@ class SignageClient:
                 '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
                 '--avcodec-hw', 'none',  # Disable hardware decoding (compatibility)
                 # General streaming optimizations for all stream types
-                '--network-caching', '5000',  # 5 second buffer for network streams
-                '--live-caching', '5000',     # 5 second buffer for live streams
-                '--file-caching', '5000',     # 5 second buffer for files
-                '--http-reconnect',           # Auto-reconnect on HTTP errors
+                '--network-caching=5000',  # 5 second buffer for network streams
+                '--live-caching=5000',     # 5 second buffer for live streams
+                '--file-caching=5000',     # 5 second buffer for files
+                '--http-reconnect',        # Auto-reconnect on HTTP errors
                 '-v',                 # Less verbose than -vvv for single media
             ])
             
-            # No additional HLS-specific parameters - the general buffering above is sufficient
+            # HLS-specific: Lock to lowest quality to prevent adaptive switching freezes
+            is_hls = media_item.get('stream_type') == 'hls' or local_path.endswith('.m3u8')
+            if is_hls:
+                command.extend([
+                    '--adaptive-logic=lowest',  # Always use lowest quality (no switching)
+                    '--adaptive-maxwidth=1920',  # Max 1080p width
+                    '--adaptive-maxheight=1080', # Max 1080p height
+                ])
+                self.logger.info("HLS stream - locking to lowest quality to prevent freezing")
             
             # Set image duration for images (only for local files, not streams)
             if not local_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):

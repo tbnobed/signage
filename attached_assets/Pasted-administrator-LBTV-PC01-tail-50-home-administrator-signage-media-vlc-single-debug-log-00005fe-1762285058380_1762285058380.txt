@@ -1,0 +1,33 @@
+administrator@LBTV-PC01:~$ tail -50 /home/administrator/signage/media/vlc_single_debug.log
+[00005fe60e5ceb20] dummy interface: using the dummy interface module...
+[000079fe3003ce00] adaptive demux: Changing stream format Unknown -> Unknown
+[000079fe3003ce00] adaptive demux: Encountered discontinuity
+[000079fe304c8cf0] mpeg4audio packetizer: AAC channels: 2 samplerate: 48000
+[000079fe304c2260] faad decoder warning: decoded zero sample
+[000079fe1400d350] vaapi_filters filter warning: Using SW chroma filter for 432x240 VAOP -> I420
+[000079fe140013c0] main vout display warning: VoutDisplayEvent 'pictures invalid'
+[000079fe140013c0] main vout display warning: VoutDisplayEvent 'pictures invalid'
+[000079fe14011860] vaapi_filters filter warning: Using SW chroma filter for 432x240 VAOP -> I420
+[000079fe3003a2c0] avcodec decoder warning: plane 1: pitch not aligned (224%64): disabling direct rendering
+[000079fe140013c0] main vout display warning: VoutDisplayEvent 'pictures invalid'
+[000079fe140013c0] main vout display warning: VoutDisplayEvent 'pictures invalid'
+[000079fe140013c0] main vout display warning: VoutDisplayEvent 'pictures invalid'
+[00005fe60e5bbab0] pulse audio output warning: starting late (-10657 us)
+[00005fe60e5bbab0] main audio output warning: playback way too early (-124308): playing silence
+administrator@LBTV-PC01:~$ tail -50 /home/administrator/signage/media/vlc_single_debug.log
+[00005fe60e5ceb20] dummy interface: using the dummy interface module...
+[000079fe3003ce00] adaptive demux: Changing stream format Unknown -> Unknown
+[000079fe3003ce00] adaptive demux: Encountered discontinuity
+[000079fe304c8cf0] mpeg4audio packetizer: AAC channels: 2 samplerate: 48000
+[000079fe304c2260] faad decoder warning: decoded zero sample
+[000079fe1400d350] vaapi_filters filter warning: Using SW chroma filter for 432x240 VAOP -> I420
+[000079fe140013c0] main vout display warning: VoutDisplayEvent 'pictures invalid'
+[000079fe140013c0] main vout display warning: VoutDisplayEvent 'pictures invalid'
+[000079fe14011860] vaapi_filters filter warning: Using SW chroma filter for 432x240 VAOP -> I420
+[000079fe3003a2c0] avcodec decoder warning: plane 1: pitch not aligned (224%64): disabling direct rendering
+[000079fe140013c0] main vout display warning: VoutDisplayEvent 'pictures invalid'
+[000079fe140013c0] main vout display warning: VoutDisplayEvent 'pictures invalid'
+[000079fe140013c0] main vout display warning: VoutDisplayEvent 'pictures invalid'
+[00005fe60e5bbab0] pulse audio output warning: starting late (-10657 us)
+[00005fe60e5bbab0] main audio output warning: playback way too early (-124308): playing silence
+administrator@LBTV-PC01:~$
