@@ -1,0 +1,19 @@
+2025-11-04 12:39:06,816 - INFO - Downloading update from: https://github.com/tbnobed/signage.git
+2025-11-04 12:39:09,792 - INFO - Backed up current client to: /home/administrator/signage/client_agent.py.backup
+2025-11-04 12:39:09,792 - INFO - New client version installed successfully
+2025-11-04 12:39:09,803 - INFO - Update completed successfully. Restarting client...
+2025-11-04 12:39:09,803 - INFO - Restarting client after update...
+2025-11-04 12:39:09,803 - INFO - Cleaning up resources...
+2025-11-04 12:39:10,838 - INFO - Cleanup complete
+2025-11-04 12:39:10,838 - INFO - Auto-update complete! Exiting for systemd restart...
+2025-11-04 12:39:12,078 - INFO - Single media VLC process ended, will restart on next loop
+2025-11-04 12:39:12,079 - INFO - Single media detected: Tustin MC - using optimized direct playback
+2025-11-04 12:39:12,079 - INFO - 🔧 REPLIT-STREAMING-FIX-ACTIVE: Using corrected streaming media handler
+2025-11-04 12:39:12,079 - DEBUG - play_single_media_optimized received: {'duration': None, 'file_type': 'stream', 'filename': None, 'id': 11, 'is_stream': True, 'original_filename': 'Tustin MC', 'stream_type': 'rtmp', 'stream_url': 'rtmp://cdn1.obedtv.live:1937/live/Socal2', 'url': 'rtmp://cdn1.obedtv.live:1937/live/Socal2'}
+2025-11-04 12:39:12,079 - DEBUG - download_media called with: dict_keys(['duration', 'file_type', 'filename', 'id', 'is_stream', 'original_filename', 'stream_type', 'stream_url', 'url'])
+2025-11-04 12:39:12,079 - INFO - Using stream URL: Tustin MC -> rtmp://cdn1.obedtv.live:1937/live/Socal2
+2025-11-04 12:39:12,080 - INFO - Playing stream URL: rtmp://cdn1.obedtv.live:1937/live/Socal2
+2025-11-04 12:39:12,080 - INFO - Starting optimized single media playback: Tustin MC
+2025-11-04 12:39:12,080 - DEBUG - Display environment - DISPLAY: :0, WAYLAND_DISPLAY: not set, SESSION_TYPE: x11, XAUTHORITY: /run/user/1000/gdm/Xauthority
+2025-11-04 12:39:12,080 - INFO - Starting optimized VLC for single media: vlc --fullscreen --no-osd --no-video-title-show --loop --no-random --no-qt-error-dialogs --intf dummy --vout x11 --avcodec-hw none -v rtmp://cdn1.obedtv.live:1937/live/Socal2
+2025-11-04 12:39:12,082 - INFO - Optimized single media VLC started - seamless looping with X11 auth fix!
