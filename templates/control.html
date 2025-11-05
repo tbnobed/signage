@@ -314,13 +314,19 @@
         
         .media-grid {
             display: grid !important;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 0.875rem;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
             padding: 0.25rem;
             visibility: visible !important;
         }
         
-        @media (min-width: 768px) {
+        @media (max-width: 1200px) {
+            .media-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
             .media-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -329,12 +335,12 @@
         .media-card {
             background: rgba(255, 255, 255, 0.03);
             border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.15s ease;
             position: relative;
             overflow: hidden;
-            min-height: 180px;
+            min-height: 140px;
             display: flex !important;
             flex-direction: column;
             visibility: visible !important;
@@ -358,7 +364,7 @@
         
         .media-card-preview {
             width: 100%;
-            height: 110px;
+            height: 80px;
             background: rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
@@ -374,7 +380,7 @@
         }
         
         .media-card-preview > i {
-            font-size: 3rem;
+            font-size: 2rem;
             color: rgba(255, 255, 255, 0.3);
         }
         
@@ -396,7 +402,7 @@
         }
         
         .media-card-video-placeholder i {
-            font-size: 3.5rem;
+            font-size: 2.5rem;
             color: #00d9ff;
             opacity: 0.5;
         }
@@ -414,15 +420,15 @@
         }
         
         .media-card-info {
-            padding: 1rem;
+            padding: 0.6rem;
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.3rem;
         }
         
         .media-card-title {
-            font-size: 1rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: #fff;
             line-height: 1.3;
@@ -434,11 +440,11 @@
         }
         
         .media-card-type {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: #8899aa;
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.3rem;
         }
         
         .media-card-check {
