@@ -617,36 +617,6 @@
                             <i class="fas fa-power-off"></i>
                             Reboot Device
                         </button>
-                        
-                        <button class="control-btn btn-update" onclick="updateDevice({{ device.id }}, '{{ device.name }}')">
-                            <i class="fas fa-sync-alt"></i>
-                            Update Client
-                        </button>
-                        
-                        <div class="device-info-section">
-                            <div class="info-row">
-                                <span class="info-label">Device ID</span>
-                                <span class="info-value">{{ device.device_id }}</span>
-                            </div>
-                            {% if device.ip_address %}
-                            <div class="info-row">
-                                <span class="info-label">IP Address</span>
-                                <span class="info-value">{{ device.ip_address }}</span>
-                            </div>
-                            {% endif %}
-                            {% if device.client_version %}
-                            <div class="info-row">
-                                <span class="info-label">Version</span>
-                                <span class="info-value">v{{ device.client_version }}</span>
-                            </div>
-                            {% endif %}
-                            {% if device.teamviewer_id %}
-                            <div class="info-row">
-                                <span class="info-label">TeamViewer</span>
-                                <span class="info-value">{{ device.teamviewer_id }}</span>
-                            </div>
-                            {% endif %}
-                        </div>
                     </div>
                 </div>
             </div>
