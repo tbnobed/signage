@@ -5,7 +5,7 @@ Runs on Raspberry Pi or NUC devices to display media content
 """
 
 # Client version - increment when making updates
-CLIENT_VERSION = "2.3.7"
+CLIENT_VERSION = "2.3.8"
 
 import os
 import sys
@@ -29,6 +29,12 @@ RAPID_CHECK_INTERVAL = int(os.environ.get('RAPID_CHECK_INTERVAL', '2'))  # secon
 UPDATE_CHECK_INTERVAL = int(os.environ.get('UPDATE_CHECK_INTERVAL', '21600'))  # 6 hours in seconds
 MEDIA_DIR = os.environ.get('MEDIA_DIR', os.path.expanduser('~/signage/media'))
 LOG_FILE = os.environ.get('LOG_FILE', os.path.expanduser('~/signage/client.log'))
+
+# Stream health monitoring configuration
+STREAM_HEALTH_CHECK_INTERVAL = int(os.environ.get('STREAM_HEALTH_CHECK_INTERVAL', '10'))  # Check every 10 seconds
+STREAM_STALL_THRESHOLD = int(os.environ.get('STREAM_STALL_THRESHOLD', '30'))  # Consider stalled after 30 seconds
+STREAM_MAX_CONSECUTIVE_ERRORS = int(os.environ.get('STREAM_MAX_CONSECUTIVE_ERRORS', '3'))  # Max errors before restart
+STREAM_RESTART_COOLDOWN = int(os.environ.get('STREAM_RESTART_COOLDOWN', '60'))  # Wait 60s between restarts
 
 # Media player commands for desktop Ubuntu
 PLAYER_COMMANDS = {
@@ -60,6 +66,16 @@ class SignageClient:
         self._playlist_lock = Lock()
         self._stop_event = threading.Event()
         
+        # Stream health monitoring state
+        self._stream_health_active = False
+        self._current_stream_url = None
+        self._vlc_rc_socket = None
+        self._vlc_log_file = None
+        self._last_stream_progress = None
+        self._last_demux_bytes = 0
+        self._stream_error_count = 0
+        self._last_stream_restart = None
+        
         # Create media directory
         Path(MEDIA_DIR).mkdir(exist_ok=True)
         
@@ -77,6 +93,11 @@ class SignageClient:
         self._heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
         self._heartbeat_thread.start()
         self.logger.info("Background heartbeat checking started")
+        
+        # Start stream health monitoring thread
+        self._stream_health_thread = threading.Thread(target=self._stream_health_loop, daemon=True)
+        self._stream_health_thread.start()
+        self.logger.info("Stream health monitoring thread started")
         
         # Update system is now admin-controlled via server commands (no automatic checking)
         
@@ -256,6 +277,143 @@ class SignageClient:
                 self.send_checkin()
             except Exception as e:
                 self.logger.error(f"Error in heartbeat loop: {e}")
+
+    def _stream_health_loop(self):
+        """Background thread that monitors HLS stream health and restarts on freeze"""
+        import socket
+        
+        while not self._stop_event.wait(STREAM_HEALTH_CHECK_INTERVAL):
+            try:
+                # Only monitor when stream health is active
+                if not self._stream_health_active or not self._vlc_rc_socket or not self._current_stream_url:
+                    continue
+                
+                # Check if VLC process is still running
+                if not self.current_process or self.current_process.poll() is not None:
+                    self.logger.warning("VLC process not running - stream health monitoring paused")
+                    continue
+                
+                # Check cooldown period
+                if self._last_stream_restart:
+                    time_since_restart = (datetime.now() - self._last_stream_restart).total_seconds()
+                    if time_since_restart < STREAM_RESTART_COOLDOWN:
+                        self.logger.debug(f"Stream restart cooldown active: {int(STREAM_RESTART_COOLDOWN - time_since_restart)}s remaining")
+                        continue
+                
+                # Try to connect to VLC RC socket and check stats
+                stream_progressing = False
+                try:
+                    # Connect to RC socket with short timeout
+                    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                    sock.settimeout(2.0)
+                    sock.connect(self._vlc_rc_socket)
+                    
+                    # Send stats command
+                    sock.sendall(b'stats\n')
+                    
+                    # Read response (non-blocking with timeout)
+                    response = b''
+                    sock.settimeout(1.0)
+                    try:
+                        while True:
+                            chunk = sock.recv(4096)
+                            if not chunk:
+                                break
+                            response += chunk
+                            # Break if we got enough data
+                            if len(response) > 1024:
+                                break
+                    except socket.timeout:
+                        pass  # Got some data, that's fine
+                    
+                    sock.close()
+                    
+                    # Parse demux read bytes from response
+                    response_str = response.decode('utf-8', errors='ignore')
+                    import re
+                    demux_match = re.search(r'demux read bytes\s*:\s*(\d+)', response_str)
+                    
+                    if demux_match:
+                        current_demux_bytes = int(demux_match.group(1))
+                        
+                        # Check if bytes are increasing (stream is progressing)
+                        if current_demux_bytes > self._last_demux_bytes:
+                            stream_progressing = True
+                            self._last_stream_progress = datetime.now()
+                            self._last_demux_bytes = current_demux_bytes
+                            self._stream_error_count = 0  # Reset error count
+                            self.logger.debug(f"Stream healthy: {current_demux_bytes} bytes demuxed")
+                        else:
+                            self.logger.warning(f"Stream stalled: demux bytes unchanged at {current_demux_bytes}")
+                    else:
+                        self.logger.warning("Could not parse demux bytes from VLC stats")
+                
+                except (socket.error, socket.timeout, OSError) as sock_err:
+                    self.logger.warning(f"Failed to connect to VLC RC socket: {sock_err}")
+                    self._stream_error_count += 1
+                
+                # Check if stream has been stalled too long
+                if not stream_progressing:
+                    # If _last_stream_progress is None, seed it now (defensive fallback)
+                    if not self._last_stream_progress:
+                        self._last_stream_progress = datetime.now()
+                        self.logger.warning("Stream progress timestamp was unset - initializing now")
+                    
+                    stall_duration = (datetime.now() - self._last_stream_progress).total_seconds()
+                    
+                    if stall_duration > STREAM_STALL_THRESHOLD:
+                        self.logger.error(f"Stream stalled for {int(stall_duration)}s - initiating restart")
+                        self.send_log('error', f"HLS stream frozen for {int(stall_duration)}s - restarting playback")
+                        
+                        # Restart VLC
+                        self._restart_stream()
+                
+                # Check if too many consecutive errors
+                if self._stream_error_count >= STREAM_MAX_CONSECUTIVE_ERRORS:
+                    self.logger.error(f"Stream health check failed {self._stream_error_count} times - restarting")
+                    self.send_log('error', f"Stream monitoring errors - restarting playback")
+                    self._restart_stream()
+                
+            except Exception as e:
+                self.logger.error(f"Error in stream health monitoring: {e}")
+
+    def _restart_stream(self):
+        """Restart VLC when stream freezes"""
+        try:
+            self.logger.info("Restarting frozen stream...")
+            
+            # Set restart timestamp for cooldown
+            self._last_stream_restart = datetime.now()
+            
+            # Terminate VLC process
+            if self.current_process:
+                try:
+                    self.current_process.terminate()
+                    time.sleep(2)
+                    if self.current_process.poll() is None:
+                        self.current_process.kill()
+                        time.sleep(1)
+                except Exception as term_err:
+                    self.logger.warning(f"Error terminating VLC: {term_err}")
+            
+            # Clean up RC socket
+            if self._vlc_rc_socket and os.path.exists(self._vlc_rc_socket):
+                try:
+                    os.remove(self._vlc_rc_socket)
+                except:
+                    pass
+            
+            # Reset health monitoring state
+            self._last_demux_bytes = 0
+            self._stream_error_count = 0
+            self._last_stream_progress = datetime.now()
+            
+            # Restart playback using existing playlist
+            self.logger.info("Restarting playlist after stream freeze...")
+            self.play_playlist()
+            
+        except Exception as e:
+            self.logger.error(f"Failed to restart stream: {e}")
 
     def handle_update_command(self):
         """Handle update command received from server"""
@@ -651,6 +809,12 @@ class SignageClient:
                 # VLC: Create M3U playlist file (existing logic)
                 playlist_file = os.path.join(MEDIA_DIR, 'current_playlist.m3u')
                 
+                # Check if any items are HLS streams for health monitoring
+                has_hls_stream = any(
+                    path.startswith(('http://', 'https://')) and '.m3u8' in path 
+                    for path in media_paths
+                )
+                
                 # Generate M3U playlist content (simpler and more reliable than XSPF)
                 with open(playlist_file, 'w', encoding='utf-8') as f:
                     f.write('#EXTM3U\n')
@@ -659,6 +823,9 @@ class SignageClient:
                         if media_path.startswith(('http://', 'https://', 'rtmp://', 'rtmps://', 'rtsp://')):
                             # Stream URLs: Use as-is, no file processing
                             f.write(f'{media_path}\n')
+                            # Track stream URL for health monitoring
+                            if '.m3u8' in media_path:
+                                self._current_stream_url = media_path
                         else:
                             # Local files: Apply absolute path and image duration settings
                             abs_path = os.path.abspath(media_path)
@@ -674,6 +841,8 @@ class SignageClient:
                             f.write(f'{abs_path}\n')
                 
                 self.logger.info(f"Created VLC playlist with {len(media_paths)} items: {playlist_file}")
+                if has_hls_stream:
+                    self.logger.info("Playlist contains HLS stream(s) - enabling health monitoring")
                 
                 # VLC screen targeting
                 if SCREEN_INDEX > 0:
@@ -683,23 +852,69 @@ class SignageClient:
                 if '--loop' in command:
                     command.remove('--loop')
                 
-                # Force infinite looping for images and videos
-                command.extend([
-                    '--loop',             # Loop the entire playlist (NOT repeat current item)
-                    '--image-duration', '10',  # Images show for 10 seconds each (backup for EXTVLCOPT)
-                    '--playlist-autostart',    # Auto start playlist
-                    '--no-random',        # Play in order
-                    '--no-qt-error-dialogs',  # No error popups
-                    '--intf', 'dummy',    # No interface (more stable)
-                    '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
-                    '--avcodec-hw', 'none',  # Disable hardware decoding (compatible parameter)
-                    # General streaming optimizations for all stream types
-                    '--network-caching', '5000',  # 5 second buffer for network streams
-                    '--live-caching', '5000',     # 5 second buffer for live streams
-                    '--file-caching', '5000',     # 5 second buffer for files
-                    '--http-reconnect',           # Auto-reconnect on HTTP errors
-                    '-vvv',               # Verbose logging to see VLC errors
-                ])
+                # Configure RC socket for stream health monitoring
+                if has_hls_stream:
+                    self._vlc_rc_socket = f'/tmp/vlc_{DEVICE_ID}.sock'
+                    self._vlc_log_file = os.path.join(MEDIA_DIR, 'vlc_debug.log')
+                    
+                    # Clean up any stale socket
+                    if os.path.exists(self._vlc_rc_socket):
+                        try:
+                            os.remove(self._vlc_rc_socket)
+                        except:
+                            pass
+                    
+                    # Force infinite looping for images and videos
+                    command.extend([
+                        '--loop',             # Loop the entire playlist (NOT repeat current item)
+                        '--image-duration', '10',  # Images show for 10 seconds each (backup for EXTVLCOPT)
+                        '--playlist-autostart',    # Auto start playlist
+                        '--no-random',        # Play in order
+                        '--no-qt-error-dialogs',  # No error popups
+                        '--extraintf', 'rc',  # Enable RC interface for monitoring
+                        '--rc-unix', self._vlc_rc_socket,  # RC socket path
+                        '--rc-quiet',         # Less verbose RC output
+                        '--intf', 'dummy',    # No interface (more stable)
+                        '--file-logging',     # Enable file logging
+                        '--logfile', self._vlc_log_file,  # Log file path
+                        '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
+                        '--avcodec-hw', 'none',  # Disable hardware decoding (compatible parameter)
+                        # General streaming optimizations for all stream types
+                        '--network-caching', '5000',  # 5 second buffer for network streams
+                        '--live-caching', '5000',     # 5 second buffer for live streams
+                        '--file-caching', '5000',     # 5 second buffer for files
+                        '--http-reconnect',           # Auto-reconnect on HTTP errors
+                        '-vvv',               # Verbose logging to see VLC errors
+                    ])
+                    
+                    # Enable stream health monitoring - CRITICAL: Initialize timestamp NOW
+                    # so that freezes before first demux progress still trigger restart
+                    self._stream_health_active = True
+                    self._last_stream_progress = datetime.now()  # Seed progress timer immediately
+                    self._last_demux_bytes = 0
+                    self._stream_error_count = 0
+                    self.logger.info(f"VLC RC socket enabled at: {self._vlc_rc_socket}")
+                    self.logger.info(f"Stream health monitoring active - will restart if stalled for {STREAM_STALL_THRESHOLD}s")
+                else:
+                    # No streams - standard VLC options
+                    self._stream_health_active = False
+                    self._current_stream_url = None
+                    command.extend([
+                        '--loop',             # Loop the entire playlist (NOT repeat current item)
+                        '--image-duration', '10',  # Images show for 10 seconds each (backup for EXTVLCOPT)
+                        '--playlist-autostart',    # Auto start playlist
+                        '--no-random',        # Play in order
+                        '--no-qt-error-dialogs',  # No error popups
+                        '--intf', 'dummy',    # No interface (more stable)
+                        '--vout', 'x11',      # Force X11 output (Ubuntu/Wayland compatibility)
+                        '--avcodec-hw', 'none',  # Disable hardware decoding (compatible parameter)
+                        # General streaming optimizations for all stream types
+                        '--network-caching', '5000',  # 5 second buffer for network streams
+                        '--live-caching', '5000',     # 5 second buffer for live streams
+                        '--file-caching', '5000',     # 5 second buffer for files
+                        '--http-reconnect',           # Auto-reconnect on HTTP errors
+                        '-vvv',               # Verbose logging to see VLC errors
+                    ])
                 
                 # No additional HLS-specific parameters - the general buffering above is sufficient
                 
