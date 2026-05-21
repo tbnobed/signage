@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "DP0dgf7pjsnVqF4_LVEkr"
+uri = "file://exports/jw_hls_urls.csv"
+type = "table"
+title = "JW Player HLS URLs (TBN / Inspire / Positiv)"
