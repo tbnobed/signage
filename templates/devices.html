@@ -1,84 +1,106 @@
 {% extends "base.html" %}
-
 {% block title %}Devices — DisplayHQ{% endblock %}
 {% block page_title %}Devices{% endblock %}
 
 {% block extra_css %}
 <style>
-/* ── View toolbar ── */
-.view-toolbar { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
-.btn-view { padding:.25rem .6rem; font-size:.8rem; }
-.btn-view.active { background:var(--accent); color:#fff; border-color:var(--accent); }
-
-/* ── Compact grid cards ── */
-#devicesContainer.view-grid { display:flex; flex-wrap:wrap; gap:.75rem; }
-#devicesContainer.view-grid .device-item { width:calc(25% - .75rem); min-width:220px; flex:1 1 220px; }
-#devicesContainer.view-grid .device-card { height:100%; }
-#devicesContainer.view-list .device-item { width:100%; }
-
-.device-card .card-header { padding:.4rem .65rem; }
-.device-card .card-header h6 { font-size:.78rem; }
-.device-card .card-body { padding:.5rem .65rem; font-size:.75rem; }
-.device-card .info-label { color:var(--accent); font-size:.65rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
-.device-card .info-val { font-size:.75rem; line-height:1.3; }
-.device-card code { font-size:.68rem; }
-.device-card .nav-tabs .nav-link { padding:.2rem .45rem; font-size:.7rem; }
-.device-card .form-select-sm { font-size:.72rem; padding:.2rem .4rem; }
-.device-card .btn-compact { padding:.15rem .35rem; font-size:.68rem; }
-.device-card .card-actions { margin-top:.4rem; padding-top:.4rem; border-top:1px solid rgba(255,255,255,.07); }
-
-/* ── List view rows ── */
-#devicesContainer.view-list .device-card { display:none; }
-#devicesContainer.view-list .device-list-row {
-    display:flex; align-items:center; gap:.6rem;
-    background:var(--card-bg); border:1px solid var(--border);
-    border-radius:8px; padding:.45rem .75rem; font-size:.78rem;
+/* ── Toolbar ── */
+.devices-toolbar {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
 }
-#devicesContainer.view-grid .device-list-row { display:none; }
-.list-status-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-.list-status-dot.online  { background:var(--success); box-shadow:0 0 5px var(--success); }
-.list-status-dot.offline { background:var(--danger); }
-.list-col-name   { min-width:130px; max-width:160px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.list-col-id     { min-width:100px; max-width:130px; color:#888; font-size:.7rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.list-col-loc    { min-width:80px; max-width:120px; color:#aaa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.list-col-playing{ flex:1; min-width:100px; color:#ccc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.list-col-assign { min-width:130px; max-width:180px; }
-.list-col-assign .form-select { font-size:.7rem; padding:.15rem .3rem; background:var(--input-bg); border-color:var(--border); color:#ccc; height:auto; }
-.list-col-actions { display:flex; gap:.25rem; flex-shrink:0; }
-.list-col-actions .btn { padding:.15rem .35rem; font-size:.68rem; }
+.view-btn { width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: .8rem; }
+.view-btn.active { background: var(--accent) !important; border-color: var(--accent) !important; color: #fff !important; }
 
-/* ── Name edit in both views ── */
-.name-edit-form input { max-width:160px; font-size:.75rem; }
-.location-edit-form input { max-width:200px; font-size:.75rem; }
-.btn-link.text-info:hover { opacity:.8; }
+/* ── List view ── */
+.device-table { width: 100%; border-collapse: separate; border-spacing: 0 3px; }
+.device-table th {
+    font-size: .68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+    color: #666; padding: .45rem .75rem; cursor: pointer; user-select: none; white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+}
+.device-table th:hover { color: #aaa; }
+.device-table th .sort-icon { margin-left: .25rem; opacity: .4; }
+.device-table th.sort-active { color: var(--accent); }
+.device-table th.sort-active .sort-icon { opacity: 1; color: var(--accent); }
+.device-table td {
+    padding: .55rem .75rem; font-size: .82rem;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+.device-table td:first-child { border-left: 1px solid var(--border); border-radius: 7px 0 0 7px; }
+.device-table td:last-child  { border-right: 1px solid var(--border); border-radius: 0 7px 7px 0; }
+.device-table tr:hover td { background: rgba(255,255,255,.035); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.status-dot.online  { background: var(--success); box-shadow: 0 0 6px var(--success); }
+.status-dot.offline { background: #444; }
+.td-name { font-weight: 600; color: #e8e8f0; }
+.td-id   { font-family: 'JetBrains Mono', monospace; font-size: .72rem; color: #666; }
+.td-muted { color: #888; font-size: .78rem; }
+.td-assigned { font-size: .78rem; color: #aaa; }
+.td-assigned .fa-list { color: var(--accent); }
+.td-assigned .fa-file-image { color: var(--success); }
+.td-actions { white-space: nowrap; }
+.td-actions .btn { padding: .2rem .4rem; font-size: .7rem; opacity: .6; transition: opacity .15s; }
+.td-actions .btn:hover { opacity: 1; }
+tr:hover .td-actions .btn { opacity: .8; }
 
-/* ── No devices ── */
-.no-devices-card { width:100%; }
+/* ── Grid view ── */
+.device-grid { display: none; flex-wrap: wrap; gap: .75rem; }
+.device-grid.active { display: flex; }
+.device-card-wrap { flex: 1 1 240px; max-width: calc(25% - .6rem); min-width: 220px; }
+@media (max-width: 1200px) { .device-card-wrap { max-width: calc(33.33% - .5rem); } }
+@media (max-width: 900px)  { .device-card-wrap { max-width: calc(50% - .4rem); } }
+@media (max-width: 600px)  { .device-card-wrap { max-width: 100%; } }
+
+.dcard { border-radius: 10px; border: 1px solid var(--border); background: var(--card-bg); height: 100%; }
+.dcard-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .55rem .75rem; border-bottom: 1px solid var(--border);
+    gap: .5rem;
+}
+.dcard-head .dname { font-weight: 600; font-size: .82rem; color: #e8e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dcard-badge { font-size: .62rem; font-weight: 600; padding: .15rem .4rem; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+.dcard-badge.online  { background: rgba(16,185,129,.15); color: var(--success); }
+.dcard-badge.offline { background: rgba(255,255,255,.06); color: #666; }
+.dcard-body { padding: .6rem .75rem; font-size: .75rem; }
+.dcard-row { display: flex; gap: .35rem; margin-bottom: .3rem; color: #888; }
+.dcard-row .lbl { color: #555; font-size: .65rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; min-width: 52px; flex-shrink: 0; padding-top: .05rem; }
+.dcard-row .val { color: #ccc; word-break: break-all; }
+.dcard-row code { font-size: .68rem; color: #888; }
+.dcard-divider { border: none; border-top: 1px solid rgba(255,255,255,.06); margin: .5rem 0; }
+.dcard .form-select-sm { font-size: .72rem; padding: .2rem .4rem; height: auto; }
+.dcard .nav-tabs { border-color: rgba(255,255,255,.08); }
+.dcard .nav-tabs .nav-link { padding: .2rem .5rem; font-size: .7rem; border-radius: 4px 4px 0 0; }
+.dcard-actions { display: flex; justify-content: flex-end; gap: .3rem; margin-top: .5rem; padding-top: .5rem; border-top: 1px solid rgba(255,255,255,.06); }
+.dcard-actions .btn { padding: .18rem .4rem; font-size: .68rem; }
+
+/* ── List view hidden in grid mode ── */
+.list-view-table { display: block; }
+.list-view-table.hidden { display: none; }
+.device-grid.active ~ .list-view-table { display: none; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid my-4 fade-in">
 
-    <!-- Header row -->
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h2 class="text-gradient mb-0"><i class="fas fa-desktop me-2"></i>Devices</h2>
-        <div class="view-toolbar">
-            <!-- Sort toggle -->
-            <button id="sortBtn" class="btn btn-outline-secondary btn-sm btn-view" onclick="toggleSort()" title="Sort by name">
-                <i class="fas fa-sort-alpha-down me-1"></i><span id="sortLabel">A–Z</span>
-            </button>
-            <!-- View toggle -->
-            <div class="btn-group" role="group">
-                <button id="btnGrid" class="btn btn-outline-secondary btn-sm btn-view active" onclick="setView('grid')" title="Grid view">
-                    <i class="fas fa-th-large"></i>
-                </button>
-                <button id="btnList" class="btn btn-outline-secondary btn-sm btn-view" onclick="setView('list')" title="List view">
-                    <i class="fas fa-list"></i>
-                </button>
+        <h2 class="text-gradient mb-0"><i class="fas fa-desktop me-2"></i>Devices
+            {% if devices %}<span class="ms-2" style="font-size:.9rem;font-weight:400;color:#666;">{{ devices|length }}</span>{% endif %}
+        </h2>
+        <div class="devices-toolbar">
+            <div class="btn-group btn-group-sm">
+                <button id="btnList" class="btn btn-outline-secondary view-btn active" onclick="setView('list')" title="List view"><i class="fas fa-list"></i></button>
+                <button id="btnGrid" class="btn btn-outline-secondary view-btn" onclick="setView('grid')" title="Grid view"><i class="fas fa-th-large"></i></button>
             </div>
-            <div class="vr opacity-25"></div>
-            <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#clientSetupModal">
+            <div style="width:1px;height:20px;background:rgba(255,255,255,.1);"></div>
+            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#clientSetupModal">
                 <i class="fas fa-download me-1"></i>Client Setup
             </button>
             <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addDeviceModal">
@@ -87,16 +109,10 @@
         </div>
     </div>
 
-    <!-- Quick Start (no devices) -->
     {% if not devices %}
     <div class="alert alert-info">
-        <h5><i class="fas fa-info-circle me-2"></i>Get Started with Client Devices</h5>
-        <p class="mb-2">To connect displays to your signage system:</p>
-        <ol class="mb-3">
-            <li>Register a device using the "Add Device" button</li>
-            <li>Download and set up the client script on your device</li>
-            <li>Create playlists and assign them to devices</li>
-        </ol>
+        <h5><i class="fas fa-info-circle me-2"></i>No devices yet</h5>
+        <p class="mb-2">Register a device, then run the client setup script on your display hardware.</p>
         <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#clientSetupModal">
             <i class="fas fa-download me-1"></i>View Setup Instructions
         </button>
@@ -104,185 +120,130 @@
     {% endif %}
 
     {% if devices %}
-    <!-- Devices container: class toggled by JS -->
-    <div id="devicesContainer" class="view-grid">
 
-        {% for device in devices %}
-        <div class="device-item" data-name="{{ device.name|lower }}">
-
-            <!-- ═══ GRID CARD (compact) ═══ -->
-            <div class="card glass hover-lift device-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center flex-grow-1 overflow-hidden me-2">
-                        <h6 class="mb-0 device-name-display text-truncate" id="name-display-{{ device.id }}">{{ device.name }}</h6>
-                        <button class="btn btn-sm btn-link text-info p-0 ms-1 flex-shrink-0"
-                                onclick="editDeviceName({{ device.id }}, '{{ device.name|replace("'", "\\'") }}')" title="Edit name">
-                            <i class="fas fa-edit fa-xs"></i>
-                        </button>
-                        <form id="name-form-{{ device.id }}" class="name-edit-form d-none ms-1" onsubmit="saveDeviceName(event, {{ device.id }})">
-                            <div class="d-flex align-items-center">
-                                <input type="text" class="form-control form-control-sm me-1" id="name-input-{{ device.id }}" value="{{ device.name }}" required>
-                                <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check fa-xs"></i></button>
-                                <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEditName({{ device.id }})"><i class="fas fa-times fa-xs"></i></button>
-                            </div>
-                        </form>
-                    </div>
-                    {% if device.is_online() %}
-                    <span class="status-online flex-shrink-0" style="font-size:.65rem;"><i class="fas fa-circle me-1" style="font-size:.5rem;"></i>Online</span>
+    <!-- ═══════════════════════════════════════════
+         LIST VIEW (default)
+    ════════════════════════════════════════════ -->
+    <div id="listView">
+        <table class="device-table" id="deviceTable">
+            <thead>
+                <tr>
+                    <th style="width:16px;"></th>
+                    <th onclick="sortTable(1)" id="th-name">Name <i class="fas fa-sort sort-icon"></i></th>
+                    <th onclick="sortTable(2)" id="th-id">Device ID <i class="fas fa-sort sort-icon"></i></th>
+                    <th onclick="sortTable(3)" id="th-loc">Location <i class="fas fa-sort sort-icon"></i></th>
+                    <th>Assigned</th>
+                    <th onclick="sortTable(5)" id="th-seen">Last Seen <i class="fas fa-sort sort-icon"></i></th>
+                    <th style="text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="deviceTableBody">
+            {% for device in devices %}
+            <tr data-name="{{ device.name|lower }}" data-id="{{ device.device_id|lower }}" data-loc="{{ (device.location or '')|lower }}" data-seen="{{ device.last_checkin.strftime('%Y%m%d%H%M%S') if device.last_checkin else '' }}">
+                <td><span class="status-dot {% if device.is_online() %}online{% else %}offline{% endif %}"></span></td>
+                <td class="td-name">{{ device.name }}</td>
+                <td class="td-id">{{ device.device_id }}</td>
+                <td class="td-muted">{{ device.location or '—' }}</td>
+                <td class="td-assigned">
+                    {% if device.assigned_media_id %}
+                        {% for m in media_files %}{% if m.id == device.assigned_media_id %}<i class="fas fa-file-image fa-xs me-1"></i>{{ m.original_filename|truncate(28,True,'…') }}{% endif %}{% endfor %}
+                    {% elif device.current_playlist_id %}
+                        {% for p in playlists %}{% if p.id == device.current_playlist_id %}<i class="fas fa-list fa-xs me-1"></i>{{ p.name|truncate(28,True,'…') }}{% endif %}{% endfor %}
                     {% else %}
-                    <span class="status-offline flex-shrink-0" style="font-size:.65rem;"><i class="fas fa-circle me-1" style="font-size:.5rem;"></i>Offline</span>
+                        <span style="color:#444;">Unassigned</span>
                     {% endif %}
+                </td>
+                <td class="td-muted">{{ device.last_checkin.strftime('%m/%d %H:%M') if device.last_checkin else '—' }}</td>
+                <td class="td-actions" style="text-align:right;">
+                    <button class="btn btn-outline-info btn-sm"
+                            onclick="confirmUpdate('{{ device.name }}', '{{ device.id }}')"
+                            {% if not device.is_online() %}disabled{% endif %}
+                            title="Update client"><i class="fas fa-download"></i></button>
+                    <button class="btn btn-outline-warning btn-sm"
+                            onclick="confirmReboot('{{ device.name }}', '{{ device.id }}')"
+                            {% if not device.is_online() %}disabled{% endif %}
+                            title="Reboot"><i class="fas fa-power-off"></i></button>
+                    <button class="btn btn-outline-danger btn-sm"
+                            onclick="confirmDelete('{{ device.name }}', '{{ device.id }}')"
+                            title="Delete"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         GRID VIEW
+    ════════════════════════════════════════════ -->
+    <div class="device-grid" id="gridView">
+        {% for device in devices %}
+        <div class="device-card-wrap" data-name="{{ device.name|lower }}">
+            <div class="dcard">
+                <div class="dcard-head">
+                    <span class="dname" title="{{ device.name }}">{{ device.name }}</span>
+                    <span class="dcard-badge {% if device.is_online() %}online{% else %}offline{% endif %}">
+                        <i class="fas fa-circle fa-xs me-1"></i>{% if device.is_online() %}Online{% else %}Offline{% endif %}
+                    </span>
                 </div>
+                <div class="dcard-body">
+                    <div class="dcard-row"><span class="lbl">ID</span><span class="val"><code>{{ device.device_id }}</code></span></div>
+                    <div class="dcard-row"><span class="lbl">Location</span><span class="val">{{ device.location or '—' }}</span></div>
+                    {% if device.last_checkin %}<div class="dcard-row"><span class="lbl">Seen</span><span class="val">{{ device.last_checkin.strftime('%m/%d %H:%M') }}</span></div>{% endif %}
+                    {% if device.current_media %}<div class="dcard-row"><span class="lbl">Playing</span><span class="val" style="color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;" title="{{ device.current_media }}">{{ device.current_media }}</span></div>{% endif %}
+                    {% if device.client_version %}<div class="dcard-row"><span class="lbl">Client</span><span class="val">{{ device.client_version }}</span></div>{% endif %}
 
-                <div class="card-body">
-                    <!-- Info rows -->
-                    <div class="mb-1"><span class="info-label">ID</span><br><code>{{ device.device_id }}</code></div>
-
-                    <div class="mb-1">
-                        <span class="info-label">Location</span><br>
-                        <div class="d-flex align-items-center">
-                            <span class="device-location-display info-val text-truncate" id="location-display-{{ device.id }}">
-                                {{ device.location or '—' }}
-                            </span>
-                            <button class="btn btn-sm btn-link text-info p-0 ms-1 flex-shrink-0"
-                                    onclick="editDeviceLocation({{ device.id }}, '{{ (device.location or '')|replace("'", "\\'") }}')" title="Edit">
-                                <i class="fas fa-edit fa-xs"></i>
-                            </button>
-                        </div>
-                        <form id="location-form-{{ device.id }}" class="location-edit-form d-none mt-1" onsubmit="saveDeviceLocation(event, {{ device.id }})">
-                            <div class="d-flex align-items-center">
-                                <input type="text" class="form-control form-control-sm me-1" id="location-input-{{ device.id }}" value="{{ device.location or '' }}" placeholder="Enter location">
-                                <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check fa-xs"></i></button>
-                                <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEditLocation({{ device.id }})"><i class="fas fa-times fa-xs"></i></button>
-                            </div>
-                        </form>
-                    </div>
-
-                    {% if device.last_checkin %}
-                    <div class="mb-1"><span class="info-label">Last Seen</span><br><span class="info-val">{{ device.last_checkin.strftime('%m/%d %H:%M') }}</span></div>
-                    {% endif %}
-                    {% if device.current_media %}
-                    <div class="mb-1"><span class="info-label">Playing</span><br><span class="info-val text-truncate d-block"><i class="fas fa-play fa-xs me-1"></i>{{ device.current_media }}</span></div>
-                    {% endif %}
-                    {% if device.client_version %}
-                    <div class="mb-2"><span class="info-label">Client</span> <span class="info-val">{{ device.client_version }}</span></div>
-                    {% endif %}
+                    <hr class="dcard-divider">
 
                     <!-- Assignment tabs -->
-                    <ul class="nav nav-tabs nav-sm mb-2" role="tablist">
+                    <ul class="nav nav-tabs nav-sm mb-2">
                         <li class="nav-item">
-                            <button class="nav-link {% if not device.assigned_media_id %}active{% endif %}"
-                                    data-bs-toggle="tab" data-bs-target="#playlist-tab-{{ device.id }}" type="button">
+                            <button class="nav-link {% if not device.assigned_media_id %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#pt-{{ device.id }}" type="button">
                                 <i class="fas fa-list fa-xs me-1"></i>Playlist
                             </button>
                         </li>
                         <li class="nav-item">
-                            <button class="nav-link {% if device.assigned_media_id %}active{% endif %}"
-                                    data-bs-toggle="tab" data-bs-target="#media-tab-{{ device.id }}" type="button">
+                            <button class="nav-link {% if device.assigned_media_id %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#mt-{{ device.id }}" type="button">
                                 <i class="fas fa-file-image fa-xs me-1"></i>Media
                             </button>
                         </li>
                     </ul>
                     <div class="tab-content">
-                        <div class="tab-pane fade {% if not device.assigned_media_id %}show active{% endif %}" id="playlist-tab-{{ device.id }}">
-                            <form method="POST" action="{{ url_for('main.assign_playlist', device_id=device.id) }}" class="d-flex gap-1 align-items-center">
+                        <div class="tab-pane fade {% if not device.assigned_media_id %}show active{% endif %}" id="pt-{{ device.id }}">
+                            <form method="POST" action="{{ url_for('main.assign_playlist', device_id=device.id) }}" class="d-flex gap-1">
                                 <select name="playlist_id" class="form-select form-select-sm flex-grow-1">
-                                    <option value="">None</option>
+                                    <option value="">— None —</option>
                                     {% for playlist in playlists %}
                                     <option value="{{ playlist.id }}" {% if device.current_playlist_id == playlist.id and not device.assigned_media_id %}selected{% endif %}>{{ playlist.name }}</option>
                                     {% endfor %}
                                 </select>
-                                <button type="submit" class="btn btn-sm btn-outline-primary btn-compact flex-shrink-0"><i class="fas fa-save fa-xs"></i></button>
+                                <button type="submit" class="btn btn-sm btn-outline-primary" style="padding:.2rem .5rem;"><i class="fas fa-save fa-xs"></i></button>
                             </form>
                         </div>
-                        <div class="tab-pane fade {% if device.assigned_media_id %}show active{% endif %}" id="media-tab-{{ device.id }}">
-                            <form method="POST" action="{{ url_for('main.assign_media', device_id=device.id) }}" class="d-flex gap-1 align-items-center">
+                        <div class="tab-pane fade {% if device.assigned_media_id %}show active{% endif %}" id="mt-{{ device.id }}">
+                            <form method="POST" action="{{ url_for('main.assign_media', device_id=device.id) }}" class="d-flex gap-1">
                                 <select name="media_id" class="form-select form-select-sm flex-grow-1">
-                                    <option value="">None</option>
+                                    <option value="">— None —</option>
                                     {% for media in media_files %}
                                     <option value="{{ media.id }}" {% if device.assigned_media_id == media.id %}selected{% endif %}>{{ media.original_filename }}</option>
                                     {% endfor %}
                                 </select>
-                                <button type="submit" class="btn btn-sm btn-outline-success btn-compact flex-shrink-0"><i class="fas fa-save fa-xs"></i></button>
+                                <button type="submit" class="btn btn-sm btn-outline-success" style="padding:.2rem .5rem;"><i class="fas fa-save fa-xs"></i></button>
                             </form>
                         </div>
                     </div>
 
-                    <!-- Actions -->
-                    <div class="card-actions d-flex justify-content-end gap-1">
-                        <button type="button" class="btn btn-sm btn-outline-info btn-compact"
-                                onclick="confirmUpdate('{{ device.name }}', '{{ device.id }}')"
-                                {% if not device.is_online() %}disabled title="Offline"{% endif %}>
-                            <i class="fas fa-download fa-xs me-1"></i>Update
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-warning btn-compact"
-                                onclick="confirmReboot('{{ device.name }}', '{{ device.id }}')"
-                                {% if not device.is_online() %}disabled title="Offline"{% endif %}>
-                            <i class="fas fa-power-off fa-xs me-1"></i>Reboot
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-compact"
-                                onclick="confirmDelete('{{ device.name }}', '{{ device.id }}')">
-                            <i class="fas fa-trash fa-xs me-1"></i>Del
-                        </button>
+                    <div class="dcard-actions">
+                        <button class="btn btn-outline-info btn-sm" onclick="confirmUpdate('{{ device.name }}', '{{ device.id }}')" {% if not device.is_online() %}disabled{% endif %} title="Update"><i class="fas fa-download fa-xs me-1"></i>Update</button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="confirmReboot('{{ device.name }}', '{{ device.id }}')" {% if not device.is_online() %}disabled{% endif %} title="Reboot"><i class="fas fa-power-off fa-xs me-1"></i>Reboot</button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="confirmDelete('{{ device.name }}', '{{ device.id }}')"><i class="fas fa-trash fa-xs"></i></button>
                     </div>
                 </div>
-            </div><!-- /device-card -->
-
-            <!-- ═══ LIST ROW ═══ -->
-            <div class="device-list-row">
-                <div class="list-status-dot {% if device.is_online() %}online{% else %}offline{% endif %}" title="{% if device.is_online() %}Online{% else %}Offline{% endif %}"></div>
-                <div class="list-col-name" title="{{ device.name }}">{{ device.name }}</div>
-                <div class="list-col-id" title="{{ device.device_id }}"><code>{{ device.device_id }}</code></div>
-                <div class="list-col-loc" title="{{ device.location or '' }}">
-                    <i class="fas fa-map-marker-alt fa-xs me-1 opacity-50"></i>{{ device.location or '—' }}
-                </div>
-                <div class="list-col-playing">
-                    {% if device.current_media %}<i class="fas fa-play fa-xs me-1 opacity-50"></i>{{ device.current_media }}
-                    {% else %}<span class="opacity-25">—</span>{% endif %}
-                </div>
-                <!-- Compact assignment for list view -->
-                <div class="list-col-assign">
-                    {% if device.assigned_media_id %}
-                        {% for m in media_files %}{% if m.id == device.assigned_media_id %}<span title="Media: {{ m.original_filename }}"><i class="fas fa-file-image fa-xs me-1 text-success"></i>{{ m.original_filename|truncate(22, True, '…') }}</span>{% endif %}{% endfor %}
-                    {% elif device.current_playlist_id %}
-                        {% for p in playlists %}{% if p.id == device.current_playlist_id %}<span title="Playlist: {{ p.name }}"><i class="fas fa-list fa-xs me-1 text-info"></i>{{ p.name|truncate(22, True, '…') }}</span>{% endif %}{% endfor %}
-                    {% else %}
-                        <span class="opacity-25">Unassigned</span>
-                    {% endif %}
-                </div>
-                <div class="list-col-actions">
-                    <button type="button" class="btn btn-sm btn-outline-info"
-                            onclick="confirmUpdate('{{ device.name }}', '{{ device.id }}')"
-                            {% if not device.is_online() %}disabled title="Offline"{% endif %}>
-                        <i class="fas fa-download fa-xs"></i>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-warning"
-                            onclick="confirmReboot('{{ device.name }}', '{{ device.id }}')"
-                            {% if not device.is_online() %}disabled title="Offline"{% endif %}>
-                        <i class="fas fa-power-off fa-xs"></i>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger"
-                            onclick="confirmDelete('{{ device.name }}', '{{ device.id }}')">
-                        <i class="fas fa-trash fa-xs"></i>
-                    </button>
-                </div>
-            </div><!-- /device-list-row -->
-
-        </div><!-- /device-item -->
-        {% endfor %}
-
-    </div><!-- /devicesContainer -->
-    {% else %}
-    <div class="card">
-        <div class="card-body text-center py-5">
-            <i class="fas fa-desktop fa-4x text-muted mb-3"></i>
-            <h4>No Devices Registered</h4>
-            <p class="text-muted">Get started by adding your first display device.</p>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDeviceModal">
-                <i class="fas fa-plus me-2"></i>Add First Device
-            </button>
+            </div>
         </div>
+        {% endfor %}
     </div>
+
     {% endif %}
 </div>
 
@@ -297,19 +258,17 @@
             <form method="POST" action="{{ url_for('main.add_device') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="deviceName" class="form-label">Device Name *</label>
+                        <label class="form-label">Device Name *</label>
                         <input type="text" class="form-control" id="deviceName" name="name" placeholder="e.g., Lobby Display" required>
-                        <div class="form-text">A friendly name for this display device</div>
                     </div>
                     <div class="mb-3">
-                        <label for="deviceId" class="form-label">Device ID *</label>
+                        <label class="form-label">Device ID *</label>
                         <input type="text" class="form-control" id="deviceId" name="device_id" placeholder="e.g., device-001" required>
                         <div class="form-text">Unique identifier used by the client agent</div>
                     </div>
                     <div class="mb-3">
-                        <label for="deviceLocation" class="form-label">Location</label>
-                        <input type="text" class="form-control" id="deviceLocation" name="location" placeholder="e.g., Main Lobby, Conference Room A">
-                        <div class="form-text">Physical location of the device (optional)</div>
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-control" name="location" placeholder="e.g., Main Lobby">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -330,62 +289,15 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-info">
-                    <h6><i class="fas fa-info-circle me-2"></i>Quick Start Guide</h6>
-                    <p class="mb-0">Follow these steps to connect a Raspberry Pi, Intel NUC, or any Linux device to your signage system.</p>
+                <div class="alert alert-info mb-3">Run this one command on your Raspberry Pi or Linux device to install everything automatically.</div>
+                <div class="bg-dark p-3 rounded mb-3 d-flex align-items-center justify-content-between gap-2">
+                    <code class="text-light" style="font-size:.82rem;">curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh | bash</code>
+                    <button class="btn btn-outline-secondary btn-sm flex-shrink-0" onclick="copyToClipboard('curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh | bash')"><i class="fas fa-copy"></i></button>
                 </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>1. Register Device</h6>
-                        <p class="text-muted small">Add your device using the "Add Device" button with a unique Device ID.</p>
-                        <h6>2. Download Setup Script</h6>
-                        <div class="mb-3">
-                            <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh | bash')">
-                                <i class="fas fa-terminal me-1"></i>Copy Setup Command
-                            </button>
-                        </div>
-                        <h6>3. Run Script</h6>
-                        <p class="text-muted small">The script will automatically install all dependencies and media players.</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Quick Setup Commands</h6>
-                        <p class="text-muted small">Run these on your Raspberry Pi or Linux device:</p>
-                        <div class="bg-dark p-3 rounded">
-                            <code class="text-light small">
-                                # One-line setup (installs everything)<br>
-                                curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh | bash<br><br>
-                                # Or download and run manually<br>
-                                wget https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh<br>
-                                bash setup_client.sh<br><br>
-                                # The script will:<br>
-                                # 1. Install Python 3 and dependencies<br>
-                                # 2. Install media players (omxplayer/vlc/ffmpeg)<br>
-                                # 3. Ask for server URL: {{ request.url_root.rstrip('/') }}<br>
-                                # 4. Ask for device ID and setup systemd service
-                            </code>
-                        </div>
-                    </div>
-                </div>
-                <hr>
-                <div class="row">
-                    <div class="col-12">
-                        <h6>Supported Devices &amp; Players</h6>
-                        <div class="row">
-                            <div class="col-md-4"><strong>Raspberry Pi</strong><ul class="text-muted small"><li>omxplayer (recommended)</li><li>VLC (alternative)</li></ul></div>
-                            <div class="col-md-4"><strong>Intel NUC / PC</strong><ul class="text-muted small"><li>VLC (recommended)</li><li>ffplay (lightweight)</li></ul></div>
-                            <div class="col-md-4"><strong>Any Linux Device</strong><ul class="text-muted small"><li>Automatic detection</li><li>Fallback support</li></ul></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="alert alert-warning">
-                    <strong>Important:</strong> Make sure your device can reach this server at <code>{{ request.url_root }}</code>
-                    and that the Device ID matches exactly what you register in the system.
-                </div>
+                <p class="text-muted small mb-0">Server URL: <code>{{ request.url_root.rstrip('/') }}</code> — enter this when prompted by the setup script.</p>
             </div>
             <div class="modal-footer">
-                <a href="https://github.com/tbnobed/signage/blob/main/CLIENT_SETUP.md" target="_blank" class="btn btn-outline-info">
-                    <i class="fas fa-book me-1"></i>Detailed Guide
-                </a>
+                <a href="https://github.com/tbnobed/signage/blob/main/CLIENT_SETUP.md" target="_blank" class="btn btn-outline-info btn-sm"><i class="fas fa-book me-1"></i>Full Guide</a>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -396,21 +308,11 @@
 <div class="modal fade" id="rebootDeviceModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-warning"><i class="fas fa-power-off me-2"></i>Reboot Device</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to reboot <strong><span id="deviceNameToReboot"></span></strong>?</p>
-                <div class="alert alert-info">
-                    The reboot command will be sent on the next check-in. Device will be offline for ~1–2 minutes.
-                </div>
-            </div>
+            <div class="modal-header"><h5 class="modal-title text-warning"><i class="fas fa-power-off me-2"></i>Reboot Device</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body"><p>Reboot <strong><span id="deviceNameToReboot"></span></strong>? Device will be offline for ~1–2 minutes.</p></div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="rebootDeviceForm" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-warning"><i class="fas fa-power-off me-1"></i>Reboot</button>
-                </form>
+                <form id="rebootDeviceForm" method="POST" style="display:inline;"><button type="submit" class="btn btn-warning"><i class="fas fa-power-off me-1"></i>Reboot</button></form>
             </div>
         </div>
     </div>
@@ -420,21 +322,14 @@
 <div class="modal fade" id="deleteDeviceModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Delete Device</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+            <div class="modal-header"><h5 class="modal-title text-danger"><i class="fas fa-trash me-2"></i>Delete Device</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
-                <p>Are you sure you want to delete <strong><span id="deviceNameToDelete"></span></strong>?</p>
-                <div class="alert alert-warning">
-                    <strong>Cannot be undone.</strong> Removes the device, all logs, and playlist assignments.
-                </div>
+                <p>Delete <strong><span id="deviceNameToDelete"></span></strong>? This cannot be undone.</p>
+                <div class="alert alert-warning mb-0">Removes the device, all logs, and playlist assignments.</div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteDeviceForm" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash me-1"></i>Delete</button>
-                </form>
+                <form id="deleteDeviceForm" method="POST" style="display:inline;"><button type="submit" class="btn btn-danger"><i class="fas fa-trash me-1"></i>Delete</button></form>
             </div>
         </div>
     </div>
@@ -444,21 +339,11 @@
 <div class="modal fade" id="updateDeviceModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-info"><i class="fas fa-download me-2"></i>Update Client</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Update the client on <strong><span id="deviceNameToUpdate"></span></strong>?</p>
-                <div class="alert alert-info">
-                    Latest client version will be downloaded from GitHub. Device offline ~30–60 seconds.
-                </div>
-            </div>
+            <div class="modal-header"><h5 class="modal-title text-info"><i class="fas fa-download me-2"></i>Update Client</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body"><p>Update client on <strong><span id="deviceNameToUpdate"></span></strong>? Device offline ~30–60 seconds.</p></div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="updateDeviceForm" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-info"><i class="fas fa-download me-1"></i>Update</button>
-                </form>
+                <form id="updateDeviceForm" method="POST" style="display:inline;"><button type="submit" class="btn btn-info"><i class="fas fa-download me-1"></i>Update</button></form>
             </div>
         </div>
     </div>
@@ -467,160 +352,124 @@
 
 {% block scripts %}
 <script>
-// ─── View & sort state ───────────────────────────────────────────
-let currentView = localStorage.getItem('devicesView') || 'grid';
-let sortAsc     = localStorage.getItem('devicesSortAsc') !== 'false';
+// ─── View toggle ───────────────────────────────────────────────
+let currentView = localStorage.getItem('devView') || 'list';
 
 function setView(v) {
     currentView = v;
-    localStorage.setItem('devicesView', v);
-    const c = document.getElementById('devicesContainer');
-    if (!c) return;
-    c.className = 'view-' + v;
-    document.getElementById('btnGrid').classList.toggle('active', v === 'grid');
-    document.getElementById('btnList').classList.toggle('active', v === 'list');
-}
-
-function toggleSort() {
-    sortAsc = !sortAsc;
-    localStorage.setItem('devicesSortAsc', sortAsc);
-    document.getElementById('sortLabel').textContent = sortAsc ? 'A–Z' : 'Z–A';
-    const icon = document.querySelector('#sortBtn i');
-    icon.className = sortAsc ? 'fas fa-sort-alpha-down me-1' : 'fas fa-sort-alpha-up me-1';
-    sortDevices();
-}
-
-function naturalKey(s) {
-    return s.replace(/(\d+)/g, n => n.padStart(10, '0'));
-}
-
-function sortDevices() {
-    const c = document.getElementById('devicesContainer');
-    if (!c) return;
-    const items = Array.from(c.querySelectorAll('.device-item'));
-    items.sort((a, b) => {
-        const ka = naturalKey(a.dataset.name || '');
-        const kb = naturalKey(b.dataset.name || '');
-        return sortAsc ? ka.localeCompare(kb) : kb.localeCompare(ka);
-    });
-    items.forEach(i => c.appendChild(i));
-}
-
-// Init on load
-document.addEventListener('DOMContentLoaded', function() {
-    setView(currentView);
-    if (!sortAsc) {
-        document.getElementById('sortLabel').textContent = 'Z–A';
-        const icon = document.querySelector('#sortBtn i');
-        if (icon) icon.className = 'fas fa-sort-alpha-up me-1';
+    localStorage.setItem('devView', v);
+    const lv = document.getElementById('listView');
+    const gv = document.getElementById('gridView');
+    const bl = document.getElementById('btnList');
+    const bg = document.getElementById('btnGrid');
+    if (v === 'list') {
+        if (lv) lv.style.display = '';
+        if (gv) gv.classList.remove('active');
+        bl.classList.add('active');
+        bg.classList.remove('active');
+    } else {
+        if (lv) lv.style.display = 'none';
+        if (gv) gv.classList.add('active');
+        bg.classList.add('active');
+        bl.classList.remove('active');
+        sortGrid();
     }
-    sortDevices();
-});
+}
 
-// ─── Modal helpers ───────────────────────────────────────────────
-function confirmReboot(deviceName, deviceId) {
-    document.getElementById('deviceNameToReboot').textContent = deviceName;
-    document.getElementById('rebootDeviceForm').action = "{{ url_for('main.reboot_device', device_id=0) }}".replace('0', deviceId);
+// ─── Table sort ────────────────────────────────────────────────
+let sortCol = 1, sortDir = 1; // default: name asc
+
+function sortTable(col) {
+    if (sortCol === col) sortDir *= -1;
+    else { sortCol = col; sortDir = 1; }
+
+    // Update header icons
+    document.querySelectorAll('.device-table th').forEach((th, i) => {
+        th.classList.remove('sort-active');
+        const icon = th.querySelector('.sort-icon');
+        if (icon) icon.className = 'fas fa-sort sort-icon';
+    });
+    const headers = document.querySelectorAll('.device-table th');
+    if (headers[col]) {
+        headers[col].classList.add('sort-active');
+        const icon = headers[col].querySelector('.sort-icon');
+        if (icon) icon.className = `fas fa-sort-${sortDir === 1 ? 'up' : 'down'} sort-icon`;
+    }
+
+    const tbody = document.getElementById('deviceTableBody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const dataAttr = ['', 'name', 'id', 'loc', '', 'seen'][col] || 'name';
+
+    rows.sort((a, b) => {
+        let av = col <= 3 || col === 5 ? (a.dataset[dataAttr] || '') : '';
+        let bv = col <= 3 || col === 5 ? (b.dataset[dataAttr] || '') : '';
+        return naturalCmp(av, bv) * sortDir;
+    });
+    rows.forEach(r => tbody.appendChild(r));
+}
+
+function naturalCmp(a, b) {
+    return a.replace(/(\d+)/g, n => n.padStart(10,'0'))
+            .localeCompare(b.replace(/(\d+)/g, n => n.padStart(10,'0')));
+}
+
+// ─── Grid sort ─────────────────────────────────────────────────
+function sortGrid() {
+    const gv = document.getElementById('gridView');
+    if (!gv) return;
+    const items = Array.from(gv.querySelectorAll('.device-card-wrap'));
+    items.sort((a, b) => naturalCmp(a.dataset.name || '', b.dataset.name || ''));
+    items.forEach(i => gv.appendChild(i));
+}
+
+// ─── Modal helpers ─────────────────────────────────────────────
+function confirmReboot(name, id) {
+    document.getElementById('deviceNameToReboot').textContent = name;
+    document.getElementById('rebootDeviceForm').action = "{{ url_for('main.reboot_device', device_id=0) }}".replace('0', id);
     new bootstrap.Modal(document.getElementById('rebootDeviceModal')).show();
 }
-function confirmUpdate(deviceName, deviceId) {
-    document.getElementById('deviceNameToUpdate').textContent = deviceName;
-    document.getElementById('updateDeviceForm').action = "{{ url_for('main.update_device', device_id=0) }}".replace('0', deviceId);
+function confirmUpdate(name, id) {
+    document.getElementById('deviceNameToUpdate').textContent = name;
+    document.getElementById('updateDeviceForm').action = "{{ url_for('main.update_device', device_id=0) }}".replace('0', id);
     new bootstrap.Modal(document.getElementById('updateDeviceModal')).show();
 }
-function confirmDelete(deviceName, deviceId) {
-    document.getElementById('deviceNameToDelete').textContent = deviceName;
-    document.getElementById('deleteDeviceForm').action = "{{ url_for('main.delete_device', device_id=0) }}".replace('0', deviceId);
+function confirmDelete(name, id) {
+    document.getElementById('deviceNameToDelete').textContent = name;
+    document.getElementById('deleteDeviceForm').action = "{{ url_for('main.delete_device', device_id=0) }}".replace('0', id);
     new bootstrap.Modal(document.getElementById('deleteDeviceModal')).show();
 }
 
-// ─── Clipboard ───────────────────────────────────────────────────
+// ─── Clipboard ─────────────────────────────────────────────────
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(
-        () => showAlert('Copied to clipboard!', 'success'),
+        () => showAlert('Copied!', 'success'),
         () => showAlert('Could not copy', 'warning')
     );
 }
 
-// ─── Inline name edit ────────────────────────────────────────────
-function editDeviceName(id, name) {
-    document.getElementById('name-display-' + id).classList.add('d-none');
-    document.getElementById('name-form-' + id).classList.remove('d-none');
-    const inp = document.getElementById('name-input-' + id);
-    inp.focus(); inp.select();
-}
-function cancelEditName(id) {
-    document.getElementById('name-display-' + id).classList.remove('d-none');
-    document.getElementById('name-form-' + id).classList.add('d-none');
-}
-function saveDeviceName(event, id) {
-    event.preventDefault();
-    const newName = document.getElementById('name-input-' + id).value.trim();
-    if (!newName) { showAlert('Name cannot be empty', 'warning'); return; }
-    fetch("{{ url_for('main.update_device_name', device_id=0) }}".replace('0', id), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newName })
-    })
-    .then(r => r.json())
-    .then(d => {
-        if (d.success) {
-            document.getElementById('name-display-' + id).textContent = newName;
-            const item = document.getElementById('name-display-' + id).closest('.device-item');
-            if (item) item.dataset.name = newName.toLowerCase();
-            cancelEditName(id);
-            showAlert('Name updated', 'success');
-        } else { showAlert(d.error || 'Failed', 'danger'); }
-    })
-    .catch(() => showAlert('Failed to update name', 'danger'));
+// ─── Alert helper ──────────────────────────────────────────────
+function showAlert(msg, type) {
+    const el = document.createElement('div');
+    el.className = `alert alert-${type} alert-dismissible fade show position-fixed mt-3`;
+    el.style.cssText = 'top:0;left:50%;transform:translateX(-50%);z-index:9999;min-width:200px;text-align:center;';
+    el.innerHTML = `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
 }
 
-// ─── Inline location edit ────────────────────────────────────────
-function editDeviceLocation(id, loc) {
-    document.getElementById('location-display-' + id).classList.add('d-none');
-    document.getElementById('location-form-' + id).classList.remove('d-none');
-    const inp = document.getElementById('location-input-' + id);
-    inp.focus(); inp.select();
-}
-function cancelEditLocation(id) {
-    document.getElementById('location-display-' + id).classList.remove('d-none');
-    document.getElementById('location-form-' + id).classList.add('d-none');
-}
-function saveDeviceLocation(event, id) {
-    event.preventDefault();
-    const newLoc = document.getElementById('location-input-' + id).value.trim();
-    fetch("{{ url_for('main.update_device_location', device_id=0) }}".replace('0', id), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location: newLoc })
-    })
-    .then(r => r.json())
-    .then(d => {
-        if (d.success) {
-            document.getElementById('location-display-' + id).textContent = newLoc || '—';
-            cancelEditLocation(id);
-            showAlert('Location updated', 'success');
-        } else { showAlert(d.error || 'Failed', 'danger'); }
-    })
-    .catch(() => showAlert('Failed to update location', 'danger'));
-}
-
-// ─── Auto device ID from name ─────────────────────────────────────
+// ─── Auto device ID ─────────────────────────────────────────────
 document.getElementById('deviceName').addEventListener('input', function() {
-    const name = this.value.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
-    if (name && !document.getElementById('deviceId').value) {
-        document.getElementById('deviceId').value = name + '-' + Math.random().toString(36).substr(2, 4);
-    }
+    const slug = this.value.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-');
+    if (slug && !document.getElementById('deviceId').value)
+        document.getElementById('deviceId').value = slug + '-' + Math.random().toString(36).substr(2,4);
 });
 
-// ─── Alert helper ─────────────────────────────────────────────────
-function showAlert(message, type) {
-    const el = document.createElement('div');
-    el.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
-    el.style.zIndex = '9999';
-    el.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 3000);
-}
+// ─── Init ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    setView(currentView);
+    // apply initial sort (name asc) to table
+    sortTable(1); sortDir = 1; // reset after first call flipped it
+});
 </script>
 {% endblock %}
