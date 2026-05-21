@@ -1,214 +1,268 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - DisplayHQ{% endblock %}
+{% block title %}Dashboard — DisplayHQ{% endblock %}
+{% block page_title %}Network Overview{% endblock %}
 
 {% block content %}
-<div class="container my-4 fade-in">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-gradient"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
-        <span class="status-online">
-            <i class="fas fa-circle me-1"></i>System Online
-        </span>
-    </div>
+<div class="fade-in">
 
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="stats-card hover-lift slide-up">
-                <div class="stat-icon">
-                    <i class="fas fa-desktop"></i>
+    <!-- Stat Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-label">Total Devices</span>
+                    <div class="stat-icon accent"><i class="fas fa-desktop"></i></div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="text-gradient">{{ total_devices }}</h3>
-                    <p class="text-muted">Total Devices</p>
-                </div>
+                <div class="stat-value">{{ total_devices }}</div>
+                <div class="stat-sub">registered displays</div>
             </div>
         </div>
-        
-        <div class="col-md-3 mb-3">
-            <div class="stats-card hover-lift slide-up">
-                <div class="stat-icon glow-success">
-                    <i class="fas fa-wifi"></i>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-label">Online</span>
+                    <div class="stat-icon online"><i class="fas fa-wifi"></i></div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="text-gradient">{{ online_devices }}</h3>
-                    <p class="text-muted">Online Devices</p>
-                </div>
+                <div class="stat-value">{{ online_devices }}</div>
+                {% if total_devices > 0 %}
+                <div class="stat-sub">{{ ((online_devices / total_devices) * 100)|round(1) }}% uptime</div>
+                {% else %}
+                <div class="stat-sub">—</div>
+                {% endif %}
             </div>
         </div>
-        
-        <div class="col-md-3 mb-3">
-            <div class="stats-card hover-lift slide-up">
-                <div class="stat-icon glow-primary">
-                    <i class="fas fa-images"></i>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-label">Media Files</span>
+                    <div class="stat-icon muted"><i class="fas fa-photo-video"></i></div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="text-gradient">{{ total_media }}</h3>
-                    <p class="text-muted">Media Files</p>
-                </div>
+                <div class="stat-value">{{ total_media }}</div>
+                <div class="stat-sub">in library</div>
             </div>
         </div>
-        
-        <div class="col-md-3 mb-3">
-            <div class="stats-card hover-lift slide-up">
-                <div class="stat-icon">
-                    <i class="fas fa-list"></i>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-label">Playlists</span>
+                    <div class="stat-icon accent"><i class="fas fa-layer-group"></i></div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="text-gradient">{{ total_playlists }}</h3>
-                    <p class="text-muted">Playlists</p>
-                </div>
+                <div class="stat-value">{{ total_playlists }}</div>
+                <div class="stat-sub">active sequences</div>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <!-- Recent Devices -->
-        <div class="col-lg-6 mb-4">
-            <div class="card glass hover-lift">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-desktop me-2"></i>Recent Devices</h5>
-                    <a href="{{ url_for('main.devices') }}" class="btn btn-sm btn-outline-primary">View All</a>
+    <!-- Main content area + activity sidebar -->
+    <div class="row g-4">
+
+        <!-- Left: Devices + Media -->
+        <div class="col-xxl-8">
+
+            <!-- Recent Devices -->
+            <div class="mb-4">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fas fa-desktop text-accent"></i>
+                        Active Displays
+                        <span class="section-count">{{ recent_devices|length }} shown</span>
+                    </div>
+                    <a href="{{ url_for('main.devices') }}" class="btn btn-sm btn-outline-primary">
+                        View All <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
                 </div>
-                <div class="card-body">
-                    {% if recent_devices %}
-                    <div class="list-group list-group-flush">
-                        {% for device in recent_devices %}
-                        <div class="list-group-item">
-                            <div class="device-item">
-                                <div class="device-icon">
-                                    <i class="fas fa-desktop"></i>
-                                </div>
-                                <div class="item-content">
-                                    <h6>{{ device.name }}</h6>
-                                    <div class="item-meta">{{ device.location or 'No location set' }}</div>
-                                </div>
-                                <div class="item-status">
-                                    {% if device.is_online() %}
-                                    <span class="status-online"><i class="fas fa-circle me-1"></i>Online</span>
-                                    {% else %}
-                                    <span class="status-offline"><i class="fas fa-circle me-1"></i>Offline</span>
-                                    {% endif %}
-                                    {% if device.last_checkin %}
-                                    <span class="item-time">{{ device.last_checkin.strftime('%H:%M') }}</span>
-                                    {% endif %}
+
+                {% if recent_devices %}
+                <div class="row g-3">
+                    {% for device in recent_devices %}
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="device-card {% if not device.is_online() %}{% endif %}">
+                            <!-- Screen preview -->
+                            <div class="device-screen {% if device.is_online() %}device-screen-online{% else %}device-screen-offline{% endif %}">
+                                {% if not device.is_online() %}
+                                <span class="no-signal">No Signal</span>
+                                {% endif %}
+                                <div class="screen-status-badge">
+                                    <span class="status-dot {% if device.is_online() %}status-dot-online pulse-online{% else %}status-dot-offline{% endif %}"></span>
+                                    {% if device.is_online() %}Online{% else %}Offline{% endif %}
                                 </div>
                             </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-desktop"></i>
-                        <p>No devices registered yet</p>
-                        <a href="{{ url_for('main.devices') }}" class="btn btn-primary">Add First Device</a>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Media -->
-        <div class="col-lg-6 mb-4">
-            <div class="card glass hover-lift">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-images me-2"></i>Recent Media</h5>
-                    <a href="{{ url_for('main.media') }}" class="btn btn-sm btn-outline-primary">View All</a>
-                </div>
-                <div class="card-body">
-                    {% if recent_media %}
-                    <div class="list-group list-group-flush">
-                        {% for media in recent_media %}
-                        <div class="list-group-item">
-                            <div class="media-item">
-                                <div class="media-icon {{ media.file_type }}">
-                                    {% if media.file_type == 'image' %}
-                                    <i class="fas fa-image"></i>
-                                    {% elif media.file_type == 'stream' %}
-                                    <i class="fas fa-broadcast-tower"></i>
-                                    {% else %}
-                                    <i class="fas fa-video"></i>
-                                    {% endif %}
-                                </div>
-                                <div class="item-content">
-                                    <h6>{{ media.original_filename }}</h6>
-                                    <div class="item-meta">
-                                        {% if media.file_type == 'stream' %}
-                                        {{ media.stream_type|upper }} Stream
-                                        {% else %}
-                                        {{ media.file_type|title }} • {{ (media.file_size / 1024 / 1024)|round(1) }} MB
-                                        {% endif %}
+                            <!-- Info -->
+                            <div class="device-info">
+                                <div class="device-name">{{ device.name }}</div>
+                                <div class="device-ip">{{ device.location or 'No location set' }}</div>
+                                <div class="device-meta">
+                                    <div class="device-meta-row">
+                                        <span class="device-meta-label">Playing</span>
+                                        <span class="device-meta-value {% if not device.is_online() %}offline{% endif %}">
+                                            {% if device.current_playlist %}{{ device.current_playlist }}{% else %}—{% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="device-meta-row">
+                                        <span class="device-meta-label">Last seen</span>
+                                        <span class="device-meta-value mono">
+                                            {% if device.last_checkin %}{{ device.last_checkin.strftime('%H:%M') }}{% else %}Never{% endif %}
+                                        </span>
                                     </div>
                                 </div>
-                                <div class="item-status">
-                                    <span class="item-time">{{ media.created_at.strftime('%m/%d') }}</span>
+                            </div>
+                            <div class="device-actions">
+                                <a href="{{ url_for('main.devices') }}" class="device-action-btn">
+                                    <i class="fas fa-cog"></i> Manage
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);">
+                    <i class="fas fa-desktop"></i>
+                    <p>No devices registered yet</p>
+                    <a href="{{ url_for('main.devices') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add First Device
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Recent Media -->
+            <div>
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fas fa-photo-video text-accent"></i>
+                        Recent Media
+                        <span class="section-count">{{ recent_media|length }} files</span>
+                    </div>
+                    <a href="{{ url_for('main.media') }}" class="btn btn-sm btn-outline-primary">
+                        View All <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                {% if recent_media %}
+                <div class="table-container">
+                    <table class="table table-borderless mb-0">
+                        <thead>
+                            <tr>
+                                <th>File</th>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Added</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for media in recent_media %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="media-icon {{ media.file_type }}">
+                                            {% if media.file_type == 'image' %}<i class="fas fa-image"></i>
+                                            {% elif media.file_type == 'stream' %}<i class="fas fa-broadcast-tower"></i>
+                                            {% else %}<i class="fas fa-video"></i>{% endif %}
+                                        </div>
+                                        <span class="fw-500" style="color:var(--text-primary);font-size:0.875rem;">{{ media.original_filename }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge {% if media.file_type == 'image' %}bg-success{% elif media.file_type == 'stream' %}bg-warning{% else %}bg-primary{% endif %}">
+                                        {{ media.file_type|title }}
+                                    </span>
+                                </td>
+                                <td class="font-mono" style="font-size:0.8rem;color:var(--text-muted);">
+                                    {% if media.file_type == 'stream' %}Stream
+                                    {% else %}{{ (media.file_size / 1024 / 1024)|round(1) }} MB{% endif %}
+                                </td>
+                                <td style="font-size:0.8rem;color:var(--text-muted);">{{ media.created_at.strftime('%b %d') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);">
+                    <i class="fas fa-photo-video"></i>
+                    <p>No media files uploaded yet</p>
+                    <a href="{{ url_for('main.media') }}" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Upload Media
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+        </div><!-- /col left -->
+
+        <!-- Right: Activity + Quick Actions -->
+        <div class="col-xxl-4">
+
+            <!-- Activity Log -->
+            <div class="card mb-4" style="position:sticky;top:calc(var(--topbar-height) + 24px);">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <span><i class="fas fa-activity me-2 text-accent" style="color:var(--text-accent)"></i>Network Log</span>
+                    <button class="btn btn-sm btn-secondary" onclick="location.reload()" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                <div class="card-body" style="max-height:380px;overflow-y:auto;">
+                    {% if recent_devices %}
+                    <div class="activity-feed">
+                        {% for device in recent_devices %}
+                        <div class="activity-item">
+                            <div class="activity-dot {% if device.is_online() %}online{% else %}offline{% endif %}"></div>
+                            <div class="activity-card">
+                                <div class="activity-msg">
+                                    {% if device.is_online() %}
+                                    <strong>{{ device.name }}</strong> is online
+                                    {% else %}
+                                    <strong>{{ device.name }}</strong> is offline
+                                    {% endif %}
+                                </div>
+                                <div class="activity-time">
+                                    {% if device.last_checkin %}{{ device.last_checkin.strftime('%b %d %H:%M') }}{% else %}Never checked in{% endif %}
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                     {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-images"></i>
-                        <p>No media files uploaded yet</p>
-                        <a href="{{ url_for('main.media') }}" class="btn btn-primary">Upload Media</a>
+                    <div class="empty-state" style="padding:24px;">
+                        <i class="fas fa-broadcast-tower" style="font-size:1.5rem;"></i>
+                        <p style="font-size:0.8rem;">No activity yet</p>
                     </div>
                     {% endif %}
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Quick Actions -->
-    <div class="row">
-        <div class="col-12">
+            <!-- Quick Actions -->
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                    <i class="fas fa-bolt me-2" style="color:var(--warning)"></i>Quick Actions
                 </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('main.devices') }}" class="btn btn-outline-primary w-100 p-3">
-                                <i class="fas fa-plus-circle fa-2x mb-2"></i><br>
-                                Add Device
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('main.media') }}" class="btn btn-outline-info w-100 p-3">
-                                <i class="fas fa-upload fa-2x mb-2"></i><br>
-                                Upload Media
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('main.playlists') }}" class="btn btn-outline-warning w-100 p-3">
-                                <i class="fas fa-list-alt fa-2x mb-2"></i><br>
-                                Create Playlist
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <button class="btn btn-outline-success w-100 p-3" onclick="refreshStats()">
-                                <i class="fas fa-sync-alt fa-2x mb-2"></i><br>
-                                Refresh Status
-                            </button>
-                        </div>
-                    </div>
+                <div class="card-body d-flex flex-column gap-2">
+                    <a href="{{ url_for('main.devices') }}" class="btn btn-outline-primary w-100 justify-content-start">
+                        <i class="fas fa-plus-circle"></i> Add Device
+                    </a>
+                    <a href="{{ url_for('main.media') }}" class="btn btn-outline-info w-100 justify-content-start">
+                        <i class="fas fa-upload"></i> Upload Media
+                    </a>
+                    <a href="{{ url_for('main.playlists') }}" class="btn btn-outline-warning w-100 justify-content-start">
+                        <i class="fas fa-list-alt"></i> Create Playlist
+                    </a>
+                    <button class="btn btn-outline-success w-100 justify-content-start" onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i> Refresh Status
+                    </button>
                 </div>
             </div>
-        </div>
-    </div>
+
+        </div><!-- /col right -->
+
+    </div><!-- /row -->
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-function refreshStats() {
-    location.reload();
-}
-
-// Auto-refresh every 30 seconds
-setInterval(function() {
-    refreshStats();
-}, 30000);
+// Auto-refresh every 60 seconds
+setTimeout(function() { location.reload(); }, 60000);
 </script>
 {% endblock %}
