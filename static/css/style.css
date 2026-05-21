@@ -668,6 +668,17 @@ body {
 
 .card-body { padding: 20px; }
 
+/* Dashboard: thinner card headers (~70% reduction) */
+.dashboard-page .card-header {
+    padding: 4px 16px;
+    font-size: 0.8rem;
+    line-height: 1.2;
+}
+.dashboard-page .card-header .btn-sm {
+    padding: 1px 8px;
+    font-size: 0.72rem;
+}
+
 /* ─── Device Cards ───────────────────────────────────────── */
 .device-card {
     background: var(--bg-card);
