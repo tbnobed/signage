@@ -5,7 +5,7 @@ Runs on Raspberry Pi or NUC devices to display media content
 """
 
 # Client version - increment when making updates
-CLIENT_VERSION = "2.3.8"
+CLIENT_VERSION = "2.3.9"
 
 import os
 import sys
@@ -600,45 +600,70 @@ class SignageClient:
         return False
 
     def parse_hls_master_playlist(self, master_url):
-        """Parse HLS master playlist and return the highest quality variant URL"""
+        """Parse HLS master playlist and return a playable URL.
+
+        - Follows redirects and resolves relative variant URLs against the FINAL URL.
+        - If the master uses separate audio renditions (EXT-X-MEDIA TYPE=AUDIO), returns
+          the master URL itself so VLC can merge audio+video natively. Pre-selecting a
+          video-only variant would strip audio and often fails to play.
+        - Otherwise, returns the highest-bandwidth variant URL.
+        - If the URL is already a media playlist (no STREAM-INF), returns the final URL.
+        """
         try:
+            from urllib.parse import urljoin
             self.logger.info(f"Parsing HLS master playlist: {master_url}")
-            response = requests.get(master_url, timeout=10)
+            response = requests.get(master_url, timeout=10, allow_redirects=True)
             response.raise_for_status()
-            
+
+            # CRITICAL: use the post-redirect URL as the base for resolving relative variants.
+            final_url = response.url
+            if final_url != master_url:
+                self.logger.info(f"HLS master redirected: {master_url} -> {final_url}")
+
             playlist_content = response.text
+
+            # Not a master playlist (no variant streams) — just use the final URL.
+            if '#EXT-X-STREAM-INF' not in playlist_content:
+                self.logger.info("URL is a media playlist (not a master), using as-is")
+                return final_url
+
+            # Detect separate audio renditions. When present, VLC must see the master to
+            # merge audio + video. Returning a video-only variant URL would lose audio.
+            has_audio_group = '#EXT-X-MEDIA:' in playlist_content and 'TYPE=AUDIO' in playlist_content
+            if has_audio_group:
+                self.logger.info("Master playlist has separate audio renditions - "
+                                 "passing master URL to VLC for native ABR + audio merge")
+                return final_url
+
+            # Otherwise, pick the highest-bandwidth variant.
             lines = playlist_content.split('\n')
-            
             variants = []
             for i, line in enumerate(lines):
                 if line.startswith('#EXT-X-STREAM-INF:'):
-                    # Parse bandwidth from this line
                     bandwidth = None
                     for param in line.split(','):
                         if 'BANDWIDTH=' in param:
-                            bandwidth = int(param.split('BANDWIDTH=')[1])
+                            try:
+                                bandwidth = int(param.split('BANDWIDTH=')[1])
+                            except ValueError:
+                                pass
                             break
-                    
-                    # Next line should be the variant URL
                     if i + 1 < len(lines) and bandwidth:
                         variant_url = lines[i + 1].strip()
                         if variant_url and not variant_url.startswith('#'):
-                            # Make absolute URL if relative
                             if not variant_url.startswith(('http://', 'https://')):
-                                from urllib.parse import urljoin
-                                variant_url = urljoin(master_url, variant_url)
+                                variant_url = urljoin(final_url, variant_url)
                             variants.append((bandwidth, variant_url))
-            
+
             if variants:
-                # Sort by bandwidth (highest first) and pick the best quality
                 variants.sort(reverse=True)
                 highest_bandwidth, highest_url = variants[0]
                 self.logger.info(f"Selected highest quality HLS variant: {highest_bandwidth} bps -> {highest_url}")
                 return highest_url
-            else:
-                self.logger.warning("No variants found in master playlist, using master URL")
-                return master_url
-                
+
+            self.logger.warning("No variants found in master playlist, using final master URL")
+            return final_url
+
         except Exception as e:
             self.logger.error(f"Failed to parse HLS master playlist: {e}, using original URL")
             return master_url
