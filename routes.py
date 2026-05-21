@@ -38,7 +38,7 @@ def dashboard():
     total_media = MediaFile.query.count()
     total_playlists = Playlist.query.count()
     
-    recent_devices = Device.query.order_by(Device.last_checkin.desc()).limit(5).all()
+    recent_devices = Device.query.order_by(Device.last_checkin.desc()).limit(6).all()
     recent_media = MediaFile.query.order_by(MediaFile.created_at.desc()).limit(5).all()
     
     return render_template('dashboard.html',
