@@ -5,51 +5,89 @@
 
 {% block extra_css %}
 <style>
-.device-name-display {
-    display: inline-block;
-}
+/* ── View toolbar ── */
+.view-toolbar { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+.btn-view { padding:.25rem .6rem; font-size:.8rem; }
+.btn-view.active { background:var(--accent); color:#fff; border-color:var(--accent); }
 
-.name-edit-form {
-    display: inline-block;
-}
+/* ── Compact grid cards ── */
+#devicesContainer.view-grid { display:flex; flex-wrap:wrap; gap:.75rem; }
+#devicesContainer.view-grid .device-item { width:calc(25% - .75rem); min-width:220px; flex:1 1 220px; }
+#devicesContainer.view-grid .device-card { height:100%; }
+#devicesContainer.view-list .device-item { width:100%; }
 
-.name-edit-form input {
-    max-width: 200px;
-}
+.device-card .card-header { padding:.4rem .65rem; }
+.device-card .card-header h6 { font-size:.78rem; }
+.device-card .card-body { padding:.5rem .65rem; font-size:.75rem; }
+.device-card .info-label { color:var(--accent); font-size:.65rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+.device-card .info-val { font-size:.75rem; line-height:1.3; }
+.device-card code { font-size:.68rem; }
+.device-card .nav-tabs .nav-link { padding:.2rem .45rem; font-size:.7rem; }
+.device-card .form-select-sm { font-size:.72rem; padding:.2rem .4rem; }
+.device-card .btn-compact { padding:.15rem .35rem; font-size:.68rem; }
+.device-card .card-actions { margin-top:.4rem; padding-top:.4rem; border-top:1px solid rgba(255,255,255,.07); }
 
-.device-location-display {
-    display: inline-block;
+/* ── List view rows ── */
+#devicesContainer.view-list .device-card { display:none; }
+#devicesContainer.view-list .device-list-row {
+    display:flex; align-items:center; gap:.6rem;
+    background:var(--card-bg); border:1px solid var(--border);
+    border-radius:8px; padding:.45rem .75rem; font-size:.78rem;
 }
+#devicesContainer.view-grid .device-list-row { display:none; }
+.list-status-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.list-status-dot.online  { background:var(--success); box-shadow:0 0 5px var(--success); }
+.list-status-dot.offline { background:var(--danger); }
+.list-col-name   { min-width:130px; max-width:160px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.list-col-id     { min-width:100px; max-width:130px; color:#888; font-size:.7rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.list-col-loc    { min-width:80px; max-width:120px; color:#aaa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.list-col-playing{ flex:1; min-width:100px; color:#ccc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.list-col-assign { min-width:130px; max-width:180px; }
+.list-col-assign .form-select { font-size:.7rem; padding:.15rem .3rem; background:var(--input-bg); border-color:var(--border); color:#ccc; height:auto; }
+.list-col-actions { display:flex; gap:.25rem; flex-shrink:0; }
+.list-col-actions .btn { padding:.15rem .35rem; font-size:.68rem; }
 
-.location-edit-form {
-    display: block;
-}
+/* ── Name edit in both views ── */
+.name-edit-form input { max-width:160px; font-size:.75rem; }
+.location-edit-form input { max-width:200px; font-size:.75rem; }
+.btn-link.text-info:hover { opacity:.8; }
 
-.location-edit-form input {
-    max-width: 250px;
-}
-
-.btn-link.text-info:hover {
-    opacity: 0.8;
-}
+/* ── No devices ── */
+.no-devices-card { width:100%; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid my-4 fade-in">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-gradient"><i class="fas fa-desktop me-2"></i>Devices</h2>
-        <div>
-            <button class="btn btn-outline-info me-2" data-bs-toggle="modal" data-bs-target="#clientSetupModal">
-                <i class="fas fa-download me-2"></i>Client Setup
+
+    <!-- Header row -->
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h2 class="text-gradient mb-0"><i class="fas fa-desktop me-2"></i>Devices</h2>
+        <div class="view-toolbar">
+            <!-- Sort toggle -->
+            <button id="sortBtn" class="btn btn-outline-secondary btn-sm btn-view" onclick="toggleSort()" title="Sort by name">
+                <i class="fas fa-sort-alpha-down me-1"></i><span id="sortLabel">A–Z</span>
             </button>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDeviceModal">
-                <i class="fas fa-plus me-2"></i>Add Device
+            <!-- View toggle -->
+            <div class="btn-group" role="group">
+                <button id="btnGrid" class="btn btn-outline-secondary btn-sm btn-view active" onclick="setView('grid')" title="Grid view">
+                    <i class="fas fa-th-large"></i>
+                </button>
+                <button id="btnList" class="btn btn-outline-secondary btn-sm btn-view" onclick="setView('list')" title="List view">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+            <div class="vr opacity-25"></div>
+            <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#clientSetupModal">
+                <i class="fas fa-download me-1"></i>Client Setup
+            </button>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addDeviceModal">
+                <i class="fas fa-plus me-1"></i>Add Device
             </button>
         </div>
     </div>
 
-    <!-- Quick Setup Info -->
+    <!-- Quick Start (no devices) -->
     {% if not devices %}
     <div class="alert alert-info">
         <h5><i class="fas fa-info-circle me-2"></i>Get Started with Client Devices</h5>
@@ -66,194 +104,174 @@
     {% endif %}
 
     {% if devices %}
-    <div class="row">
+    <!-- Devices container: class toggled by JS -->
+    <div id="devicesContainer" class="view-grid">
+
         {% for device in devices %}
-        <div class="col-lg-6 col-xl-4 mb-4">
-            <div class="card glass hover-lift">
+        <div class="device-item" data-name="{{ device.name|lower }}">
+
+            <!-- ═══ GRID CARD (compact) ═══ -->
+            <div class="card glass hover-lift device-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center flex-grow-1">
-                        <h6 class="mb-0 device-name-display" id="name-display-{{ device.id }}">{{ device.name }}</h6>
-                        <button class="btn btn-sm btn-link text-info p-0 ms-2" onclick="editDeviceName({{ device.id }}, '{{ device.name|replace("'", "\\'") }}')" title="Edit name">
-                            <i class="fas fa-edit"></i>
+                    <div class="d-flex align-items-center flex-grow-1 overflow-hidden me-2">
+                        <h6 class="mb-0 device-name-display text-truncate" id="name-display-{{ device.id }}">{{ device.name }}</h6>
+                        <button class="btn btn-sm btn-link text-info p-0 ms-1 flex-shrink-0"
+                                onclick="editDeviceName({{ device.id }}, '{{ device.name|replace("'", "\\'") }}')" title="Edit name">
+                            <i class="fas fa-edit fa-xs"></i>
                         </button>
-                        <form id="name-form-{{ device.id }}" class="name-edit-form d-none" onsubmit="saveDeviceName(event, {{ device.id }})">
+                        <form id="name-form-{{ device.id }}" class="name-edit-form d-none ms-1" onsubmit="saveDeviceName(event, {{ device.id }})">
                             <div class="d-flex align-items-center">
-                                <input type="text" class="form-control form-control-sm me-2" id="name-input-{{ device.id }}" value="{{ device.name }}" required>
-                                <button type="submit" class="btn btn-sm btn-success me-1" title="Save">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEditName({{ device.id }})" title="Cancel">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                                <input type="text" class="form-control form-control-sm me-1" id="name-input-{{ device.id }}" value="{{ device.name }}" required>
+                                <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check fa-xs"></i></button>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEditName({{ device.id }})"><i class="fas fa-times fa-xs"></i></button>
                             </div>
                         </form>
                     </div>
                     {% if device.is_online() %}
-                    <span class="status-online"><i class="fas fa-circle me-1"></i>Online</span>
+                    <span class="status-online flex-shrink-0" style="font-size:.65rem;"><i class="fas fa-circle me-1" style="font-size:.5rem;"></i>Online</span>
                     {% else %}
-                    <span class="status-offline"><i class="fas fa-circle me-1"></i>Offline</span>
+                    <span class="status-offline flex-shrink-0" style="font-size:.65rem;"><i class="fas fa-circle me-1" style="font-size:.5rem;"></i>Offline</span>
                     {% endif %}
                 </div>
+
                 <div class="card-body">
-                    <!-- Device Information in 2 Columns -->
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <div class="mb-2">
-                                <strong class="text-info">Device ID:</strong><br>
-                                <code>{{ device.device_id }}</code>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <strong class="text-info">Location:</strong><br>
-                                <div class="d-flex align-items-center">
-                                    <span class="device-location-display" id="location-display-{{ device.id }}">
-                                        <i class="fas fa-map-marker-alt me-1"></i>{{ device.location or 'Not set' }}
-                                    </span>
-                                    <button class="btn btn-sm btn-link text-info p-0 ms-2" onclick="editDeviceLocation({{ device.id }}, '{{ (device.location or '')|replace("'", "\\'") }}')" title="Edit location">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                </div>
-                                <form id="location-form-{{ device.id }}" class="location-edit-form d-none mt-1" onsubmit="saveDeviceLocation(event, {{ device.id }})">
-                                    <div class="d-flex align-items-center">
-                                        <input type="text" class="form-control form-control-sm me-2" id="location-input-{{ device.id }}" value="{{ device.location or '' }}" placeholder="Enter location">
-                                        <button type="submit" class="btn btn-sm btn-success me-1" title="Save">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEditLocation({{ device.id }})" title="Cancel">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                            
-                            {% if device.last_checkin %}
-                            <div class="mb-2">
-                                <strong class="text-info">Last Check-in:</strong><br>
-                                {{ device.last_checkin.strftime('%Y-%m-%d %H:%M:%S') }}
-                            </div>
-                            {% endif %}
-                            
-                            {% if device.current_media %}
-                            <div class="mb-2">
-                                <strong class="text-info">Currently Playing:</strong><br>
-                                <i class="fas fa-play me-1"></i>{{ device.current_media }}
-                            </div>
-                            {% endif %}
+                    <!-- Info rows -->
+                    <div class="mb-1"><span class="info-label">ID</span><br><code>{{ device.device_id }}</code></div>
+
+                    <div class="mb-1">
+                        <span class="info-label">Location</span><br>
+                        <div class="d-flex align-items-center">
+                            <span class="device-location-display info-val text-truncate" id="location-display-{{ device.id }}">
+                                {{ device.location or '—' }}
+                            </span>
+                            <button class="btn btn-sm btn-link text-info p-0 ms-1 flex-shrink-0"
+                                    onclick="editDeviceLocation({{ device.id }}, '{{ (device.location or '')|replace("'", "\\'") }}')" title="Edit">
+                                <i class="fas fa-edit fa-xs"></i>
+                            </button>
                         </div>
-                        
-                        <div class="col-6">
-                            {% if device.client_version %}
-                            <div class="mb-2">
-                                <strong class="text-info">Client Version:</strong><br>
-                                <i class="fas fa-code-branch me-1"></i>{{ device.client_version }}
+                        <form id="location-form-{{ device.id }}" class="location-edit-form d-none mt-1" onsubmit="saveDeviceLocation(event, {{ device.id }})">
+                            <div class="d-flex align-items-center">
+                                <input type="text" class="form-control form-control-sm me-1" id="location-input-{{ device.id }}" value="{{ device.location or '' }}" placeholder="Enter location">
+                                <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check fa-xs"></i></button>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEditLocation({{ device.id }})"><i class="fas fa-times fa-xs"></i></button>
                             </div>
-                            {% endif %}
-                            
-                            {% if device.teamviewer_id %}
-                            <div class="mb-2">
-                                <strong class="text-info">TeamViewer ID:</strong><br>
-                                <div class="d-flex align-items-center">
-                                    <code class="me-2">{{ device.teamviewer_id }}</code>
-                                    <button class="btn btn-sm btn-outline-info btn-compact" 
-                                            onclick="copyToClipboard('{{ device.teamviewer_id }}')"
-                                            title="Copy TeamViewer ID">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            {% endif %}
-                            
-                            {% if device.ip_address %}
-                            <div class="mb-2">
-                                <strong class="text-info">IP Address:</strong><br>
-                                {{ device.ip_address }}
-                            </div>
-                            {% endif %}
-                        </div>
+                        </form>
                     </div>
-                    
-                    <!-- Assignment Options Tabs -->
-                    <ul class="nav nav-tabs nav-sm mb-3" role="tablist">
+
+                    {% if device.last_checkin %}
+                    <div class="mb-1"><span class="info-label">Last Seen</span><br><span class="info-val">{{ device.last_checkin.strftime('%m/%d %H:%M') }}</span></div>
+                    {% endif %}
+                    {% if device.current_media %}
+                    <div class="mb-1"><span class="info-label">Playing</span><br><span class="info-val text-truncate d-block"><i class="fas fa-play fa-xs me-1"></i>{{ device.current_media }}</span></div>
+                    {% endif %}
+                    {% if device.client_version %}
+                    <div class="mb-2"><span class="info-label">Client</span> <span class="info-val">{{ device.client_version }}</span></div>
+                    {% endif %}
+
+                    <!-- Assignment tabs -->
+                    <ul class="nav nav-tabs nav-sm mb-2" role="tablist">
                         <li class="nav-item">
-                            <button class="nav-link {% if not device.assigned_media_id %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#playlist-tab-{{ device.id }}" type="button" role="tab">
-                                <i class="fas fa-list me-1"></i>Playlist
+                            <button class="nav-link {% if not device.assigned_media_id %}active{% endif %}"
+                                    data-bs-toggle="tab" data-bs-target="#playlist-tab-{{ device.id }}" type="button">
+                                <i class="fas fa-list fa-xs me-1"></i>Playlist
                             </button>
                         </li>
                         <li class="nav-item">
-                            <button class="nav-link {% if device.assigned_media_id %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#media-tab-{{ device.id }}" type="button" role="tab">
-                                <i class="fas fa-file-image me-1"></i>Single Media
+                            <button class="nav-link {% if device.assigned_media_id %}active{% endif %}"
+                                    data-bs-toggle="tab" data-bs-target="#media-tab-{{ device.id }}" type="button">
+                                <i class="fas fa-file-image fa-xs me-1"></i>Media
                             </button>
                         </li>
                     </ul>
-                    
                     <div class="tab-content">
-                        <!-- Playlist Assignment Tab -->
-                        <div class="tab-pane fade {% if not device.assigned_media_id %}show active{% endif %}" id="playlist-tab-{{ device.id }}" role="tabpanel">
-                            <form method="POST" action="{{ url_for('main.assign_playlist', device_id=device.id) }}">
-                                <div class="mb-3">
-                                    <label class="form-label">Assigned Playlist:</label>
-                                    <select name="playlist_id" class="form-select form-select-sm">
-                                        <option value="">No playlist assigned</option>
-                                        {% for playlist in playlists %}
-                                        <option value="{{ playlist.id }}" 
-                                                {% if device.current_playlist_id == playlist.id and not device.assigned_media_id %}selected{% endif %}>
-                                            {{ playlist.name }}
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-sm btn-outline-primary btn-compact">
-                                    <i class="fas fa-save me-1"></i>Assign
-                                </button>
+                        <div class="tab-pane fade {% if not device.assigned_media_id %}show active{% endif %}" id="playlist-tab-{{ device.id }}">
+                            <form method="POST" action="{{ url_for('main.assign_playlist', device_id=device.id) }}" class="d-flex gap-1 align-items-center">
+                                <select name="playlist_id" class="form-select form-select-sm flex-grow-1">
+                                    <option value="">None</option>
+                                    {% for playlist in playlists %}
+                                    <option value="{{ playlist.id }}" {% if device.current_playlist_id == playlist.id and not device.assigned_media_id %}selected{% endif %}>{{ playlist.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary btn-compact flex-shrink-0"><i class="fas fa-save fa-xs"></i></button>
                             </form>
                         </div>
-                        
-                        <!-- Single Media Assignment Tab -->
-                        <div class="tab-pane fade {% if device.assigned_media_id %}show active{% endif %}" id="media-tab-{{ device.id }}" role="tabpanel">
-                            <form method="POST" action="{{ url_for('main.assign_media', device_id=device.id) }}">
-                                <div class="mb-3">
-                                    <label class="form-label">Assigned Media File:</label>
-                                    <select name="media_id" class="form-select form-select-sm">
-                                        <option value="">No media assigned</option>
-                                        {% for media in media_files %}
-                                        <option value="{{ media.id }}" 
-                                                {% if device.assigned_media_id == media.id %}selected{% endif %}>
-                                            {{ media.original_filename }} ({{ media.file_type }})
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-sm btn-outline-success btn-compact">
-                                    <i class="fas fa-save me-1"></i>Assign
-                                </button>
+                        <div class="tab-pane fade {% if device.assigned_media_id %}show active{% endif %}" id="media-tab-{{ device.id }}">
+                            <form method="POST" action="{{ url_for('main.assign_media', device_id=device.id) }}" class="d-flex gap-1 align-items-center">
+                                <select name="media_id" class="form-select form-select-sm flex-grow-1">
+                                    <option value="">None</option>
+                                    {% for media in media_files %}
+                                    <option value="{{ media.id }}" {% if device.assigned_media_id == media.id %}selected{% endif %}>{{ media.original_filename }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-success btn-compact flex-shrink-0"><i class="fas fa-save fa-xs"></i></button>
                             </form>
                         </div>
                     </div>
-                    
-                    <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap">
-                        <div class="flex-grow-1"></div>
-                        <div class="d-flex gap-1 flex-nowrap">
-                            <button type="button" class="btn btn-sm btn-outline-info btn-compact" 
-                                    onclick="confirmUpdate('{{ device.name }}', '{{ device.id }}')"
-                                    {% if not device.is_online() %}disabled title="Device is offline"{% endif %}>
-                                <i class="fas fa-download me-1"></i>Update
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-warning btn-compact" 
-                                    onclick="confirmReboot('{{ device.name }}', '{{ device.id }}')"
-                                    {% if not device.is_online() %}disabled title="Device is offline"{% endif %}>
-                                <i class="fas fa-power-off me-1"></i>Reboot
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger btn-compact" 
-                                    onclick="confirmDelete('{{ device.name }}', '{{ device.id }}')">
-                                <i class="fas fa-trash me-1"></i>Delete
-                            </button>
-                        </div>
+
+                    <!-- Actions -->
+                    <div class="card-actions d-flex justify-content-end gap-1">
+                        <button type="button" class="btn btn-sm btn-outline-info btn-compact"
+                                onclick="confirmUpdate('{{ device.name }}', '{{ device.id }}')"
+                                {% if not device.is_online() %}disabled title="Offline"{% endif %}>
+                            <i class="fas fa-download fa-xs me-1"></i>Update
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-warning btn-compact"
+                                onclick="confirmReboot('{{ device.name }}', '{{ device.id }}')"
+                                {% if not device.is_online() %}disabled title="Offline"{% endif %}>
+                            <i class="fas fa-power-off fa-xs me-1"></i>Reboot
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-compact"
+                                onclick="confirmDelete('{{ device.name }}', '{{ device.id }}')">
+                            <i class="fas fa-trash fa-xs me-1"></i>Del
+                        </button>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div><!-- /device-card -->
+
+            <!-- ═══ LIST ROW ═══ -->
+            <div class="device-list-row">
+                <div class="list-status-dot {% if device.is_online() %}online{% else %}offline{% endif %}" title="{% if device.is_online() %}Online{% else %}Offline{% endif %}"></div>
+                <div class="list-col-name" title="{{ device.name }}">{{ device.name }}</div>
+                <div class="list-col-id" title="{{ device.device_id }}"><code>{{ device.device_id }}</code></div>
+                <div class="list-col-loc" title="{{ device.location or '' }}">
+                    <i class="fas fa-map-marker-alt fa-xs me-1 opacity-50"></i>{{ device.location or '—' }}
+                </div>
+                <div class="list-col-playing">
+                    {% if device.current_media %}<i class="fas fa-play fa-xs me-1 opacity-50"></i>{{ device.current_media }}
+                    {% else %}<span class="opacity-25">—</span>{% endif %}
+                </div>
+                <!-- Compact assignment for list view -->
+                <div class="list-col-assign">
+                    {% if device.assigned_media_id %}
+                        {% for m in media_files %}{% if m.id == device.assigned_media_id %}<span title="Media: {{ m.original_filename }}"><i class="fas fa-file-image fa-xs me-1 text-success"></i>{{ m.original_filename|truncate(22, True, '…') }}</span>{% endif %}{% endfor %}
+                    {% elif device.current_playlist_id %}
+                        {% for p in playlists %}{% if p.id == device.current_playlist_id %}<span title="Playlist: {{ p.name }}"><i class="fas fa-list fa-xs me-1 text-info"></i>{{ p.name|truncate(22, True, '…') }}</span>{% endif %}{% endfor %}
+                    {% else %}
+                        <span class="opacity-25">Unassigned</span>
+                    {% endif %}
+                </div>
+                <div class="list-col-actions">
+                    <button type="button" class="btn btn-sm btn-outline-info"
+                            onclick="confirmUpdate('{{ device.name }}', '{{ device.id }}')"
+                            {% if not device.is_online() %}disabled title="Offline"{% endif %}>
+                        <i class="fas fa-download fa-xs"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-warning"
+                            onclick="confirmReboot('{{ device.name }}', '{{ device.id }}')"
+                            {% if not device.is_online() %}disabled title="Offline"{% endif %}>
+                        <i class="fas fa-power-off fa-xs"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                            onclick="confirmDelete('{{ device.name }}', '{{ device.id }}')">
+                        <i class="fas fa-trash fa-xs"></i>
+                    </button>
+                </div>
+            </div><!-- /device-list-row -->
+
+        </div><!-- /device-item -->
         {% endfor %}
-    </div>
+
+    </div><!-- /devicesContainer -->
     {% else %}
     <div class="card">
         <div class="card-body text-center py-5">
@@ -268,7 +286,7 @@
     {% endif %}
 </div>
 
-<!-- Add Device Modal -->
+<!-- ══ Add Device Modal ══ -->
 <div class="modal fade" id="addDeviceModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -280,22 +298,17 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="deviceName" class="form-label">Device Name *</label>
-                        <input type="text" class="form-control" id="deviceName" name="name" 
-                               placeholder="e.g., Lobby Display" required>
+                        <input type="text" class="form-control" id="deviceName" name="name" placeholder="e.g., Lobby Display" required>
                         <div class="form-text">A friendly name for this display device</div>
                     </div>
-                    
                     <div class="mb-3">
                         <label for="deviceId" class="form-label">Device ID *</label>
-                        <input type="text" class="form-control" id="deviceId" name="device_id" 
-                               placeholder="e.g., device-001" required>
+                        <input type="text" class="form-control" id="deviceId" name="device_id" placeholder="e.g., device-001" required>
                         <div class="form-text">Unique identifier used by the client agent</div>
                     </div>
-                    
                     <div class="mb-3">
                         <label for="deviceLocation" class="form-label">Location</label>
-                        <input type="text" class="form-control" id="deviceLocation" name="location" 
-                               placeholder="e.g., Main Lobby, Conference Room A">
+                        <input type="text" class="form-control" id="deviceLocation" name="location" placeholder="e.g., Main Lobby, Conference Room A">
                         <div class="form-text">Physical location of the device (optional)</div>
                     </div>
                 </div>
@@ -308,7 +321,7 @@
     </div>
 </div>
 
-<!-- Client Setup Modal -->
+<!-- ══ Client Setup Modal ══ -->
 <div class="modal fade" id="clientSetupModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -321,36 +334,29 @@
                     <h6><i class="fas fa-info-circle me-2"></i>Quick Start Guide</h6>
                     <p class="mb-0">Follow these steps to connect a Raspberry Pi, Intel NUC, or any Linux device to your signage system.</p>
                 </div>
-
                 <div class="row">
                     <div class="col-md-6">
                         <h6>1. Register Device</h6>
                         <p class="text-muted small">Add your device using the "Add Device" button with a unique Device ID.</p>
-                        
                         <h6>2. Download Setup Script</h6>
                         <div class="mb-3">
                             <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh | bash')">
                                 <i class="fas fa-terminal me-1"></i>Copy Setup Command
                             </button>
                         </div>
-                        
                         <h6>3. Run Script</h6>
                         <p class="text-muted small">The script will automatically install all dependencies and media players.</p>
                     </div>
-                    
                     <div class="col-md-6">
                         <h6>Quick Setup Commands</h6>
                         <p class="text-muted small">Run these on your Raspberry Pi or Linux device:</p>
-                        
                         <div class="bg-dark p-3 rounded">
                             <code class="text-light small">
                                 # One-line setup (installs everything)<br>
                                 curl -L https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh | bash<br><br>
-                                
                                 # Or download and run manually<br>
                                 wget https://raw.githubusercontent.com/tbnobed/signage/main/setup_client.sh<br>
                                 bash setup_client.sh<br><br>
-                                
                                 # The script will:<br>
                                 # 1. Install Python 3 and dependencies<br>
                                 # 2. Install media players (omxplayer/vlc/ffmpeg)<br>
@@ -360,38 +366,17 @@
                         </div>
                     </div>
                 </div>
-
                 <hr>
-
                 <div class="row">
                     <div class="col-12">
-                        <h6>Supported Devices & Players</h6>
+                        <h6>Supported Devices &amp; Players</h6>
                         <div class="row">
-                            <div class="col-md-4">
-                                <strong>Raspberry Pi</strong>
-                                <ul class="text-muted small">
-                                    <li>omxplayer (recommended)</li>
-                                    <li>VLC (alternative)</li>
-                                </ul>
-                            </div>
-                            <div class="col-md-4">
-                                <strong>Intel NUC / PC</strong>
-                                <ul class="text-muted small">
-                                    <li>VLC (recommended)</li>
-                                    <li>ffplay (lightweight)</li>
-                                </ul>
-                            </div>
-                            <div class="col-md-4">
-                                <strong>Any Linux Device</strong>
-                                <ul class="text-muted small">
-                                    <li>Automatic detection</li>
-                                    <li>Fallback support</li>
-                                </ul>
-                            </div>
+                            <div class="col-md-4"><strong>Raspberry Pi</strong><ul class="text-muted small"><li>omxplayer (recommended)</li><li>VLC (alternative)</li></ul></div>
+                            <div class="col-md-4"><strong>Intel NUC / PC</strong><ul class="text-muted small"><li>VLC (recommended)</li><li>ffplay (lightweight)</li></ul></div>
+                            <div class="col-md-4"><strong>Any Linux Device</strong><ul class="text-muted small"><li>Automatic detection</li><li>Fallback support</li></ul></div>
                         </div>
                     </div>
                 </div>
-
                 <div class="alert alert-warning">
                     <strong>Important:</strong> Make sure your device can reach this server at <code>{{ request.url_root }}</code>
                     and that the Device ID matches exactly what you register in the system.
@@ -407,112 +392,72 @@
     </div>
 </div>
 
-<!-- Reboot Confirmation Modal -->
+<!-- ══ Reboot Modal ══ -->
 <div class="modal fade" id="rebootDeviceModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title text-warning">
-                    <i class="fas fa-power-off me-2"></i>Reboot Device
-                </h5>
+                <h5 class="modal-title text-warning"><i class="fas fa-power-off me-2"></i>Reboot Device</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to reboot the device <strong><span id="deviceNameToReboot"></span></strong>?</p>
-                
+                <p>Are you sure you want to reboot <strong><span id="deviceNameToReboot"></span></strong>?</p>
                 <div class="alert alert-info">
-                    <strong>What will happen:</strong>
-                    <ul class="mb-0 mt-2">
-                        <li>The reboot command will be sent on the next check-in</li>
-                        <li>Current media playback will stop</li>
-                        <li>The device will restart completely</li>
-                        <li>Media playback will resume automatically after reboot</li>
-                    </ul>
+                    The reboot command will be sent on the next check-in. Device will be offline for ~1–2 minutes.
                 </div>
-                
-                <p class="mb-0">The device will be offline for about 1-2 minutes during the reboot process.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="rebootDeviceForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-warning">
-                        <i class="fas fa-power-off me-1"></i>Reboot Device
-                    </button>
+                <form id="rebootDeviceForm" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-warning"><i class="fas fa-power-off me-1"></i>Reboot</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
+<!-- ══ Delete Modal ══ -->
 <div class="modal fade" id="deleteDeviceModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title text-danger">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Device
-                </h5>
+                <h5 class="modal-title text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Delete Device</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete the device <strong><span id="deviceNameToDelete"></span></strong>?</p>
-                
+                <p>Are you sure you want to delete <strong><span id="deviceNameToDelete"></span></strong>?</p>
                 <div class="alert alert-warning">
-                    <strong>This action cannot be undone!</strong><br>
-                    This will permanently remove:
-                    <ul class="mb-0 mt-2">
-                        <li>The device registration</li>
-                        <li>All device logs and history</li>
-                        <li>Any playlist assignments</li>
-                    </ul>
+                    <strong>Cannot be undone.</strong> Removes the device, all logs, and playlist assignments.
                 </div>
-                
-                <p class="mb-0">The client will no longer be able to connect to the server until it's re-registered.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteDeviceForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash me-1"></i>Delete Device
-                    </button>
+                <form id="deleteDeviceForm" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash me-1"></i>Delete</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Update Client Confirmation Modal -->
+<!-- ══ Update Modal ══ -->
 <div class="modal fade" id="updateDeviceModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title text-info">
-                    <i class="fas fa-download me-2"></i>Update Client
-                </h5>
+                <h5 class="modal-title text-info"><i class="fas fa-download me-2"></i>Update Client</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to update the client on <strong><span id="deviceNameToUpdate"></span></strong>?</p>
-                
+                <p>Update the client on <strong><span id="deviceNameToUpdate"></span></strong>?</p>
                 <div class="alert alert-info">
-                    <strong>What will happen:</strong>
-                    <ul class="mb-0 mt-2">
-                        <li>The update command will be sent on the next check-in</li>
-                        <li>Latest client version will be downloaded from GitHub</li>
-                        <li>Current media playback will stop briefly</li>
-                        <li>Client service will restart automatically with new version</li>
-                        <li>Media playback will resume after update</li>
-                    </ul>
+                    Latest client version will be downloaded from GitHub. Device offline ~30–60 seconds.
                 </div>
-                
-                <p class="mb-0">The device will be offline for about 30-60 seconds during the update process.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="updateDeviceForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-info">
-                        <i class="fas fa-download me-1"></i>Update Client
-                    </button>
+                <form id="updateDeviceForm" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-info"><i class="fas fa-download me-1"></i>Update</button>
                 </form>
             </div>
         </div>
@@ -522,7 +467,145 @@
 
 {% block scripts %}
 <script>
-// Generate random device ID
+// ─── View & sort state ───────────────────────────────────────────
+let currentView = localStorage.getItem('devicesView') || 'grid';
+let sortAsc     = localStorage.getItem('devicesSortAsc') !== 'false';
+
+function setView(v) {
+    currentView = v;
+    localStorage.setItem('devicesView', v);
+    const c = document.getElementById('devicesContainer');
+    if (!c) return;
+    c.className = 'view-' + v;
+    document.getElementById('btnGrid').classList.toggle('active', v === 'grid');
+    document.getElementById('btnList').classList.toggle('active', v === 'list');
+}
+
+function toggleSort() {
+    sortAsc = !sortAsc;
+    localStorage.setItem('devicesSortAsc', sortAsc);
+    document.getElementById('sortLabel').textContent = sortAsc ? 'A–Z' : 'Z–A';
+    const icon = document.querySelector('#sortBtn i');
+    icon.className = sortAsc ? 'fas fa-sort-alpha-down me-1' : 'fas fa-sort-alpha-up me-1';
+    sortDevices();
+}
+
+function naturalKey(s) {
+    return s.replace(/(\d+)/g, n => n.padStart(10, '0'));
+}
+
+function sortDevices() {
+    const c = document.getElementById('devicesContainer');
+    if (!c) return;
+    const items = Array.from(c.querySelectorAll('.device-item'));
+    items.sort((a, b) => {
+        const ka = naturalKey(a.dataset.name || '');
+        const kb = naturalKey(b.dataset.name || '');
+        return sortAsc ? ka.localeCompare(kb) : kb.localeCompare(ka);
+    });
+    items.forEach(i => c.appendChild(i));
+}
+
+// Init on load
+document.addEventListener('DOMContentLoaded', function() {
+    setView(currentView);
+    if (!sortAsc) {
+        document.getElementById('sortLabel').textContent = 'Z–A';
+        const icon = document.querySelector('#sortBtn i');
+        if (icon) icon.className = 'fas fa-sort-alpha-up me-1';
+    }
+    sortDevices();
+});
+
+// ─── Modal helpers ───────────────────────────────────────────────
+function confirmReboot(deviceName, deviceId) {
+    document.getElementById('deviceNameToReboot').textContent = deviceName;
+    document.getElementById('rebootDeviceForm').action = "{{ url_for('main.reboot_device', device_id=0) }}".replace('0', deviceId);
+    new bootstrap.Modal(document.getElementById('rebootDeviceModal')).show();
+}
+function confirmUpdate(deviceName, deviceId) {
+    document.getElementById('deviceNameToUpdate').textContent = deviceName;
+    document.getElementById('updateDeviceForm').action = "{{ url_for('main.update_device', device_id=0) }}".replace('0', deviceId);
+    new bootstrap.Modal(document.getElementById('updateDeviceModal')).show();
+}
+function confirmDelete(deviceName, deviceId) {
+    document.getElementById('deviceNameToDelete').textContent = deviceName;
+    document.getElementById('deleteDeviceForm').action = "{{ url_for('main.delete_device', device_id=0) }}".replace('0', deviceId);
+    new bootstrap.Modal(document.getElementById('deleteDeviceModal')).show();
+}
+
+// ─── Clipboard ───────────────────────────────────────────────────
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(
+        () => showAlert('Copied to clipboard!', 'success'),
+        () => showAlert('Could not copy', 'warning')
+    );
+}
+
+// ─── Inline name edit ────────────────────────────────────────────
+function editDeviceName(id, name) {
+    document.getElementById('name-display-' + id).classList.add('d-none');
+    document.getElementById('name-form-' + id).classList.remove('d-none');
+    const inp = document.getElementById('name-input-' + id);
+    inp.focus(); inp.select();
+}
+function cancelEditName(id) {
+    document.getElementById('name-display-' + id).classList.remove('d-none');
+    document.getElementById('name-form-' + id).classList.add('d-none');
+}
+function saveDeviceName(event, id) {
+    event.preventDefault();
+    const newName = document.getElementById('name-input-' + id).value.trim();
+    if (!newName) { showAlert('Name cannot be empty', 'warning'); return; }
+    fetch("{{ url_for('main.update_device_name', device_id=0) }}".replace('0', id), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName })
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.success) {
+            document.getElementById('name-display-' + id).textContent = newName;
+            const item = document.getElementById('name-display-' + id).closest('.device-item');
+            if (item) item.dataset.name = newName.toLowerCase();
+            cancelEditName(id);
+            showAlert('Name updated', 'success');
+        } else { showAlert(d.error || 'Failed', 'danger'); }
+    })
+    .catch(() => showAlert('Failed to update name', 'danger'));
+}
+
+// ─── Inline location edit ────────────────────────────────────────
+function editDeviceLocation(id, loc) {
+    document.getElementById('location-display-' + id).classList.add('d-none');
+    document.getElementById('location-form-' + id).classList.remove('d-none');
+    const inp = document.getElementById('location-input-' + id);
+    inp.focus(); inp.select();
+}
+function cancelEditLocation(id) {
+    document.getElementById('location-display-' + id).classList.remove('d-none');
+    document.getElementById('location-form-' + id).classList.add('d-none');
+}
+function saveDeviceLocation(event, id) {
+    event.preventDefault();
+    const newLoc = document.getElementById('location-input-' + id).value.trim();
+    fetch("{{ url_for('main.update_device_location', device_id=0) }}".replace('0', id), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ location: newLoc })
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.success) {
+            document.getElementById('location-display-' + id).textContent = newLoc || '—';
+            cancelEditLocation(id);
+            showAlert('Location updated', 'success');
+        } else { showAlert(d.error || 'Failed', 'danger'); }
+    })
+    .catch(() => showAlert('Failed to update location', 'danger'));
+}
+
+// ─── Auto device ID from name ─────────────────────────────────────
 document.getElementById('deviceName').addEventListener('input', function() {
     const name = this.value.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
     if (name && !document.getElementById('deviceId').value) {
@@ -530,138 +613,14 @@ document.getElementById('deviceName').addEventListener('input', function() {
     }
 });
 
-// Copy to clipboard function
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(function() {
-        showAlert('Setup command copied to clipboard!', 'success');
-    }, function(err) {
-        console.error('Could not copy text: ', err);
-        showAlert('Could not copy to clipboard', 'warning');
-    });
-}
-
-// Reboot device confirmation
-function confirmReboot(deviceName, deviceId) {
-    document.getElementById('deviceNameToReboot').textContent = deviceName;
-    document.getElementById('rebootDeviceForm').action = "{{ url_for('main.reboot_device', device_id=0) }}".replace('0', deviceId);
-    new bootstrap.Modal(document.getElementById('rebootDeviceModal')).show();
-}
-
-// Update device confirmation
-function confirmUpdate(deviceName, deviceId) {
-    document.getElementById('deviceNameToUpdate').textContent = deviceName;
-    document.getElementById('updateDeviceForm').action = "{{ url_for('main.update_device', device_id=0) }}".replace('0', deviceId);
-    new bootstrap.Modal(document.getElementById('updateDeviceModal')).show();
-}
-
-// Delete device confirmation
-function confirmDelete(deviceName, deviceId) {
-    document.getElementById('deviceNameToDelete').textContent = deviceName;
-    document.getElementById('deleteDeviceForm').action = "{{ url_for('main.delete_device', device_id=0) }}".replace('0', deviceId);
-    new bootstrap.Modal(document.getElementById('deleteDeviceModal')).show();
-}
-
-// Edit device name
-function editDeviceName(deviceId, currentName) {
-    document.getElementById('name-display-' + deviceId).classList.add('d-none');
-    document.getElementById('name-form-' + deviceId).classList.remove('d-none');
-    document.getElementById('name-input-' + deviceId).focus();
-    document.getElementById('name-input-' + deviceId).select();
-}
-
-// Cancel edit name
-function cancelEditName(deviceId) {
-    document.getElementById('name-display-' + deviceId).classList.remove('d-none');
-    document.getElementById('name-form-' + deviceId).classList.add('d-none');
-}
-
-// Save device name
-function saveDeviceName(event, deviceId) {
-    event.preventDefault();
-    const newName = document.getElementById('name-input-' + deviceId).value.trim();
-    
-    if (!newName) {
-        showAlert('Device name cannot be empty', 'warning');
-        return;
-    }
-    
-    fetch("{{ url_for('main.update_device_name', device_id=0) }}".replace('0', deviceId), {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: newName })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('name-display-' + deviceId).textContent = newName;
-            cancelEditName(deviceId);
-            showAlert('Device name updated successfully', 'success');
-        } else {
-            showAlert(data.error || 'Failed to update device name', 'danger');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showAlert('Failed to update device name', 'danger');
-    });
-}
-
-// Edit device location
-function editDeviceLocation(deviceId, currentLocation) {
-    document.getElementById('location-display-' + deviceId).classList.add('d-none');
-    document.getElementById('location-form-' + deviceId).classList.remove('d-none');
-    document.getElementById('location-input-' + deviceId).focus();
-    document.getElementById('location-input-' + deviceId).select();
-}
-
-// Cancel edit location
-function cancelEditLocation(deviceId) {
-    document.getElementById('location-display-' + deviceId).classList.remove('d-none');
-    document.getElementById('location-form-' + deviceId).classList.add('d-none');
-}
-
-// Save device location
-function saveDeviceLocation(event, deviceId) {
-    event.preventDefault();
-    const newLocation = document.getElementById('location-input-' + deviceId).value.trim();
-    
-    fetch("{{ url_for('main.update_device_location', device_id=0) }}".replace('0', deviceId), {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ location: newLocation })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const displayText = newLocation ? '<i class="fas fa-map-marker-alt me-1"></i>' + newLocation : '<i class="fas fa-map-marker-alt me-1"></i>Not set';
-            document.getElementById('location-display-' + deviceId).innerHTML = displayText;
-            cancelEditLocation(deviceId);
-            showAlert('Location updated successfully', 'success');
-        } else {
-            showAlert(data.error || 'Failed to update location', 'danger');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showAlert('Failed to update location', 'danger');
-    });
-}
-
-// Show alert helper
+// ─── Alert helper ─────────────────────────────────────────────────
 function showAlert(message, type) {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
-    alertDiv.style.zIndex = '9999';
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    document.body.appendChild(alertDiv);
-    setTimeout(() => alertDiv.remove(), 3000);
+    const el = document.createElement('div');
+    el.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+    el.style.zIndex = '9999';
+    el.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
 }
 </script>
 {% endblock %}
