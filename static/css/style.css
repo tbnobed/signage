@@ -698,7 +698,7 @@ body {
 .device-card.error { border-color: rgba(239,68,68,0.3); }
 
 .device-screen {
-    height: 120px;
+    height: 36px;
     background: #050508;
     border-bottom: 1px solid var(--border);
     position: relative;
@@ -745,8 +745,9 @@ body {
 
 .screen-status-badge {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 8px;
     display: flex;
     align-items: center;
     gap: 5px;
