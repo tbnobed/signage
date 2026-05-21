@@ -100,7 +100,7 @@
             </div>
             <span style="width:1px;height:18px;background:#2a2a2a;display:inline-block;"></span>
             <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadModal">
-                <i class="fas fa-upload me-1"></i>Upload Media
+                <i class="fas fa-plus me-1"></i>Add Media
             </button>
         </div>
     </div>
@@ -145,6 +145,7 @@
                 <td class="row-actions" style="text-align:right;" onclick="event.stopPropagation();">
                     {% if ftype == 'stream' %}
                     <a href="{{ m.stream_url }}" target="_blank" class="btn btn-outline-info btn-sm" title="Open Stream"><i class="fas fa-external-link-alt"></i></a>
+                    <button class="btn btn-outline-warning btn-sm" onclick="doEditStream({{ m.id }},'{{ m.original_filename|replace("'","\\'") }}','{{ m.stream_url|replace("'","\\'") }}','{{ m.stream_type }}')" title="Edit Stream"><i class="fas fa-edit"></i></button>
                     {% else %}
                     <a href="{{ url_for('main.uploaded_file', filename=m.filename) }}" target="_blank" class="btn btn-outline-secondary btn-sm" title="Preview"><i class="fas fa-eye"></i></a>
                     {% endif %}
@@ -178,9 +179,10 @@
                                 {% if m.duration %}<dt>Duration</dt><dd>{{ m.duration }}s</dd>{% endif %}
                                 <dt>Added</dt><dd>{{ m.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
                             </dl>
-                            <div class="mt-2">
+                            <div class="mt-2 d-flex gap-2 flex-wrap">
                                 {% if ftype == 'stream' %}
                                 <a href="{{ m.stream_url }}" target="_blank" class="btn btn-outline-info btn-sm"><i class="fas fa-external-link-alt me-1"></i>Open Stream</a>
+                                <button class="btn btn-outline-warning btn-sm" onclick="doEditStream({{ m.id }},'{{ m.original_filename|replace("'","\\'") }}','{{ m.stream_url|replace("'","\\'") }}','{{ m.stream_type }}')"><i class="fas fa-edit me-1"></i>Edit Stream</button>
                                 {% else %}
                                 <a href="{{ url_for('main.uploaded_file', filename=m.filename) }}" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="fas fa-external-link-alt me-1"></i>Open Full</a>
                                 {% endif %}
@@ -223,7 +225,8 @@
             </div>
             <div class="gc-foot">
                 {% if ftype == 'stream' %}
-                <a href="{{ m.stream_url }}" target="_blank" class="btn btn-outline-info btn-sm"><i class="fas fa-external-link-alt"></i></a>
+                <a href="{{ m.stream_url }}" target="_blank" class="btn btn-outline-info btn-sm" title="Open"><i class="fas fa-external-link-alt"></i></a>
+                <button class="btn btn-outline-warning btn-sm" onclick="doEditStream({{ m.id }},'{{ m.original_filename|replace("'","\\'") }}','{{ m.stream_url|replace("'","\\'") }}','{{ m.stream_type }}')" title="Edit"><i class="fas fa-edit"></i></button>
                 {% else %}
                 <a href="{{ url_for('main.uploaded_file', filename=m.filename) }}" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="fas fa-eye"></i></a>
                 {% endif %}
@@ -280,6 +283,27 @@
     </div></div>
 </div>
 
+<!-- Edit Stream Modal -->
+<div class="modal fade" id="editStreamModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Stream</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <form id="editStreamForm" method="POST">
+            <div class="modal-body">
+                <div class="mb-3"><label class="form-label">Stream Name</label><input type="text" class="form-control" id="esName" name="stream_name" required></div>
+                <div class="mb-3"><label class="form-label">Stream URL</label><input type="url" class="form-control" id="esUrl" name="stream_url" required></div>
+                <div class="mb-3"><label class="form-label">Stream Type</label>
+                    <select class="form-select" id="esType" name="stream_type" required>
+                        <option value="rtmp">RTMP</option>
+                        <option value="hls">HLS (M3U8)</option>
+                        <option value="http">HTTP</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Save Changes</button></div>
+        </form>
+    </div></div>
+</div>
+
 <!-- Delete Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content">
@@ -293,6 +317,15 @@
 {% block scripts %}
 <script>
 const R_DELETE = "{{ url_for('main.delete_media', media_id=0) }}";
+const R_EDIT_STREAM = "{{ url_for('main.edit_stream', media_id=0) }}";
+
+function doEditStream(id, name, url, type) {
+    document.getElementById('esName').value = name;
+    document.getElementById('esUrl').value = url;
+    document.getElementById('esType').value = type;
+    document.getElementById('editStreamForm').action = R_EDIT_STREAM.replace('/0/', '/'+id+'/');
+    new bootstrap.Modal(document.getElementById('editStreamModal')).show();
+}
 
 function setView(v) {
     localStorage.setItem('mv', v);

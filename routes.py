@@ -304,6 +304,50 @@ def add_stream():
     flash(f'{stream_type.upper()} stream "{stream_name}" added successfully', 'success')
     return redirect(url_for('main.media'))
 
+@main.route('/media/<int:media_id>/edit-stream', methods=['POST'])
+@login_required
+def edit_stream(media_id):
+    media_file = MediaFile.query.get_or_404(media_id)
+    if not media_file.is_stream:
+        flash('This media file is not a stream', 'error')
+        return redirect(url_for('main.media'))
+
+    stream_name = request.form.get('stream_name', '').strip()
+    stream_url = request.form.get('stream_url', '').strip()
+    stream_type = request.form.get('stream_type', '').strip()
+
+    if not all([stream_name, stream_url, stream_type]):
+        flash('All fields are required for streaming media', 'error')
+        return redirect(url_for('main.media'))
+
+    url_valid = False
+    if stream_type == 'rtmp' and stream_url.startswith('rtmp://'):
+        url_valid = True
+    elif stream_type == 'hls' and ('.m3u8' in stream_url or 'm3u8' in stream_url):
+        url_valid = True
+    elif stream_type == 'http' and (stream_url.startswith('http://') or stream_url.startswith('https://')):
+        url_valid = True
+
+    if not url_valid:
+        flash(f'Invalid URL format for {stream_type.upper()} stream', 'error')
+        return redirect(url_for('main.media'))
+
+    # If URL changed, ensure no other stream owns it
+    if stream_url != media_file.stream_url:
+        existing = MediaFile.query.filter(MediaFile.stream_url == stream_url, MediaFile.id != media_id).first()
+        if existing:
+            flash('Another stream is already using that URL', 'warning')
+            return redirect(url_for('main.media'))
+
+    media_file.original_filename = stream_name
+    media_file.stream_url = stream_url
+    media_file.stream_type = stream_type
+    db.session.commit()
+
+    flash(f'Stream "{stream_name}" updated', 'success')
+    return redirect(url_for('main.media'))
+
+
 @main.route('/media/<int:media_id>/delete', methods=['POST'])
 @login_required
 def delete_media(media_id):
