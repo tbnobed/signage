@@ -45,6 +45,28 @@
 .row-actions .btn:hover { opacity:1; }
 .dev-table tbody tr:hover .row-actions .btn { opacity:.75; }
 
+/* expandable row */
+.dev-table tbody tr.main-row { cursor:pointer; }
+.dev-table tbody tr.main-row td:first-child { position:relative; }
+.expand-caret { display:inline-block; transition:transform .15s; color:#444; margin-right:.3rem; font-size:.7rem; }
+.main-row.open .expand-caret { transform:rotate(90deg); color:var(--accent); }
+.main-row.open td { background:#15171e; border-color:#2a2c36 !important; }
+.main-row.open td:first-child { border-radius:8px 0 0 0; }
+.main-row.open td:last-child  { border-radius:0 8px 0 0; }
+
+.detail-row td { padding:0 !important; background:#15171e !important; border-top:none !important; border-radius:0 0 8px 8px !important; border-left:1px solid #2a2c36; border-right:1px solid #2a2c36; border-bottom:1px solid #2a2c36; }
+.detail-row { display:none; }
+.detail-row.show { display:table-row; }
+.detail-inner { padding:.85rem 1.1rem; display:grid; grid-template-columns:1fr 1fr; gap:.85rem 1.5rem; }
+@media(max-width:800px){ .detail-inner { grid-template-columns:1fr; } }
+.detail-group { }
+.detail-label { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#666; margin-bottom:.3rem; }
+.detail-group .form-select { font-size:.8rem; background:#0d0f14; border-color:#2a2c36; }
+.detail-info { display:grid; grid-template-columns:auto 1fr; gap:.2rem .8rem; font-size:.78rem; align-items:baseline; }
+.detail-info dt { color:#555; font-size:.7rem; }
+.detail-info dd { color:#bbb; margin:0; }
+.detail-info dd code { font-size:.7rem; color:#888; }
+
 /* ─── GRID VIEW ───────────────────────────────────────────────── */
 #gridView { display:none; }
 #gridView.show { display:grid; grid-template-columns:repeat(4,1fr); gap:.8rem; }
@@ -120,8 +142,8 @@
             </thead>
             <tbody id="tbody">
             {% for d in devices %}
-            <tr data-n="{{ d.name|lower }}" data-i="{{ d.device_id|lower }}" data-l="{{ (d.location or '')|lower }}" data-s="{{ d.last_checkin.strftime('%Y%m%d%H%M') if d.last_checkin else '0' }}">
-                <td><span class="sdot {% if d.is_online() %}on{% else %}off{% endif %}"></span></td>
+            <tr class="main-row" onclick="toggleRow(this)" data-n="{{ d.name|lower }}" data-i="{{ d.device_id|lower }}" data-l="{{ (d.location or '')|lower }}" data-s="{{ d.last_checkin.strftime('%Y%m%d%H%M') if d.last_checkin else '0' }}">
+                <td><i class="fas fa-caret-right expand-caret"></i><span class="sdot {% if d.is_online() %}on{% else %}off{% endif %}"></span></td>
                 <td class="col-name">{{ d.name }}</td>
                 <td class="col-id">{{ d.device_id }}</td>
                 <td class="col-dim">{{ d.location or '—' }}</td>
@@ -139,10 +161,47 @@
                     {% endif %}
                 </td>
                 <td class="col-dim">{{ d.last_checkin.strftime('%m/%d %H:%M') if d.last_checkin else '—' }}</td>
-                <td class="row-actions" style="text-align:right;">
+                <td class="row-actions" style="text-align:right;" onclick="event.stopPropagation();">
                     <button class="btn btn-outline-info btn-sm" onclick="doUpdate('{{ d.name }}','{{ d.id }}')" {% if not d.is_online() %}disabled{% endif %} title="Update"><i class="fas fa-download"></i></button>
                     <button class="btn btn-outline-warning btn-sm" onclick="doReboot('{{ d.name }}','{{ d.id }}')" {% if not d.is_online() %}disabled{% endif %} title="Reboot"><i class="fas fa-power-off"></i></button>
                     <button class="btn btn-outline-danger btn-sm" onclick="doDelete('{{ d.name }}','{{ d.id }}')" title="Delete"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+            <tr class="detail-row">
+                <td colspan="7">
+                    <div class="detail-inner" onclick="event.stopPropagation();">
+                        <div class="detail-group">
+                            <div class="detail-label"><i class="fas fa-list me-1"></i>Assign Playlist</div>
+                            <form method="POST" action="{{ url_for('main.assign_playlist', device_id=d.id) }}">
+                                <select name="playlist_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    <option value="">— No Playlist —</option>
+                                    {% for p in playlists %}
+                                    <option value="{{ p.id }}" {% if d.current_playlist_id == p.id and not d.assigned_media_id %}selected{% endif %}>{{ p.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                            <div class="detail-label mt-3"><i class="fas fa-file-image me-1"></i>Assign Single Media</div>
+                            <form method="POST" action="{{ url_for('main.assign_media', device_id=d.id) }}">
+                                <select name="media_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    <option value="">— No Media —</option>
+                                    {% for m in media_files %}
+                                    <option value="{{ m.id }}" {% if d.assigned_media_id == m.id %}selected{% endif %}>{{ m.original_filename }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                        </div>
+                        <div class="detail-group">
+                            <div class="detail-label">Device Details</div>
+                            <dl class="detail-info">
+                                <dt>Device ID</dt><dd><code>{{ d.device_id }}</code></dd>
+                                <dt>Location</dt><dd>{{ d.location or '—' }}</dd>
+                                <dt>Status</dt><dd>{% if d.is_online() %}<span style="color:#10b981;">● Online</span>{% else %}<span style="color:#666;">○ Offline</span>{% endif %}</dd>
+                                <dt>Last Seen</dt><dd>{{ d.last_checkin.strftime('%Y-%m-%d %H:%M:%S') if d.last_checkin else 'Never' }}</dd>
+                                {% if d.client_version %}<dt>Client</dt><dd>v{{ d.client_version }}</dd>{% endif %}
+                                {% if d.current_media %}<dt>Playing</dt><dd style="color:#6366f1;">{{ d.current_media }}</dd>{% endif %}
+                            </dl>
+                        </div>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
@@ -288,6 +347,15 @@ function setView(v) {
     }
 }
 
+// ── expandable rows ──────────────────────────────────────────────
+function toggleRow(tr) {
+    const isOpen = tr.classList.toggle('open');
+    const detail = tr.nextElementSibling;
+    if (detail && detail.classList.contains('detail-row')) {
+        detail.classList.toggle('show', isOpen);
+    }
+}
+
 // ── table sort ───────────────────────────────────────────────────
 let sc = 1, sd = 1;
 const dmap = {1:'n', 2:'i', 3:'l', 5:'s'};
@@ -302,10 +370,14 @@ function sort(col) {
     });
     const tb = document.getElementById('tbody');
     if (!tb) return;
-    const rows = [...tb.querySelectorAll('tr')];
+    // collect main rows paired with their detail rows
+    const pairs = [];
+    [...tb.querySelectorAll('tr.main-row')].forEach(mr => {
+        pairs.push([mr, mr.nextElementSibling]);
+    });
     const attr = 'data-' + (dmap[col] || 'n');
-    rows.sort((a,b) => nc(a.getAttribute(attr)||'', b.getAttribute(attr)||'') * sd);
-    rows.forEach(r => tb.appendChild(r));
+    pairs.sort((a,b) => nc(a[0].getAttribute(attr)||'', b[0].getAttribute(attr)||'') * sd);
+    pairs.forEach(([m, d]) => { tb.appendChild(m); if (d) tb.appendChild(d); });
 }
 
 function nc(a, b) {
